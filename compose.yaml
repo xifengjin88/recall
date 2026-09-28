@@ -1,0 +1,23 @@
+# Local PostgreSQL for Recall. `make db` starts it; `make db-reset` wipes it.
+name: recall
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: recall
+      POSTGRES_PASSWORD: recall
+      POSTGRES_DB: recall
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recall -d recall && pg_isready -U recall -d recall_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:

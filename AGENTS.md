@@ -42,11 +42,13 @@ npm run build        # static SPA in build/client/
 npm run security     # npm audit + signatures + OSV.dev CVE lookup
 ```
 
-Monorepo (after T3; see SPEC-platform.md):
+Monorepo (repo root; see SPEC-platform.md and `make help`):
 
 ```sh
 make setup | db | db-reset | dev-server | dev-web | test | lint | security
 ```
+
+Server-only (inside `server/`): `uv run --env-file ../.env pytest`, `uv run ruff check .`, `uv run pyright`. Postgres runs in Docker (`compose.yaml`); copy `.env.example` to `.env`.
 
 ## Architecture rules
 
@@ -77,7 +79,7 @@ make setup | db | db-reset | dev-server | dev-web | test | lint | security
 ## Dependencies and security
 
 - Adding any dependency (npm or Python) needs the user's approval first.
-- After installing or upgrading anything, run the security checks (`npm run security`; after T2 also `make security`, which adds `pip-audit` and an OSV.dev lookup for Python packages). Don't leave a known vulnerability in place: pin a fixed version or pick another package, and tell the user.
+- After installing or upgrading anything, run `make security` (npm audit + signatures + OSV for web; pip-audit + OSV for `server/uv.lock`). Don't leave a known vulnerability in place: pin a fixed version or pick another package, and tell the user.
 
 ## Boundaries
 

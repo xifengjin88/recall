@@ -40,19 +40,19 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `compose.yaml` with `postgres:17-alpine`, healthcheck, named volume and an init script creating `recall_test`; root `Makefile` with the targets in SPEC-platform; `.env.example`; README and AGENTS.md updated for the monorepo.
 
 **Acceptance criteria:**
-- [ ] `make db` returns only after Postgres is healthy; both DATABASE_URLs connect
-- [ ] `make test`, `make lint`, `make security` run both projects and pass
-- [ ] README "Getting started" works from a fresh clone
+- [x] `make db` returns only after Postgres is healthy; both DATABASE_URLs connect
+- [x] `make test`, `make lint`, `make security` run both projects and pass
+- [x] README "Getting started" works from a fresh clone
 
 **Verification:**
-- [ ] `make db-reset && psql "postgresql://recall:recall@localhost:5432/recall_test" -c 'select 1'`
-- [ ] `make test lint security`
+- [x] `make db-reset && psql "postgresql://recall:recall@localhost:5432/recall_test" -c 'select 1'`
+- [x] `make test lint security`
 
 **Dependencies:** T1, T2 · **Files:** compose.yaml, docker/initdb.sql, Makefile, .env.example, README.md, AGENTS.md · **Size:** M
 
 ### Checkpoint A: Platform
-- [ ] `make test lint security` green
-- [ ] Web app unchanged under `make dev-web`
+- [x] `make test lint security` green
+- [x] Web app unchanged under `make dev-web`
 - [ ] Review with human before Phase 2/3
 
 ---
