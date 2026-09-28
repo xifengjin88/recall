@@ -26,12 +26,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** uv project pinned to Python 3.13 with packages `recall_engine`, `recall_content`, `recall_api` (empty), dev tools ruff, pyright, pytest, coverage, pip-audit, a smoke test, and `scripts/osv_check.py` for uv.lock.
 
 **Acceptance criteria:**
-- [ ] `uv run pytest` passes (smoke test imports all three packages)
-- [ ] `uv run ruff check . && uv run ruff format --check . && uv run pyright` pass
-- [ ] pip-audit and OSV check report 0 vulnerabilities
+- [x] `uv run pytest` passes (smoke test imports all three packages)
+- [x] `uv run ruff check . && uv run ruff format --check . && uv run pyright` pass
+- [x] pip-audit and OSV check report 0 vulnerabilities
 
 **Verification:**
-- [ ] `cd server && uv sync && uv run pytest && uv run pyright`
+- [x] `cd server && uv sync && uv run pytest && uv run pyright`
 
 **Dependencies:** None (parallel with T1) · **Files:** server/pyproject.toml, server/src/*/__init__.py, server/tests/test_smoke.py, server/scripts/osv_check.py · **Size:** M
 

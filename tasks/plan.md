@@ -42,7 +42,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 
 ### Phase 1: Platform
 - [x] T1 Move the web app into `web/`
-- [ ] T2 Python project skeleton in `server/`
+- [x] T2 Python project skeleton in `server/`
 - [ ] T3 Postgres in Compose, Makefile, env, docs
 
 **Checkpoint A:** `make test lint security` green; web app unchanged at `make dev-web`; `psql` reaches both databases.
