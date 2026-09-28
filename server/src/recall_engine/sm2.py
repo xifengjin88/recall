@@ -111,7 +111,7 @@ def _learn(card: Card, rating: Rating, now: int, p: Preset, clock: StudyClock) -
                     card, phase=Phase.LEARNING, step=step + 1, due=_ms(now + steps[step + 1] * MINUTE)
                 )
             return _graduate(card, p.graduating_interval, now, clock)
-        case Rating.EASY:
+        case _:  # Rating.EASY
             return _graduate(card, p.easy_interval, now, clock)
 
 
@@ -130,7 +130,7 @@ def _relearn(card: Card, rating: Rating, now: int, p: Preset, clock: StudyClock)
             if step + 1 < len(steps):
                 return replace(card, step=step + 1, due=_ms(now + steps[step + 1] * MINUTE))
             return _graduate(card, card.interval, now, clock)
-        case Rating.EASY:
+        case _:  # Rating.EASY
             return _graduate(card, card.interval, now, clock)
 
 

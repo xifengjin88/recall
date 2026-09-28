@@ -80,3 +80,12 @@ class TodayQueue:
     learning: tuple[str, ...]  # due now (or within the learn-ahead window), earliest first
     review: tuple[str, ...]  # due reviews, oldest first, capped by reviews/day
     fresh: tuple[str, ...]  # unseen cards in the given order, capped by new/day
+
+
+@dataclass(frozen=True, slots=True)
+class ReviewLog:
+    """The parts of a logged review the daily limits need."""
+
+    at: int
+    kind: CardKind
+    phase_before: Phase

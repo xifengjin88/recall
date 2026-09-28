@@ -106,12 +106,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `queue.py` (is_due, is_mastered, done_today, today_queue) with golden queue cases; purity test (stdlib only); coverage at 100%; perf test for 10,000 cards.
 
 **Acceptance criteria:**
-- [ ] Queue golden cases match; purity test passes
-- [ ] `coverage` reports 100% lines and branches for `recall_engine`
-- [ ] `today_queue` over 10,000 cards < 50 ms
+- [x] Queue golden cases match; purity test passes
+- [x] `coverage` reports 100% lines and branches for `recall_engine`
+- [x] `today_queue` over 10,000 cards < 50 ms
 
 **Verification:**
-- [ ] `uv run coverage run -m pytest tests/engine && uv run coverage report --fail-under=100 --include='src/recall_engine/*'`
+- [x] `uv run coverage run -m pytest tests/engine && uv run coverage report --fail-under=100 --include='src/recall_engine/*'`
 
 **Dependencies:** T6 · **Files:** src/recall_engine/queue.py, tests/engine/{test_queue,test_purity,test_perf}.py · **Size:** M
 
