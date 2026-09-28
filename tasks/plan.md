@@ -48,7 +48,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 **Checkpoint A:** `make test lint security` green; web app unchanged at `make dev-web`; `psql` reaches both databases.
 
 ### Phase 2: Engine (highest risk, first)
-- [ ] T4 Golden-case generator from the TS engine
+- [x] T4 Golden-case generator from the TS engine
 - [ ] T5 Engine foundations: types, clock, JS-compatible maths, steps
 - [ ] T6 `answer` and `preview` with golden parity
 - [ ] T7 Queue functions, purity, coverage, performance

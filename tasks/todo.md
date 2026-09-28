@@ -64,12 +64,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** A vitest file in `web/scripts/` that, when `GEN_GOLDEN=1`, runs the TS engine over the scenario matrix in SPEC-sm2-engine (phases × ratings × presets, late/early, rollover, both 2026 DST changes in America/New_York, 200 random chains × 30 steps, queue cases) and writes `server/tests/engine/golden/sm2.json`; without the flag it checks the file is still what the TS engine produces.
 
 **Acceptance criteria:**
-- [ ] `sm2.json` has ≥ 5,000 recorded steps and records its time zone
-- [ ] Re-running the generator produces a byte-identical file (deterministic)
-- [ ] Normal `npm test` includes the "golden file is current" check
+- [x] `sm2.json` has ≥ 5,000 recorded steps and records its time zone
+- [x] Re-running the generator produces a byte-identical file (deterministic)
+- [x] Normal `npm test` includes the "golden file is current" check
 
 **Verification:**
-- [ ] `cd web && TZ=America/New_York GEN_GOLDEN=1 npx vitest run scripts/gen-engine-golden.test.ts` then `git diff --stat` shows no change on a second run
+- [x] `cd web && TZ=America/New_York GEN_GOLDEN=1 npx vitest run scripts/gen-engine-golden.test.ts` then `git diff --stat` shows no change on a second run
 
 **Dependencies:** T1, T2 · **Files:** web/scripts/gen-engine-golden.test.ts, web/vitest.config.ts, server/tests/engine/golden/sm2.json · **Size:** S
 
