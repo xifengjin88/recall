@@ -9,6 +9,7 @@ import { useSyncExternalStore } from "react";
 import { api } from "~/api/client";
 import type { ExercisePatch, Previews, ReviewResult, SchedulingInfo } from "~/api/types";
 import { APP } from "~/config";
+import { isUploaded, localFiles, markUploaded } from "./migrate-local";
 import { resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
 import {
   emptyProgress,
@@ -25,10 +26,7 @@ import {
 /** The theme is mirrored here so the pre-paint script in root.tsx can read it synchronously. */
 export const THEME_KEY = `${APP.id}:theme`;
 
-/** The IndexedDB database that held a course's progress before the server (see migrate-local.ts). */
-export const courseDbName = (slug: string) => `${APP.id}-${slug}`;
-
-export type Notice = "migrated" | "save-failed" | null;
+export type Notice = "migrated" | "upload-failed" | "save-failed" | null;
 
 export interface StoreStatus {
   ready: boolean;
@@ -84,12 +82,24 @@ export function loadCourseProgress(slug: string): Promise<void> {
   scheduling = null;
   status = SERVER_STATUS;
   const promise = (async () => {
-    const [data, info] = await Promise.all([api.progress(slug), api.scheduling(slug)]);
+    let [data, info] = await Promise.all([api.progress(slug), api.scheduling(slug)]);
+    let notice = status.notice;
+    if (!isUploaded(slug)) {
+      try {
+        const uploaded = await uploadLocal(slug, data);
+        if (uploaded) {
+          [data, info] = [uploaded, await api.scheduling(slug)];
+          notice = "migrated";
+        }
+      } catch {
+        notice = "upload-failed"; // the browser copy is untouched; the next load tries again
+      }
+    }
     if (course !== slug) return; // switched away meanwhile
     state = data;
     scheduling = info;
     mirrorTheme(data.settings.theme);
-    status = { ready: true, notice: status.notice };
+    status = { ready: true, notice };
     emit();
     reportTimeZone();
   })();
@@ -98,6 +108,23 @@ export function loadCourseProgress(slug: string): Promise<void> {
     if (loading === promise) loading = null;
   });
   return promise;
+}
+
+/**
+ * Sends progress this browser saved before the server kept it. Replaces when the server has nothing
+ * for this course yet (so the browser's settings come along), merges otherwise. Null if there was none.
+ */
+async function uploadLocal(slug: string, current: ProgressData): Promise<ProgressData | null> {
+  const files = await localFiles(slug);
+  let result: ProgressData | null = null;
+  let serverEmpty = !Object.keys(current.cards).length && !current.reviews.length && !current.sessions.length && !Object.keys(current.exercises).length;
+  for (const file of files) {
+    const imported = await api.importProgress(slug, serverEmpty ? "replace" : "merge", file);
+    result = imported.progress;
+    serverEmpty = false;
+  }
+  markUploaded(slug);
+  return result;
 }
 
 function subscribe(l: () => void) {

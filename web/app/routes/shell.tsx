@@ -153,8 +153,13 @@ function ContentErrors() {
 const NOTICES: Record<Exclude<Notice, null>, { title: string; text: string; tone: "info" | "warn" }> = {
   migrated: {
     title: "Progress moved",
-    text: "Your saved progress now lives in this browser's database (IndexedDB). A backup of the old copy was kept.",
+    text: "The progress saved in this browser was copied to the Recall server, which keeps it from now on. The browser copy was kept as a backup.",
     tone: "info",
+  },
+  "upload-failed": {
+    title: "Couldn't copy your saved progress",
+    text: "This browser has progress from before the server kept it, but it couldn't be sent. It's still here; reload to try again.",
+    tone: "warn",
   },
   "save-failed": {
     title: "Couldn't save progress",
