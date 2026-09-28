@@ -1,7 +1,7 @@
 """One-off: turn the web app's exported TS course (JSON) into a course folder.
 
-    cd web && EXPORT_COURSE_TO=/tmp/tlpi.json npx vitest run scripts/export-course.test.ts
-    cd server && uv run python scripts/convert_ts_course.py /tmp/tlpi.json ../courses/tlpi
+    cd web && EXPORT_COURSE_TO=../.tmp/tlpi-export.json npx vitest run scripts/export-course.test.ts
+    cd server && uv run python scripts/convert_ts_course.py ../.tmp/tlpi-export.json ../courses/tlpi
 
 Every field goes through the same Pydantic models the importer uses, and the written folder is
 parsed back and compared question by question with the source before the script reports success.

@@ -1,13 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Read",
+      "Read(//Users/xifengjin/projects/tlpi-drill/**)",
       "Edit(//Users/xifengjin/projects/tlpi-drill/**)",
       "Write(//Users/xifengjin/projects/tlpi-drill/**)",
-      "Edit(//tmp/**)",
-      "Write(//tmp/**)",
-      "Edit(//private/tmp/**)",
-      "Write(//private/tmp/**)",
 
       "Bash(cd *)",
       "Bash(pwd)",
