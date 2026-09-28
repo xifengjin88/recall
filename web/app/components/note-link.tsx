@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { getChapter, getNotes } from "~/content";
 import { extractNoteSection, notesHref } from "~/lib/notes";
 import { cn } from "~/lib/utils";
+import { coursePath } from "~/lib/paths";
 import { KeyHint } from "./kbd";
 import { NoteMarkdown } from "./note-markdown";
 
@@ -41,7 +42,7 @@ export function NoteSheet({ target, open, onOpenChange }: { target: NoteTarget; 
           )}
           {md ? (
             <a
-              href={notesHref(target.chapter, target)}
+              href={coursePath(notesHref(target.chapter, target))}
               target="_blank"
               rel="noreferrer"
               className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline"
@@ -100,7 +101,7 @@ export function NoteLink({
 export function NotesPageLink({ target, children, className }: { target: NoteTarget; children: React.ReactNode; className?: string }) {
   return (
     <Link
-      to={notesHref(target.chapter, target)}
+      to={coursePath(notesHref(target.chapter, target))}
       className={cn("inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline", className)}
     >
       {children}

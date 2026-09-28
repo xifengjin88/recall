@@ -8,6 +8,7 @@ import { NEW_EXERCISE, type ExerciseStatus } from "~/lib/progress";
 import type { Exercise } from "~/lib/types";
 import { cn } from "~/lib/utils";
 import { useProgress } from "~/state/progress-store";
+import { coursePath } from "~/lib/paths";
 
 export const EXERCISE_STATUS: Record<ExerciseStatus, { label: string; icon: typeof CheckCircle2Icon; className: string }> = {
   "not-started": { label: "Not started", icon: CircleDashedIcon, className: "text-muted-foreground" },
@@ -41,7 +42,7 @@ export function ExerciseList({ exercises, nav = true }: { exercises: Exercise[];
         return (
           <li key={e.id}>
             <Link
-              to={`/exercises/${e.id}`}
+              to={coursePath(`/exercises/${e.id}`)}
               data-nav
               className="flex flex-col gap-1.5 px-4 py-3 outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
             >

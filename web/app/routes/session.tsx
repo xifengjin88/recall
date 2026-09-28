@@ -35,6 +35,7 @@ import {
   recordReview,
   startSession,
 } from "~/state/progress-store";
+import { coursePath } from "~/lib/paths";
 
 const RATING_LABELS: Record<Rating, { label: string; key: string }> = {
   again: { label: "Again", key: "1" },
@@ -90,7 +91,7 @@ function SessionRunner({ spec }: { spec: SessionSpec }) {
     if (questions.length) startSession(sessionId, spec.mode);
   }, [questions.length, sessionId, spec.mode]);
 
-  const backTo = spec.chapter !== null ? `/chapters/${spec.chapter}` : "/";
+  const backTo = spec.chapter !== null ? coursePath(`/chapters/${spec.chapter}`) : coursePath();
   const finish = (final: ResultRow[]) => {
     completeSession(sessionId);
     setDone({ rows: final, elapsed: Date.now() - startedAt });

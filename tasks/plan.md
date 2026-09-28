@@ -67,7 +67,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 - [x] T14 Catalog API (courses, outline, content, notes)
 - [x] T15 Web: API client, generated types, Vite proxy check
 - [x] T16 Web: course grid at `/` and `/c/:course` layout loading content
-- [ ] T17 Web: course-scoped links and notes from the API
+- [x] T17 Web: course-scoped links and notes from the API
 
 **Checkpoint C (half milestone):** open the grid, enter TLPI, take a quiz; content comes from Postgres, progress still in IndexedDB. **Write and approve SPEC-learning-api, SPEC-web-client.**
 

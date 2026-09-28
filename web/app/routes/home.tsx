@@ -19,6 +19,7 @@ import { bookOrder, doneToday, todayQueue } from "~/lib/session";
 import { streak } from "~/lib/stats";
 import { cn } from "~/lib/utils";
 import { useProgress } from "~/state/progress-store";
+import { coursePath } from "~/lib/paths";
 
 export const handle: RouteHandle = {
   screen: "Home",
@@ -98,7 +99,7 @@ export default function Home() {
           <ul className="divide-y rounded-lg border">
             {redo.map((e) => (
               <li key={e.id}>
-                <Link to={`/exercises/${e.id}`} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-muted/60">
+                <Link to={coursePath(`/exercises/${e.id}`)} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-muted/60">
                   <span>{e.title.replace(/`/g, "")}</span>
                   <ArrowRightIcon className="size-4 shrink-0" aria-hidden />
                 </Link>
@@ -110,7 +111,7 @@ export default function Home() {
 
       {last ? (
         <Link
-          to={`/chapters/${last.number}`}
+          to={coursePath(`/chapters/${last.number}`)}
           className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm transition-colors hover:bg-muted"
         >
           <span>
@@ -145,7 +146,7 @@ export default function Home() {
             return (
               <li key={t.number}>
                 <Link
-                  to={`/chapters/${ch.number}`}
+                  to={coursePath(`/chapters/${ch.number}`)}
                   data-nav
                   data-chapter={ch.number}
                   className="grid grid-cols-[1.5rem_1fr] gap-x-3 gap-y-1.5 px-4 py-3 outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"

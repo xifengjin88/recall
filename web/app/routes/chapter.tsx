@@ -17,6 +17,7 @@ import { SUBJECT, getChapter, hasNotes } from "~/content";
 import { useHotkeys, useListNav } from "~/hooks/use-hotkeys";
 import { chapterStatus, mastery, sectionMastery } from "~/lib/mastery";
 import { notesHref } from "~/lib/notes";
+import { coursePath } from "~/lib/paths";
 import type { RouteHandle } from "~/lib/shortcuts";
 import { setLastChapter, useProgress } from "~/state/progress-store";
 
@@ -79,7 +80,7 @@ export default function ChapterPage({ loaderData }: Route.ComponentProps) {
     f: () => open("flashcards"),
     m: reviewMistakes,
     e: () => hasExercises && setTab(tab === "exercises" ? "sections" : "exercises"),
-    n: () => notes && navigate(notesHref(chapter.number)),
+    n: () => notes && navigate(coursePath(notesHref(chapter.number))),
   });
 
   return (
@@ -162,7 +163,7 @@ export default function ChapterPage({ loaderData }: Route.ComponentProps) {
                   </div>
                   {notes ? (
                     <Link
-                      to={notesHref(chapter.number, { section: s.id })}
+                      to={coursePath(notesHref(chapter.number, { section: s.id }))}
                       className="mt-0.5 rounded text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       <ExternalLinkIcon className="size-3.5" aria-hidden />

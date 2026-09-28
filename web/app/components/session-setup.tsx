@@ -11,6 +11,7 @@ import { newSeed, pickQuestions, SCOPE_LABELS, specToSearch, type Scope, type Se
 import { QUESTION_TYPES, type QuestionType } from "~/lib/types";
 import { updatePrefs, useProgress } from "~/state/progress-store";
 import { KeyHint } from "./kbd";
+import { coursePath } from "~/lib/paths";
 
 /** Where the setup panel was opened from; decides the default scope. */
 type SessionMode = SessionSpec["mode"];
@@ -93,7 +94,7 @@ function SetupForm({ entry }: { entry: SetupEntry }) {
     e.preventDefault();
     if (!sessionSize) return;
     updatePrefs({ length, order, types, difficulty });
-    navigate(`/session${specToSearch({ ...spec, seed: newSeed() })}`);
+    navigate(coursePath(`/session${specToSearch({ ...spec, seed: newSeed() })}`));
   }
 
   const sectionLabel = sections.length === 1 ? `§${sections[0]}` : `${sections.length} sections`;

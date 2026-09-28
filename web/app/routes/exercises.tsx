@@ -5,6 +5,7 @@ import { ExerciseList } from "~/components/exercise-list";
 import { SUBJECT, CHAPTERS } from "~/content";
 import { useListNav } from "~/hooks/use-hotkeys";
 import { LIST_SHORTCUTS, type RouteHandle } from "~/lib/shortcuts";
+import { coursePath } from "~/lib/paths";
 
 export function meta() {
   return [{ title: `Exercises · ${APP.name}` }];
@@ -30,7 +31,7 @@ export default function Exercises() {
           {withExercises.map((c) => (
             <section key={c.number} className="space-y-2">
               <h2 className="text-sm font-medium">
-                <Link to={`/chapters/${c.number}?tab=exercises`} className="hover:underline">
+                <Link to={coursePath(`/chapters/${c.number}?tab=exercises`)} className="hover:underline">
                   Chapter {c.number}: {c.title}
                 </Link>
               </h2>

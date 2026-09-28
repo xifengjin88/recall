@@ -9,6 +9,7 @@ import { SUBJECT, getChapter, getNotes } from "~/content";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { noteToc, stripTitle } from "~/lib/notes";
 import type { RouteHandle } from "~/lib/shortcuts";
+import { coursePath } from "~/lib/paths";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   await ensureCourse(params.course); // loaders run in parallel with the course layout's
@@ -34,7 +35,7 @@ export const handle: RouteHandle = {
 export default function NotesPage({ loaderData }: Route.ComponentProps) {
   const { chapter, md } = loaderData;
   const toc = noteToc(md);
-  const back = `/chapters/${chapter.number}`;
+  const back = coursePath(`/chapters/${chapter.number}`);
 
   useHotkeys({
     b: () => document.querySelector<HTMLAnchorElement>("[data-back-to-chapter]")?.click(),

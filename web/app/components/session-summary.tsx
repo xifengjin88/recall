@@ -14,6 +14,7 @@ import { KeyHint } from "./kbd";
 import { Md, MdLines } from "./md";
 import { NoteLink } from "./note-link";
 import { SessionSetup, type SetupEntry } from "./session-setup";
+import { coursePath } from "~/lib/paths";
 
 /** One answer in a session. A card in relearning can appear more than once. */
 export interface ResultRow {
@@ -68,11 +69,11 @@ export function SessionSummary({ spec, rows, elapsed }: { spec: SessionSpec; row
   const further = ends.filter((e) => e.after.phase === "review" && e.after.lapses === e.before.lapses && e.after.interval > e.before.interval).length;
 
   const chapter = spec.chapter !== null ? getChapter(spec.chapter) : undefined;
-  const backTo = chapter ? `/chapters/${chapter.number}` : "/";
+  const backTo = chapter ? coursePath(`/chapters/${chapter.number}`) : coursePath();
 
   const retry = () => {
     if (!missedIds.length) return;
-    navigate(`/session${specToSearch({ ...spec, scope: "ids", ids: missedIds, order: "shuffled", seed: newSeed() })}`);
+    navigate(coursePath(`/session${specToSearch({ ...spec, scope: "ids", ids: missedIds, order: "shuffled", seed: newSeed() })}`));
   };
   const newSession = () =>
     setSetup({

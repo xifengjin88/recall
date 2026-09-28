@@ -11,6 +11,7 @@ import type { RouteHandle } from "~/lib/shortcuts";
 import { accuracyByDay, forecast, studyDays, weakest } from "~/lib/stats";
 import { cn } from "~/lib/utils";
 import { useProgress } from "~/state/progress-store";
+import { coursePath } from "~/lib/paths";
 
 export function meta() {
   return [{ title: `Stats · ${APP.name}` }];
@@ -95,7 +96,7 @@ export default function Stats() {
         {CHAPTERS.map((c) => (
           <div key={c.number} className="space-y-2 rounded-lg border p-4">
             <div className="grid gap-1.5 sm:grid-cols-[1fr_14rem] sm:items-center">
-              <Link to={`/chapters/${c.number}`} className="font-medium hover:underline">
+              <Link to={coursePath(`/chapters/${c.number}`)} className="font-medium hover:underline">
                 {c.number}. {c.title}
               </Link>
               <MasteryBar m={mastery(c.questions, p.cards)} label={`Chapter ${c.number} mastery`} />
@@ -126,7 +127,7 @@ export default function Stats() {
               return (
                 <li key={w.cardId} className="flex items-start gap-3 px-4 py-2.5 text-sm">
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">§{q.section}</span>
-                  <Link to={`/chapters/${chapterOf(q.id)}`} className="min-w-0 flex-1 hover:underline">
+                  <Link to={coursePath(`/chapters/${chapterOf(q.id)}`)} className="min-w-0 flex-1 hover:underline">
                     <Md text={q.prompt} />
                   </Link>
                   <span className="shrink-0 font-mono text-xs tabular-nums">
@@ -153,7 +154,7 @@ export default function Stats() {
               return (
                 <li key={c.id} className="flex items-start gap-3 px-4 py-2.5 text-sm">
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">§{q.section}</span>
-                  <Link to={`/chapters/${chapterOf(q.id)}`} className="min-w-0 flex-1 hover:underline">
+                  <Link to={coursePath(`/chapters/${chapterOf(q.id)}`)} className="min-w-0 flex-1 hover:underline">
                     <Md text={q.prompt} />
                   </Link>
                   <span className="shrink-0 font-mono text-xs tabular-nums">{c.lapses} lapses</span>

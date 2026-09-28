@@ -9,6 +9,7 @@ import type { CodeBlock as Code } from "~/lib/types";
 import { cn } from "~/lib/utils";
 import { useProgress } from "~/state/progress-store";
 import { CodeBlock } from "./code-block";
+import { coursePath } from "~/lib/paths";
 
 function textOf(children: ReactNode): string {
   if (typeof children === "string" || typeof children === "number") return String(children);
@@ -45,7 +46,7 @@ export function NoteMarkdown({ markdown, chapter, embedded = false }: { markdown
         const inPage = href.startsWith("#");
         const internal = inPage || href.startsWith("/");
         if (!internal) return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
-        const to = inPage && embedded ? `/chapters/${chapter}/notes${href}` : href;
+        const to = inPage && embedded ? coursePath(`/chapters/${chapter}/notes${href}`) : inPage ? href : coursePath(href);
         if (embedded) return <a href={to} target="_blank" rel="noreferrer">{children}</a>;
         return inPage ? <a href={to}>{children}</a> : <Link to={to}>{children}</Link>;
       },

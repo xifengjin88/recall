@@ -256,11 +256,11 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** A `useCoursePath()` helper; replace hard-coded `/chapters…`, `/session…`, `/exercises…`, `/stats` links; notes page and side panel fetch `/units/<n>/notes`.
 
 **Acceptance criteria:**
-- [ ] No link in the app leaves the current course by accident (grep for `to="/` finds only the grid and settings)
-- [ ] Notes page and "See in notes" panel render from the API
+- [x] No link in the app leaves the current course by accident (grep for `to="/` finds only the grid and settings)
+- [x] Notes page and "See in notes" panel render from the API
 
 **Verification:**
-- [ ] `cd web && npm test && npm run typecheck` · Manual: every nav link and note link under `/c/tlpi`
+- [x] `cd web && npm test && npm run typecheck` · Manual: every nav link and note link under `/c/tlpi`
 
 **Dependencies:** T16 · **Files:** web/app/lib/paths.ts + link call sites (split into two commits if > 5 files) · **Size:** M
 

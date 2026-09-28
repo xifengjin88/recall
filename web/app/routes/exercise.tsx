@@ -18,6 +18,7 @@ import { useHotkeys } from "~/hooks/use-hotkeys";
 import { NEW_EXERCISE } from "~/lib/progress";
 import type { RouteHandle } from "~/lib/shortcuts";
 import { updateExercise, useProgress } from "~/state/progress-store";
+import { coursePath } from "~/lib/paths";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   await ensureCourse(params.course); // loaders run in parallel with the course layout's
@@ -61,7 +62,7 @@ export default function ExercisePage({ loaderData }: Route.ComponentProps) {
     <article className="space-y-8">
       <header className="space-y-3">
         <Link
-          to={`/chapters/${chapter.number}?tab=exercises`}
+          to={coursePath(`/chapters/${chapter.number}?tab=exercises`)}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" /> Chapter {chapter.number}
