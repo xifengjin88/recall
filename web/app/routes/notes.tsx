@@ -2,6 +2,7 @@ import { APP } from "~/config";
 import { data, Link } from "react-router";
 import { ArrowLeftIcon, ChevronDownIcon } from "lucide-react";
 import type { Route } from "./+types/notes";
+import { ensureCourse } from "~/content/load";
 import { NoteMarkdown } from "~/components/note-markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
 import { SUBJECT, getChapter, getNotes } from "~/content";
@@ -9,7 +10,8 @@ import { useHotkeys } from "~/hooks/use-hotkeys";
 import { noteToc, stripTitle } from "~/lib/notes";
 import type { RouteHandle } from "~/lib/shortcuts";
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  await ensureCourse(params.course); // loaders run in parallel with the course layout's
   const n = Number(params.number);
   const chapter = getChapter(n);
   const md = getNotes(n);

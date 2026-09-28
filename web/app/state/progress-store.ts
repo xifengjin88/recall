@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { APP } from "~/config";
-import { SUBJECT } from "~/content/subject";
+
 import { today } from "~/lib/dates";
 import { answer, cardFor, resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
 import {
@@ -24,6 +24,8 @@ import { MemoryRepo, type Changes, type ProgressRepo } from "./repo";
 
 /** Where v1 kept everything, before IndexedDB. Migrated once, then renamed as a backup. */
 const LEGACY_KEY = "tlpi-drill:progress";
+/** The course that pre-course-era progress belongs to. */
+const LEGACY_COURSE = "tlpi";
 /** The theme is mirrored here so the pre-paint script in root.tsx can read it synchronously. */
 export const THEME_KEY = `${APP.id}:theme`;
 
@@ -68,17 +70,26 @@ function mirrorTheme(theme: Settings["theme"]) {
   }
 }
 
+/** The IndexedDB database holding one course's progress. */
+export const courseDbName = (slug: string) => `${APP.id}-${slug}`;
+
+let currentDb: string | null = null;
+
 /**
- * Load progress from this subject's IndexedDB database (moving any old localStorage
- * progress into it first). Safe to call repeatedly; the shell's clientLoader awaits it.
+ * Load a course's progress from its IndexedDB database (moving any old localStorage
+ * progress into TLPI's first). Safe to call repeatedly; switching course reloads.
  */
-export function initProgress(dbName = `${APP.id}-${SUBJECT.id}`): Promise<void> {
-  initPromise ??= (async () => {
+export function initProgress(dbName: string): Promise<void> {
+  if (initPromise && currentDb === dbName) return initPromise;
+  currentDb = dbName;
+  state = SERVER_SNAPSHOT;
+  status = SERVER_STATUS;
+  initPromise = (async () => {
     let notice: Notice = null;
     try {
       const idb = new IdbRepo(dbName);
       let data = await idb.load();
-      if (!data) {
+      if (!data && dbName === courseDbName(LEGACY_COURSE)) {
         const legacy = readLegacy();
         if (legacy) {
           await idb.replaceAll(legacy);
@@ -113,13 +124,15 @@ function commit(update: (p: ProgressData) => ProgressData, changes: (p: Progress
   state = update(state);
   const c = changes(state);
   emit();
-  writes = writes.then(() => repo.commit(c)).catch(() => setStatus({ notice: "save-failed" }));
+  const target = repo; // this course's database, even if the learner switches course before it runs
+  writes = writes.then(() => target.commit(c)).catch(() => setStatus({ notice: "save-failed" }));
 }
 
 function replace(next: ProgressData) {
   state = next;
   emit();
-  writes = writes.then(() => repo.replaceAll(next)).catch(() => setStatus({ notice: "save-failed" }));
+  const target = repo;
+  writes = writes.then(() => target.replaceAll(next)).catch(() => setStatus({ notice: "save-failed" }));
 }
 
 function subscribe(l: () => void) {

@@ -144,10 +144,18 @@ describe("content validation (spec §5.5, acceptance 12)", () => {
     expect(errors[0].where).toBe("Chapter 3");
   });
 
-  it("shipped content has no errors", async () => {
-    const { CONTENT_ERRORS, CHAPTERS } = await import("~/content");
-    expect(CONTENT_ERRORS).toEqual([]);
-    expect(CHAPTERS.map((c) => c.number)).toContain(2);
+  it("a course loaded from the API populates the content helpers", async () => {
+    const content = await import("~/content");
+    const { samples } = await import("~/api/contract");
+    const notes = new Map([[1, samples.notes.markdown]]);
+    content.setCourse(samples.course, samples.content, notes);
+    expect(content.CONTENT_ERRORS).toEqual([]);
+    expect(content.SUBJECT).toMatchObject({ id: "demo", short: "DEMO" });
+    expect(content.TOC.map((t) => t.number)).toEqual([1, 2]);
+    expect(content.getChapter(1)?.questions).toHaveLength(8);
+    expect(content.QUESTIONS_BY_ID.get("demo-q004")?.type).toBe("typed");
+    expect(content.chapterOf("demo-ex01")).toBe(1);
+    expect(content.hasNotes(1) && !content.hasNotes(2)).toBe(true);
   });
 });
 

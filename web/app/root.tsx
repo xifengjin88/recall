@@ -2,7 +2,7 @@ import { APP } from "~/config";
 import { isRouteErrorResponse, Link, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 import type { Route } from "./+types/root";
-import { SUBJECT } from "./content";
+
 import { THEME_KEY } from "./state/progress-store";
 import "./app.css";
 
@@ -10,7 +10,7 @@ import "./app.css";
 const THEME_BOOT = `(function(){try{var t=localStorage.getItem(${JSON.stringify(THEME_KEY)})||"system";var d=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d)}catch(e){}})()`;
 
 export function meta() {
-  return [{ title: `${APP.name} · ${SUBJECT.short}` }, { name: "description", content: `${APP.tagline}: ${SUBJECT.title}` }];
+  return [{ title: APP.name }, { name: "description", content: APP.tagline }];
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {

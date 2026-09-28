@@ -1,4 +1,7 @@
-"""One-off: turn the web app's exported TS course (JSON) into a course folder.
+"""One-off (T11), kept for reference: turn the web app's exported TS course (JSON) into a course folder.
+
+TLPI was converted this way while its content was still bundled in the web app; the export
+script (web/scripts/export-course.test.ts) was removed once courses/tlpi became the source.
 
     cd web && EXPORT_COURSE_TO=../.tmp/tlpi-export.json npx vitest run scripts/export-course.test.ts
     cd server && uv run python scripts/convert_ts_course.py ../.tmp/tlpi-export.json ../courses/tlpi

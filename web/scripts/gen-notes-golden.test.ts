@@ -10,7 +10,7 @@ import { extractNoteSection, headingId, noteToc } from "../app/lib/notes";
 
 const OUT = fileURLToPath(new URL("../../server/tests/content/golden/notes.json", import.meta.url));
 const NOTES_COPY = fileURLToPath(new URL("../../server/tests/content/golden/ch02-notes.md", import.meta.url));
-const CH02 = readFileSync(fileURLToPath(new URL("../app/content/notes/ch02.md", import.meta.url)), "utf8");
+const CH02 = readFileSync(fileURLToPath(new URL("../../courses/tlpi/units/02-fundamental-concepts/notes.md", import.meta.url)), "utf8");
 
 const HEADINGS = [
   "2.7 Processes",

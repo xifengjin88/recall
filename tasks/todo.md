@@ -242,12 +242,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** New home: grid of course cards. Existing routes nest under `/c/:course`; its layout `clientLoader` fetches outline + content and fills the `~/content` facade (same exports as today). The bundled `app/content/ch02.ts` stops being used.
 
 **Acceptance criteria:**
-- [ ] `/` shows a TLPI card; clicking it opens `/c/tlpi` with the current Home
-- [ ] Every existing screen works under `/c/tlpi/…` with content from the API
-- [ ] Unknown course slug → 404 page
+- [x] `/` shows a TLPI card; clicking it opens `/c/tlpi` with the current Home
+- [x] Every existing screen works under `/c/tlpi/…` with content from the API
+- [x] Unknown course slug → 404 page
 
 **Verification:**
-- [ ] `cd web && npm test && npm run typecheck` · Manual: grid → course → chapter → quiz
+- [x] `cd web && npm test && npm run typecheck` · Manual: grid → course → chapter → quiz
 
 **Dependencies:** T15 · **Files:** web/app/routes.ts, web/app/routes/courses.tsx, web/app/routes/course.tsx, web/app/content/index.ts · **Size:** M
 

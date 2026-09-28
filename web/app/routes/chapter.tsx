@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { data, Link, useNavigate, useSearchParams } from "react-router";
 import { BookOpenIcon, ExternalLinkIcon, LayersIcon, ListChecksIcon, RotateCcwIcon } from "lucide-react";
 import type { Route } from "./+types/chapter";
+import { ensureCourse } from "~/content/load";
 import { ExerciseList } from "~/components/exercise-list";
 import { KeyHint } from "~/components/kbd";
 import { MasteryBar } from "~/components/mastery-bar";
@@ -19,7 +20,8 @@ import { notesHref } from "~/lib/notes";
 import type { RouteHandle } from "~/lib/shortcuts";
 import { setLastChapter, useProgress } from "~/state/progress-store";
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  await ensureCourse(params.course); // loaders run in parallel with the course layout's
   const chapter = getChapter(Number(params.number));
   if (!chapter) throw data("Chapter not found", { status: 404 });
   return { chapter };

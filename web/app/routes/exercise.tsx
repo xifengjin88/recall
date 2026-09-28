@@ -2,6 +2,7 @@ import { APP } from "~/config";
 import { data, Link } from "react-router";
 import { ArrowLeftIcon, LightbulbIcon } from "lucide-react";
 import type { Route } from "./+types/exercise";
+import { ensureCourse } from "~/content/load";
 import { CodeBlock } from "~/components/code-block";
 import { difficultyLabel, ExerciseStatusChip } from "~/components/exercise-list";
 import { ExerciseReview, RedoBanner } from "~/components/exercise-review";
@@ -18,7 +19,8 @@ import { NEW_EXERCISE } from "~/lib/progress";
 import type { RouteHandle } from "~/lib/shortcuts";
 import { updateExercise, useProgress } from "~/state/progress-store";
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  await ensureCourse(params.course); // loaders run in parallel with the course layout's
   const exercise = EXERCISES_BY_ID.get(params.id);
   if (!exercise) throw data("Exercise not found", { status: 404 });
   return { exercise, chapter: getChapter(exercise.chapter)! };

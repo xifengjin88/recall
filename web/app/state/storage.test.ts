@@ -78,7 +78,7 @@ describe("progress store", () => {
       JSON.stringify({ version: 1, items: { q1: { box: 2, due: "2026-10-01", mistake: false, updatedAt: 5 } }, attempts: [], settings: { theme: "dark" } }),
     );
     const store = await import("./progress-store");
-    const db = freshDb();
+    const db = store.courseDbName("tlpi"); // old localStorage progress belongs to TLPI
     await store.initProgress(db);
     expect(store.getProgress().cards.q1).toMatchObject({ phase: "review", interval: 3 });
     expect(localStorage.getItem("tlpi-drill:progress")).toBeNull();

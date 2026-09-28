@@ -1,6 +1,6 @@
 import { APP } from "~/config";
 import { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, useMatches, useNavigate } from "react-router";
+import { NavLink, Outlet, useMatches, useNavigate, useParams } from "react-router";
 import { InfoIcon, KeyboardIcon, TriangleAlertIcon, XIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -11,35 +11,33 @@ import { SUBJECT, CONTENT_ERRORS } from "~/content";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { GLOBAL_SHORTCUTS, type RouteHandle, type Shortcut } from "~/lib/shortcuts";
 import { cn } from "~/lib/utils";
-import { dismissNotice, initProgress, useProgress, useStoreStatus, type Notice } from "~/state/progress-store";
+import { dismissNotice, useProgress, useStoreStatus, type Notice } from "~/state/progress-store";
+import { coursePath } from "~/lib/paths";
 
-const NAV = [
-  { to: "/", label: "Home", end: true },
+/** Course screens (paths inside /c/:course). */
+const COURSE_NAV = [
+  { to: "", label: "Home", end: true },
   { to: "/exercises", label: "Exercises" },
   { to: "/stats", label: "Stats" },
   { to: "/settings", label: "Settings" },
 ];
 
-// Every screen needs progress, so load it (from IndexedDB) before any of them render.
-export async function clientLoader() {
-  await initProgress();
-  return null;
-}
-
 export default function Shell() {
   const navigate = useNavigate();
+  const { course } = useParams();
   const [helpOpen, setHelpOpen] = useState(false);
   const pendingG = useRef<number | null>(null);
+  const inCourse = course !== undefined && SUBJECT.id === course;
 
   useThemeSync();
 
-  // "g h" / "g s": a g arms the sequence for one second.
+  // "g h" / "g s": a g arms the sequence for one second. Outside a course, home is the course grid.
   useHotkeys({
     g: () => {
       pendingG.current = window.setTimeout(() => (pendingG.current = null), 1000);
     },
-    h: (e) => goIfPending(e, "/"),
-    s: (e) => goIfPending(e, "/stats"),
+    h: (e) => goIfPending(e, inCourse ? coursePath() : "/"),
+    s: (e) => inCourse && goIfPending(e, coursePath("/stats")),
     "?": () => setHelpOpen(true),
   });
   function goIfPending(_e: KeyboardEvent, to: string) {
@@ -59,15 +57,24 @@ export default function Shell() {
       </a>
       <header className="border-b">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3">
-          <NavLink to="/" className="mr-auto flex items-center gap-2 text-sm font-semibold tracking-tight">
-            {APP.name}
-            <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-normal text-muted-foreground">{SUBJECT.short}</span>
-          </NavLink>
+          <span className="mr-auto flex items-center gap-2 text-sm font-semibold tracking-tight">
+            <NavLink to="/" aria-label={`${APP.name}: all courses`}>
+              {APP.name}
+            </NavLink>
+            {inCourse ? (
+              <NavLink
+                to={coursePath()}
+                className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-normal text-muted-foreground hover:text-foreground"
+              >
+                {SUBJECT.short}
+              </NavLink>
+            ) : null}
+          </span>
           <nav aria-label="Main" className="flex items-center gap-0.5 overflow-x-auto">
-            {NAV.map((n) => (
+            {(inCourse ? COURSE_NAV : []).map((n) => (
               <NavLink
                 key={n.to}
-                to={n.to}
+                to={coursePath(n.to)}
                 end={n.end}
                 className={({ isActive }) =>
                   cn(
@@ -87,7 +94,7 @@ export default function Shell() {
       </header>
 
       <div className="mx-auto w-full max-w-3xl space-y-3 px-4 pt-4 empty:hidden">
-        <ContentErrors />
+        {inCourse ? <ContentErrors /> : null}
         <StoreNotice />
       </div>
 
