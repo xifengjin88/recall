@@ -384,6 +384,6 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 
 ### Checkpoint D: Milestone 1
 - [ ] Every docs/SPEC.md acceptance criterion re-checked by hand on TLPI
-- [ ] A second tiny course imports, appears on the grid, and keeps separate study state
-- [ ] `make test lint security` green
+- [x] A second tiny course imports, appears on the grid, and keeps separate study state (demo fixture course: test_catalog, test_queue grid counts, test_isolation)
+- [x] `make test lint security` green
 - [ ] Review with human
