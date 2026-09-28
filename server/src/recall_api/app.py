@@ -45,10 +45,12 @@ def create_app(
     register_error_handlers(app)
 
     from .api.catalog import bp as catalog
+    from .api.exercises import bp as exercises
     from .api.progress import bp as progress
     from .api.reviews import bp as reviews
 
     app.register_blueprint(catalog)
+    app.register_blueprint(exercises)
     app.register_blueprint(progress)
     app.register_blueprint(reviews)
 

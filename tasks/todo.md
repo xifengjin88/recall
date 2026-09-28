@@ -333,11 +333,11 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Endpoints for exercise state (tests ticked, hints, notes, attempt start, skip/unskip) and rating through the review endpoint; web exercise page switched over.
 
 **Acceptance criteria:**
-- [ ] Finishing and rating an exercise schedules a redo (test course with one exercise)
-- [ ] Skip suspends the card; unskip restores it
+- [x] Finishing and rating an exercise schedules a redo (test course with one exercise)
+- [x] Skip suspends the card; unskip restores it
 
 **Verification:**
-- [ ] `uv run pytest tests/api/test_exercises.py` · Manual on the test course
+- [x] `uv run pytest tests/api/test_exercises.py` · Manual on the test course
 
 **Dependencies:** T21 · **Files:** src/recall_api/api/exercises.py, src/recall_api/services/exercises.py, tests/api/test_exercises.py, web/app/components/exercise-review.tsx, web/app/state/progress-store.ts · **Size:** M
 

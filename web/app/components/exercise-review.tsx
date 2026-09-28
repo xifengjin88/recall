@@ -13,7 +13,6 @@ import {
   completeSession,
   previewCard,
   recordReview,
-  setSuspended,
   startExerciseAttempt,
   startSession,
   updateExercise,
@@ -84,7 +83,6 @@ export function ExerciseReview({ ex, state, allTicked }: { ex: Exercise; state: 
           size="sm"
           variant="outline"
           onClick={() => {
-            setSuspended(ex.id, "exercise", false);
             updateExercise(ex.id, { status: card ? "done" : "in-progress" });
           }}
         >
@@ -123,7 +121,6 @@ export function ExerciseReview({ ex, state, allTicked }: { ex: Exercise; state: 
     if (!saved) return; // the notice says it didn't save; the button stays to retry
     const { after } = saved;
     completeSession(sessionId);
-    updateExercise(ex.id, { status: "done" });
     setRated({ rating: chosen, after });
     setReviewId(newId());
     setRating(null);
@@ -182,7 +179,6 @@ export function ExerciseReview({ ex, state, allTicked }: { ex: Exercise; state: 
           size="sm"
           variant="ghost"
           onClick={() => {
-            setSuspended(ex.id, "exercise", true);
             updateExercise(ex.id, { status: "skipped" });
           }}
         >

@@ -2,12 +2,12 @@
 //
 // The server schedules: recordReview / overrideReview / previewCard await the API and use the
 // cards it returns. Other changes update memory at once and are sent in order in the background;
-// a failure shows the "Couldn't save" notice. Exercise state, settings and prefs are still
-// memory-only here until their endpoints land (T22, T23).
+// a failure shows the "Couldn't save" notice. Settings and prefs are still memory-only here
+// until their endpoints land (T23).
 
 import { useSyncExternalStore } from "react";
 import { api } from "~/api/client";
-import type { Previews, ReviewResult } from "~/api/types";
+import type { ExercisePatch, Previews, ReviewResult } from "~/api/types";
 import { APP } from "~/config";
 import { resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
 import {
@@ -114,8 +114,11 @@ export const showNotice = (notice: Notice) => setStatus({ notice });
 /** Read without subscribing (e.g. when building a session once). */
 export const getProgress = () => state;
 export const getStatus = () => status;
-/** Resolves when every background change has been sent. */
-export const flushWrites = () => writes;
+/** Sends any notes waiting for a typing pause, then resolves when every background change has been sent. */
+export function flushWrites() {
+  flushNotes();
+  return writes;
+}
 
 export function presetFor(kind: CardKind): Preset {
   return resolvePreset(kind, state.settings.scheduling);
@@ -161,10 +164,15 @@ export interface Reviewed {
 }
 
 function applyResult({ review, card }: ReviewResult): Reviewed {
+  // Rating an exercise attempt finishes it (the server marks it done in the same step).
+  const ex = state.exercises[card.id];
+  const exercises =
+    review.kind === "exercise" ? { ...state.exercises, [card.id]: { ...(ex ?? NEW_EXERCISE), status: "done" as const, updatedAt: review.at } } : state.exercises;
   set({
     ...state,
     cards: { ...state.cards, [card.id]: card },
     reviews: [...state.reviews.filter((r) => r.id !== review.id), review],
+    exercises,
   });
   return { before: review.before, after: card };
 }
@@ -221,21 +229,60 @@ export function setSuspended(cardId: string, _kind: CardKind, suspended: boolean
   });
 }
 
-// ---- exercises (memory-only until T22) ---------------------------------------------
+// ---- exercises --------------------------------------------------------------------
+// Memory changes at once (the server applies the same rules), so typing and ticking stay instant.
+// Server responses aren't copied back: a slow reply would overwrite newer typing.
+
+const NOTES_DELAY_MS = 500;
+const pendingNotes = new Map<string, { notes: string; timer: ReturnType<typeof setTimeout> }>();
 
 function putExercise(id: string, next: ExerciseState) {
   set({ ...state, exercises: { ...state.exercises, [id]: next } });
 }
 
-export function updateExercise(id: string, patch: Partial<Omit<ExerciseState, "updatedAt">>) {
+function sendNotes(id: string) {
+  const pending = pendingNotes.get(id);
+  if (!pending) return;
+  clearTimeout(pending.timer);
+  pendingNotes.delete(id);
+  const slug = requireCourse();
+  send(() => api.patchExercise(slug, id, { notes: pending.notes }));
+}
+
+/** Send notes still waiting for the typing pause (before leaving the page or checking writes). */
+export function flushNotes() {
+  for (const id of [...pendingNotes.keys()]) sendNotes(id);
+}
+
+if (typeof window !== "undefined") window.addEventListener("pagehide", flushNotes);
+
+export function updateExercise(id: string, patch: ExercisePatch) {
+  const slug = requireCourse();
   const prev = state.exercises[id] ?? NEW_EXERCISE;
   const next: ExerciseState = { ...prev, ...patch, updatedAt: Date.now() };
   if (!patch.status && next.status === "not-started") next.status = "in-progress";
   if (next.attemptStartedAt === null && next.status === "in-progress") next.attemptStartedAt = Date.now();
   putExercise(id, next);
+  // Skipping suspends the card (the server does both in one step).
+  const card = state.cards[id];
+  const skipped = next.status === "skipped";
+  if (card && card.suspended !== skipped && (skipped || prev.status === "skipped")) {
+    set({ ...state, cards: { ...state.cards, [id]: { ...card, suspended: skipped } } });
+  }
+
+  const { notes, ...rest } = patch;
+  if (notes !== undefined) {
+    clearTimeout(pendingNotes.get(id)?.timer);
+    pendingNotes.set(id, { notes, timer: setTimeout(() => sendNotes(id), NOTES_DELAY_MS) });
+  }
+  if (Object.keys(rest).length) {
+    sendNotes(id); // keep notes ahead of a status change, e.g. typing then skipping
+    send(() => api.patchExercise(slug, id, rest));
+  }
 }
 
 export function startExerciseAttempt(id: string, mode: Exclude<AttemptMode, "first">) {
+  const slug = requireCourse();
   const prev = state.exercises[id] ?? NEW_EXERCISE;
   putExercise(id, {
     ...prev,
@@ -246,6 +293,8 @@ export function startExerciseAttempt(id: string, mode: Exclude<AttemptMode, "fir
     hintsRevealed: 0,
     updatedAt: Date.now(),
   });
+  sendNotes(id);
+  send(() => api.startAttempt(slug, id, mode));
 }
 
 // ---- settings (memory-only until T23) ---------------------------------------------
@@ -299,4 +348,6 @@ export function __resetStoreForTests() {
   state = SERVER_SNAPSHOT;
   status = SERVER_STATUS;
   writes = Promise.resolve();
+  for (const { timer } of pendingNotes.values()) clearTimeout(timer);
+  pendingNotes.clear();
 }

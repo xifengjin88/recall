@@ -110,6 +110,36 @@ describe("progress store (API-backed)", () => {
     expect(store.getStatus().notice).toBe("save-failed");
   });
 
+  it("debounces exercise notes and keeps them ahead of a later status change", async () => {
+    vi.useFakeTimers();
+    try {
+      const ex = `${base}/exercises/demo-ex01`;
+      const calls = mockApi({ [`GET ${base}/progress`]: emptyProgress, [`PATCH ${ex}`]: {} });
+      await store.loadCourseProgress("demo");
+      store.updateExercise("demo-ex01", { notes: "w" });
+      store.updateExercise("demo-ex01", { notes: "write(2)" });
+      expect(store.getProgress().exercises["demo-ex01"]).toMatchObject({ status: "in-progress", notes: "write(2)" });
+      await vi.advanceTimersByTimeAsync(600);
+      store.updateExercise("demo-ex01", { notes: "write(2) then exit" });
+      store.updateExercise("demo-ex01", { status: "skipped" }); // sends the pending notes first
+      await store.flushWrites();
+      expect(calls.slice(1).map((c) => c.body)).toEqual([{ notes: "write(2)" }, { notes: "write(2) then exit" }, { status: "skipped" }]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("marks an exercise done in memory when its rating is saved", async () => {
+    const exerciseReview = {
+      review: { ...samples.review.review, id: "e1", cardId: "demo-ex01", kind: "exercise", source: "exercise" },
+      card: { ...samples.review.card, id: "demo-ex01", kind: "exercise" },
+    };
+    mockApi({ [`GET ${base}/progress`]: emptyProgress, [`POST ${base}/reviews`]: exerciseReview });
+    await store.loadCourseProgress("demo");
+    await store.recordReview({ reviewId: "e1", cardId: "demo-ex01", kind: "exercise", source: "exercise", sessionId: null, rating: "good", correct: true, answer: "" });
+    expect(store.getProgress().exercises["demo-ex01"].status).toBe("done");
+  });
+
   it("imports the raw file and resets one unit through the API", async () => {
     const calls = mockApi({
       [`GET ${base}/progress`]: emptyProgress,

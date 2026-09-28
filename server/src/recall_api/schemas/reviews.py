@@ -1,4 +1,4 @@
-"""Request bodies for rating events, sessions and card changes."""
+"""Request bodies for rating events, sessions, card and exercise changes."""
 
 from typing import Any, Literal
 
@@ -31,3 +31,16 @@ class SessionRequest(Strict):
 
 class CardPatch(Strict):
     suspended: bool
+
+
+class ExercisePatch(Strict):
+    """Only the fields sent are changed."""
+
+    status: Literal["not-started", "in-progress", "done", "skipped"] | None = None
+    notes: str | None = Field(default=None, max_length=100_000)
+    tests_passed: list[str] | None = None  # test names
+    hints_revealed: int | None = Field(default=None, ge=0)
+
+
+class AttemptRequest(Strict):
+    mode: Literal["redo", "quick"]

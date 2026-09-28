@@ -1,12 +1,13 @@
 // Typed access to the Flask API. In development Vite proxies /api to the server on :5001.
 
 import type { Card } from "~/lib/engine";
-import type { ProgressData, SessionMode, SessionRecord } from "~/lib/progress";
+import type { AttemptMode, ExerciseState, ProgressData, SessionMode, SessionRecord } from "~/lib/progress";
 import type {
   ApiErrorBody,
   CourseContent,
   CourseOutline,
   CoursesResponse,
+  ExercisePatch,
   ImportResult,
   Previews,
   ReviewRequest,
@@ -76,4 +77,8 @@ export const api = {
     request<SessionRecord>(`/courses/${enc(slug)}/sessions`, json("POST", { id, mode })),
   completeSession: (slug: string, id: string) =>
     request<SessionRecord>(`/courses/${enc(slug)}/sessions/${enc(id)}/complete`, json("POST")),
+  patchExercise: (slug: string, key: string, patch: ExercisePatch) =>
+    request<ExerciseState>(`/courses/${enc(slug)}/exercises/${enc(key)}`, json("PATCH", patch)),
+  startAttempt: (slug: string, key: string, mode: Exclude<AttemptMode, "first">) =>
+    request<ExerciseState>(`/courses/${enc(slug)}/exercises/${enc(key)}/attempts`, json("POST", { mode })),
 };

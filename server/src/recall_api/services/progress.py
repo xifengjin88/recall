@@ -38,6 +38,41 @@ EXPORT_APP = "recall"
 LEGACY_EXPORT_APPS = ("tlpi-drill",)
 
 
+# ---- exercise state rows -----------------------------------------------------------
+
+
+def exercise_row(session: Session, item: Item, learner_id: uuid.UUID, now: int) -> ExerciseStateRow:
+    """The learner's state for an exercise, created as not started if there is none yet."""
+    row = session.get(ExerciseStateRow, (learner_id, item.id))
+    if row is None:
+        row = ExerciseStateRow(
+            learner_id=learner_id,
+            item_id=item.id,
+            course_id=item.course_id,
+            status="not-started",
+            notes="",
+            attempt="first",
+            attempt_started_at=None,
+            tests_passed=[],
+            hints_revealed=0,
+            updated_at=to_dt(now),
+        )
+        session.add(row)
+    return row
+
+
+def exercise_out(row: ExerciseStateRow) -> ExerciseStateOut:
+    return ExerciseStateOut(
+        status=row.status,  # type: ignore[arg-type]
+        notes=row.notes,
+        attempt=row.attempt,  # type: ignore[arg-type]
+        attempt_started_at=to_ms_opt(row.attempt_started_at),
+        tests_passed=list(row.tests_passed),
+        hints_revealed=row.hints_revealed,
+        updated_at=to_ms(row.updated_at),
+    )
+
+
 # ---- settings rows -----------------------------------------------------------------
 
 
@@ -128,15 +163,7 @@ def load_progress(
         )
     ]
     exercises = {
-        keys[e.item_id]: ExerciseStateOut(
-            status=e.status,  # type: ignore[arg-type]
-            notes=e.notes,
-            attempt=e.attempt,  # type: ignore[arg-type]
-            attempt_started_at=to_ms_opt(e.attempt_started_at),
-            tests_passed=list(e.tests_passed),
-            hints_revealed=e.hints_revealed,
-            updated_at=to_ms(e.updated_at),
-        )
+        keys[e.item_id]: exercise_out(e)
         for e in session.scalars(
             select(ExerciseStateRow).where(
                 ExerciseStateRow.learner_id == learner_id, ExerciseStateRow.course_id == course.id

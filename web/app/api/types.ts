@@ -2,7 +2,7 @@
 // contract.ts, which type-checks real responses saved by server/tests/api/test_samples.py.
 
 import type { Card, Rating } from "~/lib/engine";
-import type { ProgressData, ReviewRecord, ReviewSource } from "~/lib/progress";
+import type { ExerciseState, ProgressData, ReviewRecord, ReviewSource } from "~/lib/progress";
 import type { Chapter } from "~/lib/types";
 
 export interface CourseSummary {
@@ -76,6 +76,9 @@ export interface ImportResult {
   progress: ProgressData;
   skipped: number;
 }
+
+/** Only the fields sent change. First touch starts the exercise; "skipped" also suspends its card. */
+export type ExercisePatch = Partial<Pick<ExerciseState, "status" | "notes" | "testsPassed" | "hintsRevealed">>;
 
 export interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };

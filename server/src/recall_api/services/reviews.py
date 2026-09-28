@@ -20,7 +20,7 @@ from ..schemas.progress import CardOut, ReviewOut, SessionOut
 from ..schemas.reviews import ReviewRequest
 from ..timeconv import to_dt, to_ms, to_ms_opt
 from .cards import card_from_out, card_out, card_to_row_values, row_to_card
-from .progress import course_settings, learner_clock
+from .progress import course_settings, exercise_row, learner_clock
 
 
 def get_item(session: Session, course: Course, key: str) -> Item:
@@ -50,7 +50,7 @@ def current_card(
     return row_to_card(row, item.key), row
 
 
-def _store_card(session: Session, item: Item, card: Card, row: CardRow | None, learner_id: uuid.UUID) -> None:
+def store_card(session: Session, item: Item, card: Card, row: CardRow | None, learner_id: uuid.UUID) -> None:
     values = card_to_row_values(card)
     if row is None:
         session.add(CardRow(learner_id=learner_id, item_id=item.id, course_id=item.course_id, **values))
@@ -99,7 +99,7 @@ def record_review(
     preset = preset_for(session, course, kind, learner_id)
     before, row = current_card(session, item, preset, learner_id)
     after = answer(before, Rating(req.rating), now, preset, learner_clock(session, learner_id))
-    _store_card(session, item, after, row, learner_id)
+    store_card(session, item, after, row, learner_id)
     review = ReviewRow(
         id=req.id,
         learner_id=learner_id,
@@ -120,6 +120,10 @@ def record_review(
         meta=req.meta,
     )
     session.add(review)
+    if kind is CardKind.EXERCISE:  # rating an attempt finishes it
+        state = exercise_row(session, item, learner_id, now)
+        state.status = "done"
+        state.updated_at = to_dt(now)
     session.flush()
     return review_out(review, item.key), card_out(after)
 
@@ -148,7 +152,7 @@ def override_review(
     preset = preset_for(session, course, kind, learner_id)
     after = answer(before, Rating.HARD, now, preset, learner_clock(session, learner_id))
     _, card_row = current_card(session, item, preset, learner_id)
-    _store_card(session, item, after, card_row, learner_id)
+    store_card(session, item, after, card_row, learner_id)
     row.rating = Rating.HARD.value
     row.correct = True
     row.overridden = True
@@ -183,7 +187,7 @@ def set_suspended(
     card, row = current_card(session, item, preset, learner_id)
 
     updated = replace(card, suspended=suspended, updated_at=now)
-    _store_card(session, item, updated, row, learner_id)
+    store_card(session, item, updated, row, learner_id)
     session.flush()
     return card_out(updated)
 
