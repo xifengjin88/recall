@@ -78,12 +78,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `types.py`, `presets.py` (incl. `resolve_preset` layers), `clock.py` (StudyClock, study_day, day_start_ms, add_days with zoneinfo), `rng.py` (JS-compatible mulberry32 + FNV-1a over UTF-16), `jsmath.py` (js_round), `steps.py`.
 
 **Acceptance criteria:**
-- [ ] Trap tests pass: `js_round(2.5)==3`, `js_round(-2.5)==-2`, RNG/hash sequences equal TS values, UTF-16 hashing, 23/25-hour DST days
-- [ ] Study-day and 04:00 rollover tests pass in America/Los_Angeles
-- [ ] pyright strict passes on `recall_engine`
+- [x] Trap tests pass: `js_round(2.5)==3`, `js_round(-2.5)==-2`, RNG/hash sequences equal TS values, UTF-16 hashing, 23/25-hour DST days
+- [x] Study-day and 04:00 rollover tests pass in America/Los_Angeles
+- [x] pyright strict passes on `recall_engine`
 
 **Verification:**
-- [ ] `cd server && uv run pytest tests/engine/test_traps.py tests/engine/test_clock.py && uv run pyright src/recall_engine`
+- [x] `cd server && uv run pytest tests/engine/test_traps.py tests/engine/test_clock.py && uv run pyright src/recall_engine`
 
 **Dependencies:** T4 (trap expectations come from TS) · **Files:** src/recall_engine/{types,presets,clock,rng,jsmath,steps}.py, tests/engine/{test_traps,test_clock}.py · **Size:** M
 
