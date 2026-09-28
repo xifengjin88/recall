@@ -1,0 +1,6 @@
+number: 1
+title: Basics
+note_title: DEMO 01 - Basics
+sections:
+  - { key: "1.1", title: First Section }
+  - { key: "1.2", title: Second Section }

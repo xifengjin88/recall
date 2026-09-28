@@ -113,12 +113,15 @@ Errors carry a line number when the YAML node has one (a small loader keeps PyYA
 server/src/recall_content/
   __init__.py       parse_course(path) -> ParsedCourse | raises ContentErrors
   schemas.py        Pydantic models
-  loader.py         YAML with line marks; folder walking
+  loader.py         YAML with line marks; per-item validation
+  course.py         parse_course: folder walking and assembling ParsedCourse
+  writer.py         write_course: ParsedCourse back to files (export, round trip)
+  errors.py         ContentError / ContentErrors
   rules.py          cross-field and cross-file rules
   notes.py          heading extraction (same ids as the web app: "s2.7", slugs)
   hashing.py        canonical JSON + SHA-256
 server/tests/content/
-  fixtures/valid-course/  fixtures/broken/<rule>/
+  fixtures/valid-course/  (broken variants are one-edit copies made in each test)
   test_schemas.py  test_rules.py  test_loader.py  test_tlpi.py
 ```
 
@@ -137,7 +140,7 @@ One rule per function, each returning a list of errors (never raising), so the v
 
 - pytest in `server/tests/content/`.
 - A known-good fixture course passes with zero errors.
-- One broken fixture per rule, asserting the exact message, file and line.
+- One failing case per rule, asserting the exact message, file and line. Each case copies the valid fixture course to a temp folder and applies one small text edit, so the broken input is visible in the test itself.
 - `test_tlpi.py`: the real `courses/tlpi/` (produced by `content-import`'s conversion) parses with zero errors and 50 questions. Skipped until that folder exists.
 - Round trip: parse → dump to YAML → parse gives equal models and equal hashes.
 

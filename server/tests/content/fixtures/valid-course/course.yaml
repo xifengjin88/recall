@@ -1,0 +1,11 @@
+slug: demo
+title: Demo Course
+short: DEMO
+author: Test Author
+description: A tiny course used by the content tests.
+scheduling:
+  question:
+    new_per_day: 5
+outline:
+  - { number: 1, title: Basics }
+  - { number: 2, title: Coming Later }

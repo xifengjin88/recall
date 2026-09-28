@@ -1,0 +1,12 @@
+- key: demo-ex01
+  title: Write `hello`
+  sections: ["1.1"]
+  book_ref: 1-1
+  difficulty: 1
+  estimate: 20 min
+  goal: Print hello.
+  requirements: [Print "hello" and a newline.]
+  tests:
+    - { name: prints hello, run: ./hello, expect: "stdout is hello" }
+    - { name: exit status, run: "./hello; echo $?", expect: "0" }
+  hints: [Use write(2).]

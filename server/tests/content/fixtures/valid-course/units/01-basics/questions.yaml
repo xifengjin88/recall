@@ -1,0 +1,77 @@
+- key: demo-q001
+  type: single
+  section: "1.1"
+  difficulty: 1
+  prompt: Pick **b**.
+  options: [a, b, c]
+  answer: b
+  explanation: Because b.
+
+- key: demo-q002
+  type: multi
+  section: "1.1"
+  difficulty: 2
+  tags: [set]
+  prompt: Pick a and c.
+  options: [a, b, c]
+  answers: [a, c]
+  explanation: Exactly a and c.
+
+- key: demo-q003
+  type: truefalse
+  section: "1.2"
+  difficulty: 1
+  prompt: The sky is green.
+  answer: false
+  explanation: It is blue.
+
+- key: demo-q004
+  type: typed
+  section: "1.2"
+  difficulty: 1
+  prompt: Type `x`.
+  accept: [x, ex]
+  hint: One letter.
+  explanation: It's x.
+  note_anchor: Details
+
+- key: demo-q005
+  type: output
+  section: "1.2"
+  difficulty: 2
+  prompt: What does it print?
+  code: { lang: bash, source: "$ echo hi" }
+  accept: [hi]
+  explanation: echo prints its argument.
+
+- key: demo-q006
+  type: output
+  section: "1.1"
+  difficulty: 2
+  prompt: Which line?
+  code:
+    lang: c
+    source: |
+      int main(void) { return 0; }
+  options: ["0", "1"]
+  answer: "0"
+  explanation: main returns 0.
+
+- key: demo-q007
+  type: order
+  section: "1.1"
+  difficulty: 1
+  prompt: Order them.
+  items: [one, two, three]
+  explanation: Counting.
+
+- key: demo-q008
+  type: match
+  section: "1.2"
+  difficulty: 1
+  prompt: Match them.
+  pairs:
+    - { term: a, definition: A }
+    - { term: b, definition: B }
+    - { term: c, definition: C }
+  explanation: Upper case.

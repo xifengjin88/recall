@@ -138,12 +138,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** YAML loading that keeps node line marks, course folder walking, and the rule set from SPEC-content-model (keys, sections, options/answers, accept, order, match, exercises, outline/unit numbers), collecting all errors.
 
 **Acceptance criteria:**
-- [ ] Valid fixture course → 0 errors
-- [ ] One broken fixture per rule → exact message with file and line
-- [ ] Parse → dump → parse gives equal models and hashes
+- [x] Valid fixture course → 0 errors
+- [x] One broken fixture per rule → exact message with file and line
+- [x] Parse → dump → parse gives equal models and hashes
 
 **Verification:**
-- [ ] `uv run pytest tests/content/test_loader.py tests/content/test_rules.py`
+- [x] `uv run pytest tests/content/test_loader.py tests/content/test_rules.py`
 
 **Dependencies:** T8 · **Files:** src/recall_content/{loader,rules,__init__}.py, tests/content/{test_loader,test_rules}.py, tests/content/fixtures/ · **Size:** M
 
