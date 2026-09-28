@@ -215,12 +215,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Flask app factory, JSON error format, `GET /api/courses`, `/api/courses/<slug>` (outline incl. empty units), `/content` (ETag = last import id, 304 support), `/units/<n>/notes`.
 
 **Acceptance criteria:**
-- [ ] Responses match the camelCase shapes the web app's `Chapter`/`Question`/`Exercise` types expect (contract test against a fixture)
-- [ ] Second `/content` request with `If-None-Match` returns 304
-- [ ] Unknown course/unit → 404 in the documented error shape
+- [x] Responses match the camelCase shapes the web app's `Chapter`/`Question`/`Exercise` types expect (contract test against a fixture)
+- [x] Second `/content` request with `If-None-Match` returns 304
+- [x] Unknown course/unit → 404 in the documented error shape
 
 **Verification:**
-- [ ] `uv run pytest tests/api/test_catalog.py` · `curl -i localhost:5001/api/courses`
+- [x] `uv run pytest tests/api/test_catalog.py` · `curl -i localhost:5001/api/courses`
 
 **Dependencies:** T13 · **Files:** src/recall_api/{app,errors}.py, src/recall_api/api/catalog.py, tests/api/test_catalog.py · **Size:** M
 

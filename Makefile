@@ -27,7 +27,7 @@ import-content: ## Validate and import every course folder in courses/
 	cd server && for course in ../courses/*/; do uv run --env-file ../.env recall content import "$$course" || exit 1; done
 
 dev-server: ## Run the Flask API on :5001
-	cd server && uv run --env-file ../.env flask --app recall_api run --port 5001 --debug
+	cd server && uv run --env-file ../.env flask --app recall_api.app:create_app run --port 5001 --debug
 
 dev-web: ## Run the web app on :5173 (proxies /api to :5001)
 	cd web && npm run dev
