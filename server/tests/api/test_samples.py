@@ -47,6 +47,14 @@ LEARNING: list[tuple[str, str, str, Any]] = [
     ),
     ("preview", "get", "/api/courses/demo/cards/demo-q001/preview", None),
     ("progress", "get", "/api/courses/demo/progress", None),
+    ("exercise", "patch", "/api/courses/demo/exercises/demo-ex01", {"testsPassed": ["prints hello"]}),
+    (
+        "scheduling",
+        "patch",
+        "/api/courses/demo/scheduling",
+        {"kind": "question", "changes": {"learnSteps": [2, 20]}},
+    ),
+    ("settings", "patch", "/api/settings", {"timeZone": "America/New_York"}),
 ]
 
 

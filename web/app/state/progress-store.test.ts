@@ -14,7 +14,7 @@ function mockApi(routes: Record<string, unknown>) {
       const method = init.method ?? "GET";
       const path = url.replace(/^\/api/, "");
       calls.push({ method, path, body: init.body ? JSON.parse(init.body as string) : undefined });
-      const hit = routes[`${method} ${path}`];
+      const hit = { ...DEFAULTS, ...routes }[`${method} ${path}`];
       if (hit === undefined || typeof hit === "number") {
         const status = typeof hit === "number" ? hit : 404;
         return new Response(JSON.stringify({ error: { code: "x", message: "failed" } }), { status });
@@ -26,7 +26,11 @@ function mockApi(routes: Record<string, unknown>) {
 }
 
 const base = "/courses/demo";
-const emptyProgress = { ...samples.progress, cards: {}, reviews: [], sessions: [] };
+// Progress already in this browser's zone, so loading doesn't report it (tested separately).
+const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const progressSample = { ...samples.progress, settings: { ...samples.progress.settings, timeZone: zone } };
+const emptyProgress = { ...progressSample, cards: {}, reviews: [], sessions: [] };
+const DEFAULTS: Record<string, unknown> = { [`GET ${base}/scheduling`]: samples.scheduling };
 
 beforeEach(() => {
   store.__resetStoreForTests();
@@ -36,7 +40,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("progress store (API-backed)", () => {
   it("loads a course's progress and mirrors the theme", async () => {
-    mockApi({ [`GET ${base}/progress`]: { ...samples.progress, settings: { ...samples.progress.settings, theme: "dark" } } });
+    mockApi({ [`GET ${base}/progress`]: { ...progressSample, settings: { ...progressSample.settings, theme: "dark" } } });
     expect(store.getProgress().cards).toEqual({});
     await store.loadCourseProgress("demo");
     expect(store.getProgress().cards["demo-q001"].phase).toBe("learning");
@@ -70,7 +74,7 @@ describe("progress store (API-backed)", () => {
 
   it("replaces a review in memory when the server returns it again (retry or override)", async () => {
     mockApi({
-      [`GET ${base}/progress`]: samples.progress,
+      [`GET ${base}/progress`]: progressSample,
       [`POST ${base}/reviews/s1%3A0/override`]: { ...samples.review, review: { ...samples.review.review, rating: "hard", overridden: true } },
     });
     await store.loadCourseProgress("demo");
@@ -101,7 +105,7 @@ describe("progress store (API-backed)", () => {
     store.completeSession("s1");
     store.setSuspended("demo-q001", "question", true);
     await store.flushWrites();
-    expect(calls.slice(1).map((c) => `${c.method} ${c.path}`)).toEqual([
+    expect(calls.slice(2).map((c) => `${c.method} ${c.path}`)).toEqual([
       `POST ${base}/sessions`,
       `POST ${base}/sessions/s1/complete`,
       `PATCH ${base}/cards/demo-q001`,
@@ -123,7 +127,7 @@ describe("progress store (API-backed)", () => {
       store.updateExercise("demo-ex01", { notes: "write(2) then exit" });
       store.updateExercise("demo-ex01", { status: "skipped" }); // sends the pending notes first
       await store.flushWrites();
-      expect(calls.slice(1).map((c) => c.body)).toEqual([{ notes: "write(2)" }, { notes: "write(2) then exit" }, { status: "skipped" }]);
+      expect(calls.slice(2).map((c) => c.body)).toEqual([{ notes: "write(2)" }, { notes: "write(2) then exit" }, { status: "skipped" }]);
     } finally {
       vi.useRealTimers();
     }
@@ -140,16 +144,37 @@ describe("progress store (API-backed)", () => {
     expect(store.getProgress().exercises["demo-ex01"].status).toBe("done");
   });
 
+  it("reports the browser's time zone when the server has another", async () => {
+    const calls = mockApi({ [`GET ${base}/progress`]: { ...emptyProgress, settings: { ...emptyProgress.settings, timeZone: "Pacific/Chatham" } }, ["PATCH /settings"]: {} });
+    await store.loadCourseProgress("demo");
+    await store.flushWrites();
+    expect(calls.at(-1)).toEqual({ method: "PATCH", path: "/settings", body: { timeZone: zone } });
+    expect(store.getProgress().settings.timeZone).toBe(zone);
+  });
+
+  it("uses the server's effective scheduling options and follows its answer to a change", async () => {
+    const changed = { ...samples.scheduling, overrides: { question: { newPerDay: 3 } }, effective: { ...samples.scheduling.effective, question: { ...samples.scheduling.effective.question, newPerDay: 3 } } };
+    const calls = mockApi({ [`GET ${base}/progress`]: emptyProgress, [`PATCH ${base}/scheduling`]: changed });
+    await store.loadCourseProgress("demo");
+    expect(store.presetFor("question")).toEqual(samples.scheduling.effective.question);
+    store.updateScheduling("question", { newPerDay: 3 });
+    expect(store.getProgress().settings.scheduling.question).toEqual({ newPerDay: 3 }); // at once
+    await store.flushWrites();
+    expect(calls.at(-1)?.body).toEqual({ kind: "question", changes: { newPerDay: 3 } });
+    expect(store.getProgress().settings.scheduling).toEqual({ question: { newPerDay: 3 } }); // the server's answer
+    expect(store.presetFor("question").newPerDay).toBe(3);
+  });
+
   it("imports the raw file and resets one unit through the API", async () => {
     const calls = mockApi({
       [`GET ${base}/progress`]: emptyProgress,
-      [`PUT ${base}/progress`]: { progress: samples.progress, skipped: 2 },
+      [`PUT ${base}/progress`]: { progress: progressSample, skipped: 2 },
       [`DELETE ${base}/progress?unit=1`]: emptyProgress,
     });
     await store.loadCourseProgress("demo");
     const file = { app: "recall", data: { version: 1, items: {} } };
     await expect(store.importProgress(file, "merge")).resolves.toBe(2);
-    expect(calls.at(-1)?.body).toEqual({ mode: "merge", file });
+    expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ mode: "merge", file });
     expect(Object.keys(store.getProgress().cards)).toEqual(["demo-q001"]);
     await store.resetProgress(1);
     expect(store.getProgress().cards).toEqual({});

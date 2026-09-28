@@ -48,11 +48,13 @@ def create_app(
     from .api.exercises import bp as exercises
     from .api.progress import bp as progress
     from .api.reviews import bp as reviews
+    from .api.settings import bp as settings
 
     app.register_blueprint(catalog)
     app.register_blueprint(exercises)
     app.register_blueprint(progress)
     app.register_blueprint(reviews)
+    app.register_blueprint(settings)
 
     @app.get("/api/health")
     def health() -> dict[str, bool]:

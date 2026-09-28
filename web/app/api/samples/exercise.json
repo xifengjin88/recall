@@ -1,0 +1,11 @@
+{
+ "attempt": "first",
+ "attemptStartedAt": 1790604000000,
+ "hintsRevealed": 0,
+ "notes": "",
+ "status": "in-progress",
+ "testsPassed": [
+  "prints hello"
+ ],
+ "updatedAt": 1790604000000
+}

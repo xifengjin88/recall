@@ -2,12 +2,12 @@
 //
 // The server schedules: recordReview / overrideReview / previewCard await the API and use the
 // cards it returns. Other changes update memory at once and are sent in order in the background;
-// a failure shows the "Couldn't save" notice. Settings and prefs are still memory-only here
-// until their endpoints land (T23).
+// a failure shows the "Couldn't save" notice. Theme, key hints, prefs and the time zone are the
+// learner's across courses; scheduling overrides and the last unit belong to this course.
 
 import { useSyncExternalStore } from "react";
 import { api } from "~/api/client";
-import type { ExercisePatch, Previews, ReviewResult } from "~/api/types";
+import type { ExercisePatch, Previews, ReviewResult, SchedulingInfo } from "~/api/types";
 import { APP } from "~/config";
 import { resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
 import {
@@ -42,6 +42,8 @@ const SERVER_STATUS: StoreStatus = { ready: false, notice: null };
 let course: string | null = null;
 let loading: Promise<void> | null = null;
 let state: ProgressData = SERVER_SNAPSHOT;
+/** This course's scheduling defaults and effective options (null until loaded). */
+let scheduling: SchedulingInfo | null = null;
 let status: StoreStatus = SERVER_STATUS;
 let writes: Promise<unknown> = Promise.resolve();
 const listeners = new Set<() => void>();
@@ -79,14 +81,17 @@ export function loadCourseProgress(slug: string): Promise<void> {
   if (loading && course === slug) return loading;
   course = slug;
   state = SERVER_SNAPSHOT;
+  scheduling = null;
   status = SERVER_STATUS;
   const promise = (async () => {
-    const data = await api.progress(slug);
+    const [data, info] = await Promise.all([api.progress(slug), api.scheduling(slug)]);
     if (course !== slug) return; // switched away meanwhile
     state = data;
+    scheduling = info;
     mirrorTheme(data.settings.theme);
     status = { ready: true, notice: status.notice };
     emit();
+    reportTimeZone();
   })();
   loading = promise;
   promise.catch(() => {
@@ -102,6 +107,10 @@ function subscribe(l: () => void) {
 
 export function useProgress(): ProgressData {
   return useSyncExternalStore(subscribe, () => state, () => SERVER_SNAPSHOT);
+}
+
+export function useScheduling(): SchedulingInfo | null {
+  return useSyncExternalStore(subscribe, () => scheduling, () => null);
 }
 
 export function useStoreStatus(): StoreStatus {
@@ -120,8 +129,9 @@ export function flushWrites() {
   return writes;
 }
 
+/** The options the server schedules this kind with (engine + course defaults + learner overrides). */
 export function presetFor(kind: CardKind): Preset {
-  return resolvePreset(kind, state.settings.scheduling);
+  return scheduling?.effective[kind] ?? resolvePreset(kind, state.settings.scheduling);
 }
 
 // ---- sessions ---------------------------------------------------------------------
@@ -297,27 +307,54 @@ export function startExerciseAttempt(id: string, mode: Exclude<AttemptMode, "fir
   send(() => api.startAttempt(slug, id, mode));
 }
 
-// ---- settings (memory-only until T23) ---------------------------------------------
+// ---- settings ---------------------------------------------------------------------
 
-export function updateSettings(patch: Partial<Settings>) {
+/** The browser's IANA zone, so day boundaries (04:00) follow the learner. Sent when it differs. */
+function reportTimeZone() {
+  let zone: string | undefined;
+  try {
+    zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return;
+  }
+  if (!zone || zone === state.settings.timeZone) return;
+  set({ ...state, settings: { ...state.settings, timeZone: zone } });
+  send(() => api.patchSettings({ timeZone: zone }));
+}
+
+export function updateSettings(patch: Partial<Pick<Settings, "theme" | "showKeyHints">>) {
   if (patch.theme) mirrorTheme(patch.theme);
   set({ ...state, settings: { ...state.settings, ...patch } });
+  send(() => api.patchSettings(patch));
 }
 
 /** Change one kind's scheduling options; `null` resets that kind to the defaults. */
 export function updateScheduling(kind: CardKind, patch: Partial<Preset> | null) {
-  const scheduling = { ...state.settings.scheduling };
-  if (patch === null) delete scheduling[kind];
-  else scheduling[kind] = { ...(scheduling[kind] ?? {}), ...patch };
-  updateSettings({ scheduling });
+  const slug = requireCourse();
+  const overrides = { ...state.settings.scheduling };
+  if (patch === null) delete overrides[kind];
+  else overrides[kind] = { ...(overrides[kind] ?? {}), ...patch };
+  set({ ...state, settings: { ...state.settings, scheduling: overrides } });
+  // The server validates and answers with the new effective options; memory follows it.
+  send(async () => {
+    const info = await api.patchScheduling(slug, kind, patch);
+    if (course !== slug) return;
+    scheduling = info;
+    set({ ...state, settings: { ...state.settings, scheduling: info.overrides } });
+  });
 }
 
 export function updatePrefs(patch: Partial<SessionPrefs>) {
-  set({ ...state, prefs: { ...state.prefs, ...patch } });
+  const prefs = { ...state.prefs, ...patch };
+  set({ ...state, prefs });
+  send(() => api.patchSettings({ prefs }));
 }
 
 export function setLastChapter(n: number) {
-  if (state.lastChapter !== n) set({ ...state, lastChapter: n });
+  if (state.lastChapter === n) return;
+  const slug = requireCourse();
+  set({ ...state, lastChapter: n });
+  send(() => api.setLastUnit(slug, n));
 }
 
 // ---- import / reset ----------------------------------------------------------------
@@ -328,6 +365,8 @@ export async function importProgress(file: unknown, mode: "replace" | "merge"): 
   const result = await withSaveNotice(() => api.importProgress(slug, mode, file));
   mirrorTheme(result.progress.settings.theme);
   set(result.progress);
+  scheduling = await api.scheduling(slug).catch(() => scheduling); // a replace may bring overrides
+  emit();
   return result.skipped;
 }
 
@@ -346,6 +385,7 @@ export function __resetStoreForTests() {
   course = null;
   loading = null;
   state = SERVER_SNAPSHOT;
+  scheduling = null;
   status = SERVER_STATUS;
   writes = Promise.resolve();
   for (const { timer } of pendingNotes.values()) clearTimeout(timer);

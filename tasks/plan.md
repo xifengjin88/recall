@@ -77,7 +77,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 - [x] T20 Review events and sessions endpoints (server runs SM-2)
 - [x] T21 Web: quiz and flashcards send rating events
 - [x] T22 Exercises on the server (attempts, rating, skip)
-- [ ] T23 Settings and per-course scheduling overrides
+- [x] T23 Settings and per-course scheduling overrides
 - [ ] T24 Today's queue and course card counts from the server
 - [ ] T25 One-time IndexedDB upload; retire the TS engine and IndexedDB
 

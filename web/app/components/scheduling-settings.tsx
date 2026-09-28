@@ -5,7 +5,7 @@ import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { formatSteps, parseSteps, PRESETS, resolvePreset, type CardKind, type Preset } from "~/lib/engine";
 import { cn } from "~/lib/utils";
-import { updateScheduling, useProgress } from "~/state/progress-store";
+import { updateScheduling, useProgress, useScheduling } from "~/state/progress-store";
 
 type NumKey = { [K in keyof Preset]: Preset[K] extends number ? K : never }[keyof Preset];
 type StepKey = "learnSteps" | "relearnSteps";
@@ -98,8 +98,11 @@ export function SchedulingSettings() {
 
 function KindForm({ kind, note }: { kind: CardKind; note: string }) {
   const { settings } = useProgress();
+  const info = useScheduling();
   const overrides = settings.scheduling[kind] ?? {};
-  const preset = resolvePreset(kind, settings.scheduling);
+  // The server's view (engine + this course's defaults + overrides); the engine's alone until it loads.
+  const preset = info?.effective[kind] ?? resolvePreset(kind, settings.scheduling);
+  const defaults = info?.defaults[kind] ?? PRESETS[kind];
   const changed = Object.keys(overrides).length;
 
   return (
@@ -114,7 +117,7 @@ function KindForm({ kind, note }: { kind: CardKind; note: string }) {
         <fieldset key={g.title} className="space-y-3">
           <legend className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">{g.title}</legend>
           {g.fields.map((f) => (
-            <FieldRow key={`${kind}-${f.key}-${display(f, preset)}`} kind={kind} field={f} preset={preset} isChanged={f.key in overrides} />
+            <FieldRow key={`${kind}-${f.key}-${display(f, preset)}`} kind={kind} field={f} preset={preset} defaults={defaults} isChanged={f.key in overrides} />
           ))}
         </fieldset>
       ))}
@@ -123,16 +126,17 @@ function KindForm({ kind, note }: { kind: CardKind; note: string }) {
   );
 }
 
-function FieldRow({ kind, field, preset, isChanged }: { kind: CardKind; field: Field; preset: Preset; isChanged: boolean }) {
+function FieldRow({ kind, field, preset, defaults, isChanged }: { kind: CardKind; field: Field; preset: Preset; defaults: Preset; isChanged: boolean }) {
   const [draft, setDraft] = useState(display(field, preset));
   const [error, setError] = useState<string | null>(null);
   const id = `sched-${kind}-${field.key}`;
-  const defaultText = display(field, PRESETS[kind]);
+  const defaultText = display(field, defaults);
 
   function save() {
     const { value, error } = parse(field, draft);
     if (error) return setError(error);
     setError(null);
+    if (JSON.stringify(value) === JSON.stringify(preset[field.key])) return; // unchanged: nothing to send
     if (field.key === "easyInterval" && (value as number) < preset.graduatingInterval) {
       return setError("Should be at least the graduating interval");
     }

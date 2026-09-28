@@ -346,12 +346,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `GET/PATCH /api/settings` (theme, key hints, prefs, time zone sent by the browser on load) and per-course scheduling overrides validated with `resolve_preset`; Settings page wired to them.
 
 **Acceptance criteria:**
-- [ ] Changing "New cards/day" for TLPI affects only TLPI's next queue
-- [ ] Invalid values rejected with the same messages as the UI validation
-- [ ] Browser time zone stored on first load
+- [x] Changing "New cards/day" for TLPI affects only TLPI's next queue
+- [x] Invalid values rejected with the same messages as the UI validation
+- [x] Browser time zone stored on first load
 
 **Verification:**
-- [ ] `uv run pytest tests/api/test_settings.py` · Manual: Settings › Scheduling
+- [x] `uv run pytest tests/api/test_settings.py` · Manual: Settings › Scheduling
 
 **Dependencies:** T21 · **Files:** src/recall_api/api/settings.py, src/recall_api/services/settings.py, tests/api/test_settings.py, web/app/components/scheduling-settings.tsx, web/app/routes/settings.tsx · **Size:** M
 

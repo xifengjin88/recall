@@ -35,7 +35,7 @@ All paths are under `/api/courses/<slug>` unless noted. Unknown course → 404 `
 | `GET /queue` | `?kind=question\|exercise&learnAhead=0\|1` → `{learning, review, fresh}` item keys from `today_queue` over the course's active items in book order |
 | `GET /today` | → `{learning, review, fresh, redo: [keys], nextDue: ms \| null}` for the course home |
 | `GET /scheduling` | → `{defaults: {question, exercise}, overrides, effective}` (engine defaults + course defaults, learner overrides, their combination) |
-| `PATCH /scheduling` | `{kind, changes: {...} \| null}` → same as GET. Values are validated with Anki's ranges; `null` resets that kind |
+| `PATCH /scheduling` | `{kind, changes: {...} \| null}` → same as GET. Values are validated with the Settings form's ranges (and min ≤ max interval); a `null` option removes that override, `changes: null` resets the kind |
 | `PUT /last-unit` | `{number}` → 204 |
 | `GET /api/settings` · `PATCH /api/settings` | `{theme, showKeyHints, timeZone, prefs}`; `timeZone` must be a valid IANA zone |
 

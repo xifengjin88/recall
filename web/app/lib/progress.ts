@@ -80,6 +80,8 @@ export interface Settings {
   showKeyHints: boolean;
   /** Only the options the learner changed; everything else uses the engine's defaults. */
   scheduling: PresetOverrides;
+  /** The learner's IANA time zone, for day boundaries (the server's copy; the browser reports it). */
+  timeZone?: string;
 }
 
 /** Session setup choices, remembered between sessions (spec §3.3). */

@@ -1,0 +1,100 @@
+{
+ "defaults": {
+  "exercise": {
+   "easyBonus": 1.3,
+   "easyInterval": 7,
+   "fuzz": true,
+   "graduatingInterval": 3,
+   "hardFactor": 1.2,
+   "intervalModifier": 1,
+   "lapseFactor": 0.5,
+   "learnAheadMinutes": 0,
+   "learnSteps": [],
+   "leechLapses": 8,
+   "maxInterval": 365,
+   "minEase": 1.3,
+   "minInterval": 1,
+   "newPerDay": 1,
+   "relearnSteps": [],
+   "reviewsPerDay": 2,
+   "startingEase": 2.5
+  },
+  "question": {
+   "easyBonus": 1.3,
+   "easyInterval": 4,
+   "fuzz": true,
+   "graduatingInterval": 1,
+   "hardFactor": 1.2,
+   "intervalModifier": 1,
+   "lapseFactor": 0,
+   "learnAheadMinutes": 20,
+   "learnSteps": [
+    1,
+    10
+   ],
+   "leechLapses": 8,
+   "maxInterval": 36500,
+   "minEase": 1.3,
+   "minInterval": 1,
+   "newPerDay": 5,
+   "relearnSteps": [
+    10
+   ],
+   "reviewsPerDay": 200,
+   "startingEase": 2.5
+  }
+ },
+ "effective": {
+  "exercise": {
+   "easyBonus": 1.3,
+   "easyInterval": 7,
+   "fuzz": true,
+   "graduatingInterval": 3,
+   "hardFactor": 1.2,
+   "intervalModifier": 1,
+   "lapseFactor": 0.5,
+   "learnAheadMinutes": 0,
+   "learnSteps": [],
+   "leechLapses": 8,
+   "maxInterval": 365,
+   "minEase": 1.3,
+   "minInterval": 1,
+   "newPerDay": 1,
+   "relearnSteps": [],
+   "reviewsPerDay": 2,
+   "startingEase": 2.5
+  },
+  "question": {
+   "easyBonus": 1.3,
+   "easyInterval": 4,
+   "fuzz": true,
+   "graduatingInterval": 1,
+   "hardFactor": 1.2,
+   "intervalModifier": 1,
+   "lapseFactor": 0,
+   "learnAheadMinutes": 20,
+   "learnSteps": [
+    2.0,
+    20.0
+   ],
+   "leechLapses": 8,
+   "maxInterval": 36500,
+   "minEase": 1.3,
+   "minInterval": 1,
+   "newPerDay": 5,
+   "relearnSteps": [
+    10
+   ],
+   "reviewsPerDay": 200,
+   "startingEase": 2.5
+  }
+ },
+ "overrides": {
+  "question": {
+   "learnSteps": [
+    2.0,
+    20.0
+   ]
+  }
+ }
+}

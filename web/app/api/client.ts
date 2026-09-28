@@ -1,6 +1,6 @@
 // Typed access to the Flask API. In development Vite proxies /api to the server on :5001.
 
-import type { Card } from "~/lib/engine";
+import type { Card, CardKind, Preset } from "~/lib/engine";
 import type { AttemptMode, ExerciseState, ProgressData, SessionMode, SessionRecord } from "~/lib/progress";
 import type {
   ApiErrorBody,
@@ -9,9 +9,11 @@ import type {
   CoursesResponse,
   ExercisePatch,
   ImportResult,
+  LearnerSettings,
   Previews,
   ReviewRequest,
   ReviewResult,
+  SchedulingInfo,
   UnitNotes,
 } from "./types";
 
@@ -81,4 +83,14 @@ export const api = {
     request<ExerciseState>(`/courses/${enc(slug)}/exercises/${enc(key)}`, json("PATCH", patch)),
   startAttempt: (slug: string, key: string, mode: Exclude<AttemptMode, "first">) =>
     request<ExerciseState>(`/courses/${enc(slug)}/exercises/${enc(key)}/attempts`, json("POST", { mode })),
+
+  // ---- settings ----
+  settings: () => request<LearnerSettings>("/settings"),
+  patchSettings: (patch: Partial<LearnerSettings>) => request<LearnerSettings>("/settings", json("PATCH", patch)),
+  scheduling: (slug: string) => request<SchedulingInfo>(`/courses/${enc(slug)}/scheduling`),
+  /** `changes: null` resets the kind; a null option inside removes that one override. */
+  patchScheduling: (slug: string, kind: CardKind, changes: { [K in keyof Preset]?: Preset[K] | null } | null) =>
+    request<SchedulingInfo>(`/courses/${enc(slug)}/scheduling`, json("PATCH", { kind, changes })),
+  setLastUnit: (slug: string, number: number) =>
+    request<void>(`/courses/${enc(slug)}/last-unit`, json("PUT", { number })),
 };

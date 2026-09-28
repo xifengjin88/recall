@@ -1,17 +1,30 @@
 // Type-level contract with the server: `npm run typecheck` fails if a real response (saved by
 // server/tests/api/test_samples.py) no longer fits the types in ./types.ts.
 
-import type { ProgressData, SessionRecord } from "~/lib/progress";
-import type { ApiErrorBody, CourseContent, CourseOutline, CoursesResponse, Previews, ReviewResult, UnitNotes } from "./types";
+import type { ExerciseState, ProgressData, SessionRecord } from "~/lib/progress";
+import type {
+  ApiErrorBody,
+  CourseContent,
+  CourseOutline,
+  CoursesResponse,
+  LearnerSettings,
+  Previews,
+  ReviewResult,
+  SchedulingInfo,
+  UnitNotes,
+} from "./types";
 import content from "./samples/content.json";
 import course from "./samples/course.json";
 import courses from "./samples/courses.json";
 import error from "./samples/error.json";
+import exercise from "./samples/exercise.json";
 import notes from "./samples/notes.json";
 import preview from "./samples/preview.json";
 import progress from "./samples/progress.json";
 import review from "./samples/review.json";
+import scheduling from "./samples/scheduling.json";
 import session from "./samples/session.json";
+import settings from "./samples/settings.json";
 
 // JSON imports widen string literals ("learning" → string), so objects with literal unions can't use
 // `satisfies` directly. `Loose<T>` keeps every key and nesting but relaxes literals to string/number:
@@ -36,4 +49,7 @@ export const samples = {
   review: review satisfies Loose<ReviewResult> as ReviewResult,
   preview: preview satisfies Loose<Previews> as Previews,
   progress: progress satisfies Loose<ProgressData> as ProgressData,
+  exercise: exercise satisfies Loose<ExerciseState> as ExerciseState,
+  scheduling: scheduling satisfies Loose<SchedulingInfo> as SchedulingInfo,
+  settings: settings satisfies Loose<LearnerSettings> as LearnerSettings,
 };
