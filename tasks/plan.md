@@ -74,7 +74,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 ### Phase 5: Progress on the server
 - [x] T18 Progress tables and migration
 - [x] T19 Progress import / export / load endpoints
-- [ ] T20 Review events and sessions endpoints (server runs SM-2)
+- [x] T20 Review events and sessions endpoints (server runs SM-2)
 - [ ] T21 Web: quiz and flashcards send rating events
 - [ ] T22 Exercises on the server (attempts, rating, skip)
 - [ ] T23 Settings and per-course scheduling overrides

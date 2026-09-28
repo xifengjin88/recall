@@ -305,12 +305,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `POST …/reviews` (applies `recall_engine.answer`, stores card + review in one transaction, returns card + previews), `POST …/reviews/<id>/override`, session start/complete endpoints.
 
 **Acceptance criteria:**
-- [ ] Posting the same review id twice changes nothing the second time
-- [ ] Results equal `recall_engine.answer` for the learner's clock and resolved preset
-- [ ] Override re-rates from the pre-review card, as today
+- [x] Posting the same review id twice changes nothing the second time
+- [x] Results equal `recall_engine.answer` for the learner's clock and resolved preset
+- [x] Override re-rates from the pre-review card, as today
 
 **Verification:**
-- [ ] `uv run pytest tests/api/test_reviews.py`
+- [x] `uv run pytest tests/api/test_reviews.py`
 
 **Dependencies:** T19, T7 · **Files:** src/recall_api/services/reviews.py, src/recall_api/api/reviews.py, tests/api/test_reviews.py · **Size:** M
 
