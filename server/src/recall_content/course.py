@@ -1,5 +1,6 @@
 """parse_course: a course folder → ParsedCourse, or ContentErrors listing every problem."""
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,7 @@ from .rules import (
     check_sections,
     check_unique_keys,
 )
-from .schemas import CourseFile, CourseMeta, ParsedCourse, ParsedUnit, UnitFile
+from .schemas import CourseFile, CourseMeta, OutlineEntry, ParsedCourse, ParsedUnit, UnitFile
 
 
 def parse_course(root: Path) -> ParsedCourse:
@@ -110,7 +111,12 @@ def parse_course(root: Path) -> ParsedCourse:
         description=course.description,
         scheduling=course.scheduling,
     )
-    body = {"course": meta, "outline": course.outline, "units": tuple(units)}
+    return assemble(meta, course.outline, units)
+
+
+def assemble(meta: CourseMeta, outline: Sequence[OutlineEntry], units: Sequence[ParsedUnit]) -> ParsedCourse:
+    """Build a ParsedCourse with its content hash (the one place the course hash is computed)."""
+    body = {"course": meta, "outline": tuple(outline), "units": tuple(units)}
     return ParsedCourse(
         **body, content_hash=content_hash(ParsedCourse.model_construct(**body, content_hash=""))
     )

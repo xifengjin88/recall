@@ -201,12 +201,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Import `ParsedCourse` in one transaction: upsert course/units/sections/notes/items by key, skip unchanged hashes, retire missing items, record import_run; `--dry-run`; export back to files.
 
 **Acceptance criteria:**
-- [ ] First import of TLPI: "added 50"; second: "unchanged 50", zero writes to items
-- [ ] Removing a question from the file retires it (row kept); restoring un-retires
-- [ ] Invalid course → errors printed, nothing written, exit code 1
+- [x] First import of TLPI: "added 50"; second: "unchanged 50", zero writes to items
+- [x] Removing a question from the file retires it (row kept); restoring un-retires
+- [x] Invalid course → errors printed, nothing written, exit code 1
 
 **Verification:**
-- [ ] `uv run recall content import ../courses/tlpi && uv run recall content import ../courses/tlpi` · `uv run pytest tests/content_import`
+- [x] `uv run recall content import ../courses/tlpi && uv run recall content import ../courses/tlpi` · `uv run pytest tests/content_import`
 
 **Dependencies:** T12 · **Files:** src/recall_api/services/content.py, src/recall_api/cli.py, tests/content_import/test_import.py · **Size:** M
 

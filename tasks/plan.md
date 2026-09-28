@@ -63,7 +63,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 
 ### Phase 4: First vertical slice, content from Postgres
 - [x] T12 Content tables, models, first migration
-- [ ] T13 `recall content validate / import / export` CLI
+- [x] T13 `recall content validate / import / export` CLI
 - [ ] T14 Catalog API (courses, outline, content, notes)
 - [ ] T15 Web: API client, generated types, Vite proxy check
 - [ ] T16 Web: course grid at `/` and `/c/:course` layout loading content

@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help setup db db-reset dev-server dev-web test test-server test-web lint security
+.PHONY: help setup db db-reset migrate import-content dev-server dev-web test test-server test-web lint security
 
 help: ## List commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
@@ -11,7 +11,7 @@ setup: ## Install server and web dependencies, start Postgres
 	test -f .env || cp .env.example .env
 	cd server && uv sync
 	cd web && npm ci
-	$(MAKE) db
+	$(MAKE) db migrate import-content
 
 db: ## Start Postgres and wait until it is healthy
 	docker compose up -d --wait db
@@ -19,6 +19,12 @@ db: ## Start Postgres and wait until it is healthy
 db-reset: ## Wipe the database volume and start fresh
 	docker compose down -v
 	docker compose up -d --wait db
+
+migrate: ## Apply database migrations
+	cd server && uv run --env-file ../.env recall db upgrade
+
+import-content: ## Validate and import every course folder in courses/
+	cd server && for course in ../courses/*/; do uv run --env-file ../.env recall content import "$$course" || exit 1; done
 
 dev-server: ## Run the Flask API on :5001
 	cd server && uv run --env-file ../.env flask --app recall_api run --port 5001 --debug

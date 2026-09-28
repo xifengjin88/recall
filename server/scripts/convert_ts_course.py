@@ -15,8 +15,7 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
-from recall_content import parse_course, write_course
-from recall_content.hashing import content_hash
+from recall_content import assemble, parse_course, write_course
 from recall_content.schemas import (
     CourseMeta,
     Exercise,
@@ -65,10 +64,7 @@ def convert(src: dict[str, Any], slug: str) -> ParsedCourse:
         scheduling={},
     )
     outline = tuple(OutlineEntry(number=t["number"], title=t["title"]) for t in src["toc"])
-    body = {"course": meta, "outline": outline, "units": tuple(units)}
-    return ParsedCourse(
-        **body, content_hash=content_hash(ParsedCourse.model_construct(**body, content_hash=""))
-    )
+    return assemble(meta, outline, units)
 
 
 def main(src_path: str, dest: str) -> int:
