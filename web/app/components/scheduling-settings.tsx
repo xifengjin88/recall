@@ -3,7 +3,7 @@ import { RotateCcwIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { formatSteps, parseSteps, PRESETS, resolvePreset, type CardKind, type Preset } from "~/lib/engine";
+import { formatSteps, parseSteps, type CardKind, type Preset } from "~/lib/cards";
 import { cn } from "~/lib/utils";
 import { updateScheduling, useProgress, useScheduling } from "~/state/progress-store";
 
@@ -99,10 +99,11 @@ export function SchedulingSettings() {
 function KindForm({ kind, note }: { kind: CardKind; note: string }) {
   const { settings } = useProgress();
   const info = useScheduling();
+  if (!info) return <p className="text-sm text-muted-foreground">Loading scheduling options…</p>;
   const overrides = settings.scheduling[kind] ?? {};
-  // The server's view (engine + this course's defaults + overrides); the engine's alone until it loads.
-  const preset = info?.effective[kind] ?? resolvePreset(kind, settings.scheduling);
-  const defaults = info?.defaults[kind] ?? PRESETS[kind];
+  // The server's view: engine defaults, this course's defaults, then the learner's overrides.
+  const preset = info.effective[kind];
+  const defaults = info.defaults[kind];
   const changed = Object.keys(overrides).length;
 
   return (

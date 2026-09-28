@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { formatDay, studyDay } from "~/lib/dates";
 import type { Previews } from "~/api/types";
-import { formatDue, isDue, RATINGS, type Card, type Rating } from "~/lib/engine";
+import { formatDue, isDue, RATINGS, type Card, type Rating } from "~/lib/cards";
 import { RATING_MEANING, suggestRating } from "~/lib/exercise-rating";
 import type { ExerciseState } from "~/lib/progress";
 import type { Exercise } from "~/lib/types";

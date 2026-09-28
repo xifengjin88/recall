@@ -8,7 +8,7 @@ import { CHAPTERS, getChapter } from "~/content";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { answerText } from "~/lib/grade";
 import { newSeed, specToSearch, type SessionSpec } from "~/lib/session";
-import { formatDue, type Card as EngineCard, type Rating } from "~/lib/engine";
+import { formatDue, type Card as EngineCard, type Rating } from "~/lib/cards";
 import type { Question } from "~/lib/types";
 import { KeyHint } from "./kbd";
 import { Md, MdLines } from "./md";

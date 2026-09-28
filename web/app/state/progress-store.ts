@@ -10,7 +10,7 @@ import { api } from "~/api/client";
 import type { ExercisePatch, Previews, ReviewResult, SchedulingInfo } from "~/api/types";
 import { APP } from "~/config";
 import { isUploaded, localFiles, markUploaded } from "./migrate-local";
-import { resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
+import type { Card, CardKind, Preset, Rating } from "~/lib/cards";
 import {
   emptyProgress,
   NEW_EXERCISE,
@@ -158,7 +158,8 @@ export function flushWrites() {
 
 /** The options the server schedules this kind with (engine + course defaults + learner overrides). */
 export function presetFor(kind: CardKind): Preset {
-  return scheduling?.effective[kind] ?? resolvePreset(kind, state.settings.scheduling);
+  if (!scheduling) throw new Error("Scheduling options aren't loaded yet (routes under /c/:course await ensureCourse).");
+  return scheduling.effective[kind];
 }
 
 // ---- sessions ---------------------------------------------------------------------

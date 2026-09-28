@@ -1,6 +1,6 @@
 """Anki's classic (SM-2 derived) scheduler.
 
-A line-by-line port of web/app/lib/engine/sm2.ts; helper names match so the two can be read side by
+A line-by-line port of the retired TS engine (web/app/lib/engine/sm2.ts, see git history); helper names match so the two can be read side by
 side. Parity is enforced by tests/engine/test_golden.py.
 Reference: https://faqs.ankiweb.net/what-spaced-repetition-algorithm.html and Anki's v2 scheduler
 for the late-review bonus and fuzz ranges.

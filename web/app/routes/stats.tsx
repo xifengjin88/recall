@@ -5,12 +5,11 @@ import { Md } from "~/components/md";
 import { Card, CardContent } from "~/components/ui/card";
 import { SUBJECT, CHAPTERS, chapterOf, QUESTIONS_BY_ID } from "~/content";
 import { formatDay, today } from "~/lib/dates";
-import { resolvePreset } from "~/lib/engine";
 import { mastery, sectionMastery } from "~/lib/mastery";
 import type { RouteHandle } from "~/lib/shortcuts";
 import { accuracyByDay, forecast, studyDays, weakest } from "~/lib/stats";
 import { cn } from "~/lib/utils";
-import { useProgress } from "~/state/progress-store";
+import { useProgress, useScheduling } from "~/state/progress-store";
 import { coursePath } from "~/lib/paths";
 
 export function meta() {
@@ -21,6 +20,7 @@ export const handle: RouteHandle = { screen: "Stats", shortcuts: [] };
 
 export default function Stats() {
   const p = useProgress();
+  const leechLapses = useScheduling()?.effective.question.leechLapses;
   const days = accuracyByDay(p.reviews);
   const weak = weakest(p.reviews).filter((w) => QUESTIONS_BY_ID.has(w.cardId));
   const cards = Object.values(p.cards);
@@ -145,7 +145,7 @@ export default function Stats() {
       <section className="space-y-3">
         <h2 className="text-sm font-medium">Leeches</h2>
         <p className="text-sm text-muted-foreground">
-          Cards forgotten {resolvePreset("question", p.settings.scheduling).leechLapses}+ times. Worth rewriting, or re-reading the notes for.
+          Cards forgotten {leechLapses ?? "many"}+ times. Worth rewriting, or re-reading the notes for.
         </p>
         {leeches.length ? (
           <ul className="divide-y rounded-lg border">

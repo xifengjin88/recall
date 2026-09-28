@@ -1,4 +1,4 @@
-"""Replays every scheduling step the TS engine recorded (web/scripts/gen-engine-golden.test.ts)."""
+"""Replays every scheduling step the TS engine recorded before it was retired (T25). Never regenerate."""
 
 from typing import Any
 

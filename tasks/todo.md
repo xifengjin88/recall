@@ -373,12 +373,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** On first load with the server empty for this learner and IndexedDB data present, upload it via T19 (merge) and show a notice; then delete `web/app/lib/engine`, `idb-repo.ts`, Dexie and fake-indexeddb, keeping `server/tests/engine/golden/sm2.json`; update docs/SPEC.md §6–7, README, CLAUDE.md.
 
 **Acceptance criteria:**
-- [ ] Your current browser progress appears on the server after first load; local copy kept
-- [ ] No web code imports the removed engine; bundle no longer includes Dexie
-- [ ] `make test lint security` green
+- [x] Your current browser progress appears on the server after first load; local copy kept
+- [x] No web code imports the removed engine; bundle no longer includes Dexie
+- [x] `make test lint security` green
 
 **Verification:**
-- [ ] Manual: export first, load app, compare counts with the export · `make test lint security`
+- [x] Manual: export first, load app, compare counts with the export · `make test lint security`
 
 **Dependencies:** T22, T23, T24 · **Files:** web/app/state/migrate-local.ts, web/app/routes/shell.tsx, web/package.json, docs/SPEC.md, README.md (+ deletions) · **Size:** M
 

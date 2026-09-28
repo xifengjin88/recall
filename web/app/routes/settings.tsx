@@ -77,7 +77,7 @@ export default function Settings() {
         <SchedulingSettings />
       </Section>
 
-      <Section title="Progress" description="Progress is stored in this browser's database (IndexedDB) only. Export it to back up or move to another device.">
+      <Section title="Progress" description="Progress is kept by the Recall server for this course. Export it to back up, or import a file from another install.">
         <ExportImport />
       </Section>
 

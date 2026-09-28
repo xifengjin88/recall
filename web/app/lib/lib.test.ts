@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addDays, dayStartMs, studyDay } from "./dates";
-import { newCard, QUESTION_PRESET, type Card } from "./engine";
+import { formatSteps, parseSteps, type Card } from "./cards";
 import { grade, normalizeText } from "./grade";
 import { mastery, sectionMastery } from "./mastery";
 import {
@@ -96,14 +96,42 @@ const chapter = (over: Partial<Chapter> = {}): Chapter => ({
 });
 
 
+const newCard = (id: string): Card => ({
+  id,
+  kind: "question",
+  phase: "new",
+  step: 0,
+  due: 0,
+  interval: 0,
+  ease: 2.5,
+  reps: 0,
+  lapses: 0,
+  lastReview: null,
+  lastRating: null,
+  leech: false,
+  suspended: false,
+  updatedAt: 0,
+});
+
 const review = (id: string, interval: number, over: Partial<Card> = {}): Card => ({
-  ...newCard(id, "question", QUESTION_PRESET),
+  ...newCard(id),
   phase: "review",
   interval,
   due: dayStartMs(DAY),
   lastReview: NOW - interval * 86_400_000,
   updatedAt: 1,
   ...over,
+});
+
+describe("learning steps (Settings › Scheduling)", () => {
+  it("parses and formats Anki-style steps", () => {
+    expect(parseSteps("1m 10m 1d")).toEqual([1, 10, 1440]);
+    expect(parseSteps("30s, 2h")).toEqual([0.5, 120]);
+    expect(parseSteps("")).toEqual([]);
+    expect(parseSteps("10 minutes")).toBeNull();
+    expect(parseSteps("0m")).toBeNull();
+    expect(formatSteps([1, 10, 1440, 120])).toBe("1m 10m 1d 2h");
+  });
 });
 
 describe("content validation (spec §5.5, acceptance 12)", () => {

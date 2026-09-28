@@ -12,11 +12,11 @@ The React app running entirely on the API: content from the catalog (done in T16
   - `recordReview(...) → Promise<{before, after}>`, `overrideReview(...) → Promise<…>`
   - `previewCard(itemKey) → Promise<Previews>` for flashcard and exercise rating buttons
   - other actions (settings, prefs, exercise state, sessions, suspend) update memory at once and send in order; a failure shows the existing "Couldn't save" notice.
-- **Queue and counts** come from `GET /queue` and `GET /today`; session setup keeps its filters (chapter, sections, types, difficulty, order) and applies them to the returned keys.
+- **Queue and counts** come from `POST /queue` and `GET /today`; session setup keeps its filters (chapter, sections, types, difficulty, order), applies them first, and sends the remaining keys in order as `candidates`, so the server's daily limits apply to what the learner picked.
 - **Scheduling settings** read `GET /scheduling` (defaults, overrides, effective) and write `PATCH /scheduling`; field validation messages come from the server.
 - **Time zone:** on load, the browser sends `Intl.DateTimeFormat().resolvedOptions().timeZone` to `PATCH /api/settings` if it differs.
 - **Retire the TS engine:** delete `app/lib/engine/{sm2,presets,rng,index}` and the queue functions; keep presentation helpers in `app/lib/cards.ts` (`isDue`, `isMastered`, `formatDue`, `formatDays`, `MATURE_DAYS`) and step parsing for inputs. The golden generator is removed; `server/tests/engine/golden/sm2.json` stays as the Python engine's regression suite.
-- **Retire IndexedDB:** on first load of a course, if the server has no progress for it and the browser's IndexedDB (`recall-<slug>`) has some, upload it with `PUT /progress` (merge), show a one-time notice, and keep the local database as a backup. Then remove Dexie, `idb-repo.ts` and fake-indexeddb.
+- **Retire IndexedDB:** on first load of a course in a browser, its IndexedDB (`recall-<slug>`, read with the plain IndexedDB API) and, for TLPI, the first version's localStorage key are uploaded with `PUT /progress`: `replace` when the server has nothing for the course (so the browser's settings and scheduling overrides come along), `merge` otherwise. A localStorage flag records the upload; a one-time notice says so; the local copies are kept as a backup; a failure leaves everything in place and retries on the next load. Dexie and `idb-repo.ts` are removed; fake-indexeddb stays as a dev dependency to test the upload.
 
 ## Testing strategy
 

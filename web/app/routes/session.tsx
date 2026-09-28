@@ -25,7 +25,7 @@ import { SUBJECT, CHAPTERS } from "~/content";
 import { ensureCourse } from "~/content/load";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { answerText, grade, responseText } from "~/lib/grade";
-import { formatDue, RATINGS, type Card, type Rating } from "~/lib/engine";
+import { formatDue, RATINGS, type Card, type Rating } from "~/lib/cards";
 import type { Previews } from "~/api/types";
 import { makeRng, nextInSession, pickQuestions, present, specFromSearch, type SessionSpec } from "~/lib/session";
 import type { RouteHandle } from "~/lib/shortcuts";

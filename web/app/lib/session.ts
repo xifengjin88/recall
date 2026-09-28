@@ -1,4 +1,5 @@
-import { makeRng, type Card } from "./engine";
+import type { Card } from "./cards";
+import { makeRng } from "./rng";
 import type { SessionLength, SessionMode, SessionOrder, SessionPrefs } from "./progress";
 import { QUESTION_TYPES, type LoadedChapter, type Question, type QuestionType } from "./types";
 

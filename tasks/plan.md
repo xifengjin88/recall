@@ -79,7 +79,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 - [x] T22 Exercises on the server (attempts, rating, skip)
 - [x] T23 Settings and per-course scheduling overrides
 - [x] T24 Today's queue and course card counts from the server
-- [ ] T25 One-time IndexedDB upload; retire the TS engine and IndexedDB
+- [x] T25 One-time IndexedDB upload; retire the TS engine and IndexedDB
 
 **Checkpoint D (Milestone 1):** all docs/SPEC.md acceptance criteria re-checked by hand on TLPI; a second tiny course imports and keeps separate state; `make test lint security` green.
 

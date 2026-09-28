@@ -1,6 +1,6 @@
 // Typed access to the Flask API. In development Vite proxies /api to the server on :5001.
 
-import type { Card, CardKind, Preset } from "~/lib/engine";
+import type { Card, CardKind, Preset } from "~/lib/cards";
 import type { AttemptMode, ExerciseState, ProgressData, SessionMode, SessionRecord } from "~/lib/progress";
 import type {
   ApiErrorBody,

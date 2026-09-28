@@ -10,9 +10,9 @@ Instructions for coding agents working in this repository. Claude Code reads thi
 - Engineering specs: `SPEC.md` (capability map and decisions) and `SPEC-<module>.md`
 - Current plan and task list: `tasks/plan.md`, `tasks/todo.md`
 
-## Current state and migration in progress
+## Layout
 
-The React app now lives in `web/` (task T1); content is still bundled in its JS and progress still lives in the browser's IndexedDB. **Milestone 1** (see `SPEC.md`) completes the monorepo:
+A monorepo (Milestone 1, see `SPEC.md`). The server owns content, progress and scheduling; the web app shows them and sends rating events. Progress saved in a browser's IndexedDB before the server kept it is uploaded once on course load (`web/app/state/migrate-local.ts`); the browser copy is kept.
 
 ```
 web/        the React app
@@ -21,7 +21,7 @@ courses/    course content: YAML + Markdown, imported into Postgres by `recall c
 compose.yaml  PostgreSQL 17
 ```
 
-Check `tasks/todo.md` for which tasks are done before assuming a path exists. Web paths below (`app/…`) are relative to `web/`.
+Web paths below (`app/…`) are relative to `web/`.
 
 ## Workflow
 
@@ -52,8 +52,8 @@ Server-only (inside `server/`): `uv run --env-file ../.env pytest`, `uv run ruff
 
 ## Architecture rules
 
-- **Server owns scheduling** (once Phase 5 lands). The browser sends rating events; the server runs `recall_engine` and returns the card and button previews. Don't add scheduling logic to the web app.
-- **`recall_engine` is pure:** standard library only, no I/O, never reads the clock or time zone itself. Time and a `StudyClock` are always passed in. Results must match the golden cases in `server/tests/engine/golden/`; never edit those by hand.
+- **Server owns scheduling.** The browser sends rating events; the server runs `recall_engine` and returns the card, button previews and today's queue. Don't add scheduling logic to the web app: `app/lib/cards.ts` holds card types and display helpers only.
+- **`recall_engine` is pure:** standard library only, no I/O, never reads the clock or time zone itself. Time and a `StudyClock` are always passed in. Results must match the golden cases in `server/tests/engine/golden/` (recorded from the retired TS engine, now frozen); never edit or regenerate them.
 - **Time:** store and send UTC (Postgres `timestamptz`, epoch ms on the wire). The learner's IANA time zone is used only for day boundaries (study day starts 04:00 local): review due dates, daily limits, streaks.
 - **Wire format:** JSON, camelCase keys (Pydantic aliases), snake_case in Python. Content is referenced by item key (`ch02-q014`), never by database id.
 - **Per-course state:** cards, reviews, sessions, exercise state and scheduling overrides all belong to one learner and one course. No cross-course sessions.

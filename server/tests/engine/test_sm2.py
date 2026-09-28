@@ -1,4 +1,4 @@
-"""Behaviour tests, one rule each, ported from web/app/lib/engine/engine.test.ts."""
+"""Behaviour tests, one rule each, ported from the retired TS engine's tests."""
 
 from dataclasses import replace
 from datetime import datetime

@@ -1,4 +1,4 @@
-import { isMastered, MATURE_DAYS, type Card } from "./engine";
+import { isMastered, MATURE_DAYS, type Card } from "./cards";
 import type { ExerciseState } from "./progress";
 import type { LoadedChapter, Question } from "./types";
 

@@ -1,4 +1,4 @@
-import type { Rating } from "./engine";
+import type { Rating } from "./cards";
 
 /** "45 min", "1 h", "1.5 hours", "90m" → minutes. Null when it can't be read. */
 export function parseEstimate(estimate: string | undefined): number | null {

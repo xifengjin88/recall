@@ -1,4 +1,4 @@
-"""Shared helpers: load the golden file written by web/scripts/gen-engine-golden.test.ts."""
+"""Shared helpers: load the golden file recorded from the TS engine (retired in T25; the file is frozen)."""
 
 import json
 from functools import cache

@@ -1,5 +1,5 @@
 import { addDays, studyDay, type Day } from "./dates";
-import type { Card } from "./engine";
+import type { Card } from "./cards";
 import type { ReviewRecord, SessionRecord } from "./progress";
 
 /**

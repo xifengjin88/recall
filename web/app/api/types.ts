@@ -1,7 +1,7 @@
 // Response shapes of the Flask API (server/src/recall_api). Hand-written; kept honest by
 // contract.ts, which type-checks real responses saved by server/tests/api/test_samples.py.
 
-import type { Card, CardKind, Preset, PresetOverrides, Rating } from "~/lib/engine";
+import type { Card, CardKind, Preset, PresetOverrides, Rating } from "~/lib/cards";
 import type { ExerciseState, ProgressData, ReviewRecord, ReviewSource, SessionPrefs, Theme } from "~/lib/progress";
 import type { TodayQueue } from "~/lib/session";
 import type { Chapter } from "~/lib/types";

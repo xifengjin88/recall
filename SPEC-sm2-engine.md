@@ -57,7 +57,7 @@ Decided 2026-09-28: **store UTC, use the learner's time zone only for day bounda
 
 Parity is proven, not argued:
 
-1. **Golden cases generated from the TS engine.** A generator (`web/scripts/gen-engine-golden.test.ts`, run with `TZ=America/New_York GEN_GOLDEN=1 npx vitest run …`) writes `server/tests/engine/golden/sm2.json`:
+1. **Golden cases generated from the TS engine.** A generator (`web/scripts/gen-engine-golden.test.ts`, run with `TZ=America/New_York GEN_GOLDEN=1 npx vitest run …`) wrote `server/tests/engine/golden/sm2.json`. The TS engine and the generator were retired in T25 (see git history); the file is now a frozen regression suite:
    - every phase × rating × preset (question defaults, exercise defaults, no fuzz, custom overrides, empty steps, shortened steps mid-card);
    - review cards on time, late (1, 3, 8, 30 days) and early; ease floor; leech threshold; max interval;
    - `now` values around the 04:00 rollover and across both 2026 DST changes in the fixture zone (Mar 8, Nov 1);

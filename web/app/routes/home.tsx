@@ -12,7 +12,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { ALL_EXERCISES, CHAPTERS, SUBJECT, getChapter, TOC } from "~/content";
 import { useHotkeys, useListNav } from "~/hooks/use-hotkeys";
 import { formatDay, studyDay, today } from "~/lib/dates";
-import { formatWait } from "~/lib/engine";
+import { formatWait } from "~/lib/cards";
 import { chapterStatus, mastery } from "~/lib/mastery";
 import { LIST_SHORTCUTS, type RouteHandle } from "~/lib/shortcuts";
 import { streak } from "~/lib/stats";

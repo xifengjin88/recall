@@ -247,7 +247,7 @@ A broken question is skipped; it must never crash a session.
 
 ## 6. Learning rules
 
-One scheduling engine (Anki's classic SM-2 variant, `app/lib/engine/`) drives quizzes, flashcards **and** exercises. Content never talks to it directly: each item is a *card* of a *kind* (question or exercise), and each kind has a *preset* of options. The scheduler sits behind an interface so it can be swapped (e.g. for FSRS).
+One scheduling engine (Anki's classic SM-2 variant, `recall_engine` on the server) drives quizzes, flashcards **and** exercises. The app sends each rating to the server, which schedules the card and answers with the result. Content never talks to it directly: each item is a *card* of a *kind* (question or exercise), and each kind has a *preset* of options. The scheduler sits behind an interface so it can be swapped (e.g. for FSRS).
 
 ### 6.1 Ratings
 Every review ends in one of **Again · Hard · Good · Easy**.
@@ -284,11 +284,11 @@ A day counts if at least one session (or exercise rating) was **completed** that
 
 ## 7. Progress data
 
-- Stored on the device in **IndexedDB**, one database per subject (`recall-tlpi`). Survives reloads and app updates. Storage sits behind a repository interface so a server-backed store (e.g. Postgres) can replace it.
+- Stored by the **Recall server** in PostgreSQL, per learner and per course. Times are stored in UTC; the learner's time zone (reported by the browser) decides where study days start.
 - Keyed by item `id`, so adding, editing or reordering content never loses progress. Editing a question's wording keeps its card and history. Retiring one hides it but keeps the history.
 - **Export** produces one file with all cards, reviews, sessions, exercise state, notes and settings. **Import** accepts that file (or an export from the earlier box-based version, which is converted) with a choice of *replace* or *merge* (merge keeps the most recent record per item).
-- Progress from the earlier localStorage version is moved into IndexedDB automatically on first load (the old copy is kept as a backup).
-- If storage is unavailable the app still works for the session and says that progress won't be saved.
+- Progress saved in the browser by earlier versions (IndexedDB `recall-<course>`, or the first version's localStorage) is copied to the server automatically the first time a course is opened. The browser copy is kept as a backup, and the app says when it's done.
+- If a change can't reach the server, the app says so; ratings are safe to retry (each has an id, so none is counted twice).
 
 ---
 

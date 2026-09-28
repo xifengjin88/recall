@@ -1,5 +1,5 @@
 import { dayStartMs } from "./dates";
-import type { Card, CardKind, CardPhase, PresetOverrides, Rating } from "./engine";
+import type { Card, CardKind, CardPhase, PresetOverrides, Rating } from "./cards";
 import type { QuestionType } from "./types";
 
 export type SessionMode = "quiz" | "flashcards" | "exercise";
