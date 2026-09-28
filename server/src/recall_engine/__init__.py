@@ -6,6 +6,7 @@ returns new values. Nothing here reads the clock, touches I/O or keeps state.
 
 from .clock import StudyClock, add_days, day_start_ms, days_between, study_day
 from .presets import EXERCISE_PRESET, PRESETS, QUESTION_PRESET, resolve_preset
+from .sm2 import answer, new_card, preview
 from .steps import format_steps, parse_steps
 from .types import RATINGS, Card, CardKind, DoneToday, Phase, Preset, Rating, TodayQueue
 
@@ -23,10 +24,13 @@ __all__ = [
     "StudyClock",
     "TodayQueue",
     "add_days",
+    "answer",
     "day_start_ms",
     "days_between",
     "format_steps",
+    "new_card",
     "parse_steps",
+    "preview",
     "resolve_preset",
     "study_day",
 ]

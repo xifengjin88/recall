@@ -92,12 +92,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Port `sm2.ts` (learn, relearn, review incl. late/early rules, fuzz, lapses, leech, clamping) and `preview`; port the 19 behaviour tests; replay every golden step.
 
 **Acceptance criteria:**
-- [ ] 100% of golden steps match field-for-field (due to the millisecond)
-- [ ] All ported behaviour tests pass
-- [ ] A deliberately wrong rounding makes the golden test fail (checked once, reverted)
+- [x] 100% of golden steps match field-for-field (due to the millisecond)
+- [x] All ported behaviour tests pass
+- [x] A deliberately wrong rounding makes the golden test fail (checked once, reverted)
 
 **Verification:**
-- [ ] `uv run pytest tests/engine/test_sm2.py tests/engine/test_golden.py -q`
+- [x] `uv run pytest tests/engine/test_sm2.py tests/engine/test_golden.py -q`
 
 **Dependencies:** T5 · **Files:** src/recall_engine/sm2.py, src/recall_engine/__init__.py, tests/engine/test_sm2.py, tests/engine/test_golden.py · **Size:** M
 

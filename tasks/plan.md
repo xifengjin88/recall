@@ -50,7 +50,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 ### Phase 2: Engine (highest risk, first)
 - [x] T4 Golden-case generator from the TS engine
 - [x] T5 Engine foundations: types, clock, JS-compatible maths, steps
-- [ ] T6 `answer` and `preview` with golden parity
+- [x] T6 `answer` and `preview` with golden parity
 - [ ] T7 Queue functions, purity, coverage, performance
 
 ### Phase 3: Content model (parallel with Phase 2)
