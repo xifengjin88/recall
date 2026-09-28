@@ -10,12 +10,12 @@ import { Switch } from "~/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { SUBJECT, CHAPTERS } from "~/content";
 import { today } from "~/lib/dates";
-import { exportProgress, parseProgress, type ProgressData, type SessionLength, type SessionOrder, type Theme } from "~/lib/progress";
+import { parseProgress, type ProgressData, type SessionLength, type SessionOrder, type Theme } from "~/lib/progress";
 import type { RouteHandle } from "~/lib/shortcuts";
 import {
+  exportProgress,
   importProgress,
-  resetAllProgress,
-  resetChapterProgress,
+  resetProgress,
   updatePrefs,
   updateSettings,
   useProgress,
@@ -78,7 +78,7 @@ export default function Settings() {
       </Section>
 
       <Section title="Progress" description="Progress is stored in this browser's database (IndexedDB) only. Export it to back up or move to another device.">
-        <ExportImport progress={p} />
+        <ExportImport />
       </Section>
 
       <Section title="Reset">
@@ -110,13 +110,22 @@ function Row({ label, htmlFor, children }: { label: string; htmlFor?: string; ch
   );
 }
 
-function ExportImport({ progress }: { progress: ProgressData }) {
+function ExportImport() {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [pending, setPending] = useState<{ name: string; data: ProgressData } | null>(null);
+  // `raw` goes to the server as-is (it accepts current and old export formats); `data` is for the summary.
+  const [pending, setPending] = useState<{ name: string; raw: unknown; data: ProgressData } | null>(null);
+  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
-  function download() {
-    const blob = new Blob([exportProgress(progress, SUBJECT.id)], { type: "application/json" });
+  async function download() {
+    let file: unknown;
+    try {
+      file = await exportProgress();
+    } catch {
+      setMessage({ ok: false, text: "Couldn't export: the server didn't answer." });
+      return;
+    }
+    const blob = new Blob([JSON.stringify(file, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -129,20 +138,30 @@ function ExportImport({ progress }: { progress: ProgressData }) {
     setMessage(null);
     if (!file) return;
     try {
-      const data = parseProgress(JSON.parse(await file.text()));
+      const raw: unknown = JSON.parse(await file.text());
+      const data = parseProgress(raw);
       if (!data) throw new Error();
-      setPending({ name: file.name, data });
+      setPending({ name: file.name, raw, data });
     } catch {
       setMessage({ ok: false, text: `${file.name} isn't a ${APP.name} progress export.` });
     }
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  function apply(mode: "replace" | "merge") {
-    if (!pending) return;
-    importProgress(pending.data, mode);
-    setMessage({ ok: true, text: mode === "replace" ? "Progress replaced from the file." : "File merged into your progress." });
-    setPending(null);
+  async function apply(mode: "replace" | "merge") {
+    if (!pending || busy) return;
+    setBusy(true);
+    try {
+      const skipped = await importProgress(pending.raw, mode);
+      const done = mode === "replace" ? "Progress replaced from the file." : "File merged into your progress.";
+      const note = skipped ? ` ${skipped} record${skipped === 1 ? "" : "s"} for items this course no longer has were skipped.` : "";
+      setMessage({ ok: true, text: done + note });
+      setPending(null);
+    } catch (err) {
+      setMessage({ ok: false, text: `Import failed: ${err instanceof Error ? err.message : "unknown error"}` });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -162,13 +181,13 @@ function ExportImport({ progress }: { progress: ProgressData }) {
           <AlertDescription className="space-y-3">
             <p>
               It has {Object.keys(pending.data.cards).length} cards and {pending.data.reviews.length} reviews.{" "}
-              <strong>Replace</strong> discards what's on this device; <strong>Merge</strong> keeps the most recent record for each item.
+              <strong>Replace</strong> discards your current progress in this course; <strong>Merge</strong> keeps the most recent record for each item.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="destructive" onClick={() => apply("replace")}>
+              <Button size="sm" variant="destructive" disabled={busy} onClick={() => apply("replace")}>
                 Replace
               </Button>
-              <Button size="sm" onClick={() => apply("merge")}>
+              <Button size="sm" disabled={busy} onClick={() => apply("merge")}>
                 Merge
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setPending(null)}>
@@ -193,14 +212,14 @@ function ResetControls() {
   const [done, setDone] = useState<string | null>(null);
   const label = target === "all" ? "all progress, exercise statuses and history" : `all progress for Chapter ${target}`;
 
-  function reset() {
-    if (target === "all") resetAllProgress();
-    else {
-      const ch = CHAPTERS.find((c) => String(c.number) === target)!;
-      resetChapterProgress(new Set([...ch.questions.map((q) => q.id), ...ch.exercises.map((e) => e.id)]));
-    }
+  async function reset() {
     setConfirming(false);
-    setDone(target === "all" ? "Everything was reset." : `Chapter ${target} was reset.`);
+    try {
+      await resetProgress(target === "all" ? undefined : Number(target));
+      setDone(target === "all" ? "Everything was reset." : `Chapter ${target} was reset.`);
+    } catch {
+      setDone("Reset failed: the server didn't answer.");
+    }
   }
 
   return (

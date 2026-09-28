@@ -1,35 +1,34 @@
-import { useSyncExternalStore } from "react";
-import { APP } from "~/config";
+// The current course's progress, backed by the API (SPEC-web-client.md).
+//
+// The server schedules: recordReview / overrideReview / previewCard await the API and use the
+// cards it returns. Other changes update memory at once and are sent in order in the background;
+// a failure shows the "Couldn't save" notice. Exercise state, settings and prefs are still
+// memory-only here until their endpoints land (T22, T23).
 
-import { today } from "~/lib/dates";
-import { answer, cardFor, resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
+import { useSyncExternalStore } from "react";
+import { api } from "~/api/client";
+import type { Previews, ReviewResult } from "~/api/types";
+import { APP } from "~/config";
+import { resolvePreset, type Card, type CardKind, type Preset, type Rating } from "~/lib/engine";
 import {
   emptyProgress,
-  mergeProgress,
   NEW_EXERCISE,
-  parseProgress,
-  resetAll,
-  snapshot,
   type AttemptMode,
   type ExerciseState,
   type ProgressData,
-  type ReviewRecord,
   type ReviewSource,
   type SessionMode,
   type SessionPrefs,
   type Settings,
 } from "~/lib/progress";
-import { IdbRepo } from "./idb-repo";
-import { MemoryRepo, type Changes, type ProgressRepo } from "./repo";
 
-/** Where v1 kept everything, before IndexedDB. Migrated once, then renamed as a backup. */
-const LEGACY_KEY = "tlpi-drill:progress";
-/** The course that pre-course-era progress belongs to. */
-const LEGACY_COURSE = "tlpi";
 /** The theme is mirrored here so the pre-paint script in root.tsx can read it synchronously. */
 export const THEME_KEY = `${APP.id}:theme`;
 
-export type Notice = "migrated" | "no-storage" | "save-failed" | null;
+/** The IndexedDB database that held a course's progress before the server (see migrate-local.ts). */
+export const courseDbName = (slug: string) => `${APP.id}-${slug}`;
+
+export type Notice = "migrated" | "save-failed" | null;
 
 export interface StoreStatus {
   ready: boolean;
@@ -40,11 +39,11 @@ export interface StoreStatus {
 const SERVER_SNAPSHOT = emptyProgress();
 const SERVER_STATUS: StoreStatus = { ready: false, notice: null };
 
-let repo: ProgressRepo = new MemoryRepo();
+let course: string | null = null;
+let loading: Promise<void> | null = null;
 let state: ProgressData = SERVER_SNAPSHOT;
 let status: StoreStatus = SERVER_STATUS;
-let initPromise: Promise<void> | null = null;
-let writes: Promise<void> = Promise.resolve();
+let writes: Promise<unknown> = Promise.resolve();
 const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((l) => l());
@@ -52,15 +51,10 @@ const setStatus = (patch: Partial<StoreStatus>) => {
   status = { ...status, ...patch };
   emit();
 };
-
-function readLegacy(): ProgressData | null {
-  try {
-    const raw = localStorage.getItem(LEGACY_KEY);
-    return raw ? parseProgress(JSON.parse(raw)) : null;
-  } catch {
-    return null;
-  }
-}
+const set = (next: ProgressData) => {
+  state = next;
+  emit();
+};
 
 function mirrorTheme(theme: Settings["theme"]) {
   try {
@@ -70,69 +64,35 @@ function mirrorTheme(theme: Settings["theme"]) {
   }
 }
 
-/** The IndexedDB database holding one course's progress. */
-export const courseDbName = (slug: string) => `${APP.id}-${slug}`;
+function requireCourse(): string {
+  if (!course) throw new Error("No course loaded");
+  return course;
+}
 
-let currentDb: string | null = null;
+/** Send a change in the background, after any earlier ones. */
+function send(call: () => Promise<unknown>) {
+  writes = writes.then(call).catch(() => setStatus({ notice: "save-failed" }));
+}
 
-/**
- * Load a course's progress from its IndexedDB database (moving any old localStorage
- * progress into TLPI's first). Safe to call repeatedly; switching course reloads.
- */
-export function initProgress(dbName: string): Promise<void> {
-  if (initPromise && currentDb === dbName) return initPromise;
-  currentDb = dbName;
+/** Load a course's progress from the server. Safe to call repeatedly; switching course reloads. */
+export function loadCourseProgress(slug: string): Promise<void> {
+  if (loading && course === slug) return loading;
+  course = slug;
   state = SERVER_SNAPSHOT;
   status = SERVER_STATUS;
-  initPromise = (async () => {
-    let notice: Notice = null;
-    try {
-      const idb = new IdbRepo(dbName);
-      let data = await idb.load();
-      if (!data && dbName === courseDbName(LEGACY_COURSE)) {
-        const legacy = readLegacy();
-        if (legacy) {
-          await idb.replaceAll(legacy);
-          try {
-            localStorage.setItem(`${LEGACY_KEY}:migrated-to-indexeddb`, localStorage.getItem(LEGACY_KEY) ?? "");
-            localStorage.removeItem(LEGACY_KEY);
-          } catch {
-            // the copy in IndexedDB is what matters
-          }
-          data = legacy;
-          notice = "migrated";
-        }
-      }
-      repo = idb;
-      state = data ?? emptyProgress();
-      // Ask the browser not to evict our data under storage pressure.
-      void navigator.storage?.persist?.().catch(() => {});
-    } catch {
-      repo = new MemoryRepo();
-      state = emptyProgress();
-      notice = "no-storage";
-    }
-    mirrorTheme(state.settings.theme);
-    status = { ready: true, notice };
+  const promise = (async () => {
+    const data = await api.progress(slug);
+    if (course !== slug) return; // switched away meanwhile
+    state = data;
+    mirrorTheme(data.settings.theme);
+    status = { ready: true, notice: status.notice };
     emit();
   })();
-  return initPromise;
-}
-
-/** Apply a change in memory now, and persist it in the background (in order). */
-function commit(update: (p: ProgressData) => ProgressData, changes: (p: ProgressData) => Changes) {
-  state = update(state);
-  const c = changes(state);
-  emit();
-  const target = repo; // this course's database, even if the learner switches course before it runs
-  writes = writes.then(() => target.commit(c)).catch(() => setStatus({ notice: "save-failed" }));
-}
-
-function replace(next: ProgressData) {
-  state = next;
-  emit();
-  const target = repo;
-  writes = writes.then(() => target.replaceAll(next)).catch(() => setStatus({ notice: "save-failed" }));
+  loading = promise;
+  promise.catch(() => {
+    if (loading === promise) loading = null;
+  });
+  return promise;
 }
 
 function subscribe(l: () => void) {
@@ -149,12 +109,13 @@ export function useStoreStatus(): StoreStatus {
 }
 
 export const dismissNotice = () => setStatus({ notice: null });
+export const showNotice = (notice: Notice) => setStatus({ notice });
 
 /** Read without subscribing (e.g. when building a session once). */
 export const getProgress = () => state;
-/** Resolves when every pending write has reached storage. */
+export const getStatus = () => status;
+/** Resolves when every background change has been sent. */
 export const flushWrites = () => writes;
-export const storageName = () => repo.name;
 
 export function presetFor(kind: CardKind): Preset {
   return resolvePreset(kind, state.settings.scheduling);
@@ -164,18 +125,21 @@ export function presetFor(kind: CardKind): Preset {
 
 export function startSession(id: string, mode: SessionMode) {
   if (state.sessions.some((s) => s.id === id)) return;
-  const session = { id, mode, startedAt: Date.now() };
-  commit((p) => ({ ...p, sessions: [...p.sessions, session] }), () => ({ sessions: [session] }));
+  set({ ...state, sessions: [...state.sessions, { id, mode, startedAt: Date.now() }] });
+  const slug = requireCourse();
+  send(() => api.startSession(slug, id, mode));
 }
 
 export function completeSession(id: string) {
-  const s = state.sessions.find((x) => x.id === id);
-  if (!s || s.completedAt) return;
-  const done = { ...s, completedAt: Date.now(), completedDay: today() };
-  commit((p) => ({ ...p, sessions: p.sessions.map((x) => (x.id === id ? done : x)) }), () => ({ sessions: [done] }));
+  const slug = requireCourse();
+  // The server decides completedDay (the learner's study day); memory updates when it answers.
+  send(async () => {
+    const done = await api.completeSession(slug, id);
+    if (course === slug) set({ ...state, sessions: state.sessions.map((s) => (s.id === id ? done : s)) });
+  });
 }
 
-// ---- reviews ----------------------------------------------------------------------
+// ---- reviews (scheduled by the server) --------------------------------------------
 
 export interface ReviewInput {
   reviewId: string;
@@ -187,7 +151,6 @@ export interface ReviewInput {
   correct: boolean;
   answer: string;
   hinted?: boolean;
-  overridden?: boolean;
   durationMs?: number;
   meta?: Record<string, unknown>;
 }
@@ -197,70 +160,81 @@ export interface Reviewed {
   after: Card;
 }
 
-/** Rate a card (from any source) and log it. */
-export function recordReview(input: ReviewInput): Reviewed {
-  const now = Date.now();
-  const before = cardFor(state.cards, input.cardId, input.kind, state.settings.scheduling);
-  const after = answer(before, input.rating, now, presetFor(input.kind));
-  const review: ReviewRecord = {
-    id: input.reviewId,
-    cardId: input.cardId,
-    kind: input.kind,
-    source: input.source,
-    sessionId: input.sessionId,
-    at: now,
-    rating: input.rating,
-    correct: input.correct,
-    answer: input.answer,
-    hinted: !!input.hinted,
-    overridden: !!input.overridden,
-    before: snapshot(before),
-    after: snapshot(after),
-    ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-    ...(input.meta ? { meta: input.meta } : {}),
-  };
-  commit(
-    (p) => ({ ...p, cards: { ...p.cards, [after.id]: after }, reviews: [...p.reviews, review] }),
-    () => ({ cards: [after], reviews: [review] }),
+function applyResult({ review, card }: ReviewResult): Reviewed {
+  set({
+    ...state,
+    cards: { ...state.cards, [card.id]: card },
+    reviews: [...state.reviews.filter((r) => r.id !== review.id), review],
+  });
+  return { before: review.before, after: card };
+}
+
+async function withSaveNotice<T>(call: () => Promise<T>): Promise<T> {
+  await writes; // keep ordering with earlier background changes (e.g. the session start)
+  try {
+    return await call();
+  } catch (err) {
+    setStatus({ notice: "save-failed" });
+    throw err;
+  }
+}
+
+/** Rate a card. Resolves with the card as it was and as the server scheduled it. */
+export function recordReview(input: ReviewInput): Promise<Reviewed> {
+  const slug = requireCourse();
+  return withSaveNotice(async () =>
+    applyResult(
+      await api.review(slug, {
+        id: input.reviewId,
+        itemKey: input.cardId,
+        source: input.source,
+        sessionId: input.sessionId,
+        rating: input.rating,
+        correct: input.correct,
+        answer: input.answer,
+        hinted: input.hinted,
+        durationMs: input.durationMs,
+        meta: input.meta,
+      }),
+    ),
   );
-  return { before, after };
 }
 
-/** "I was right": re-rate a review as Hard (correct by override), from the card as it was before. */
-export function overrideReview(reviewId: string, before: Card): Reviewed {
-  const now = Date.now();
-  const after = answer(before, "hard", now, presetFor(before.kind));
-  const old = state.reviews.find((r) => r.id === reviewId);
-  if (!old) return { before, after: state.cards[before.id] ?? before };
-  const review: ReviewRecord = { ...old, rating: "hard", correct: true, overridden: true, after: snapshot(after) };
-  commit(
-    (p) => ({ ...p, cards: { ...p.cards, [after.id]: after }, reviews: p.reviews.map((r) => (r.id === reviewId ? review : r)) }),
-    () => ({ cards: [after], reviews: [review] }),
-  );
-  return { before, after };
+/** "I was right": the server re-rates the review as Hard from the card before it. */
+export function overrideReview(reviewId: string): Promise<Reviewed> {
+  const slug = requireCourse();
+  return withSaveNotice(async () => applyResult(await api.overrideReview(slug, reviewId)));
 }
 
-export function setSuspended(cardId: string, kind: CardKind, suspended: boolean) {
-  const card = { ...cardFor(state.cards, cardId, kind, state.settings.scheduling), suspended, updatedAt: Date.now() };
-  commit((p) => ({ ...p, cards: { ...p.cards, [cardId]: card } }), () => ({ cards: [card] }));
+/** What each rating would schedule, for button labels. */
+export function previewCard(itemKey: string): Promise<Previews> {
+  return api.preview(requireCourse(), itemKey);
 }
 
-// ---- exercises --------------------------------------------------------------------
+export function setSuspended(cardId: string, _kind: CardKind, suspended: boolean) {
+  const slug = requireCourse();
+  const current = state.cards[cardId];
+  if (current) set({ ...state, cards: { ...state.cards, [cardId]: { ...current, suspended } } });
+  send(async () => {
+    const card = await api.patchCard(slug, cardId, { suspended });
+    if (course === slug) set({ ...state, cards: { ...state.cards, [card.id]: card } });
+  });
+}
+
+// ---- exercises (memory-only until T22) ---------------------------------------------
 
 function putExercise(id: string, next: ExerciseState) {
-  commit((p) => ({ ...p, exercises: { ...p.exercises, [id]: next } }), () => ({ exercises: { [id]: next } }));
+  set({ ...state, exercises: { ...state.exercises, [id]: next } });
 }
 
 export function updateExercise(id: string, patch: Partial<Omit<ExerciseState, "updatedAt">>) {
   const prev = state.exercises[id] ?? NEW_EXERCISE;
   const next: ExerciseState = { ...prev, ...patch, updatedAt: Date.now() };
-  // Any interaction with a not-started exercise moves it to in progress.
   if (!patch.status && next.status === "not-started") next.status = "in-progress";
   if (next.attemptStartedAt === null && next.status === "in-progress") next.attemptStartedAt = Date.now();
   putExercise(id, next);
 }
 
-/** Begin a redo (full or quick): tests and hints reset; notes are kept. */
 export function startExerciseAttempt(id: string, mode: Exclude<AttemptMode, "first">) {
   const prev = state.exercises[id] ?? NEW_EXERCISE;
   putExercise(id, {
@@ -274,12 +248,11 @@ export function startExerciseAttempt(id: string, mode: Exclude<AttemptMode, "fir
   });
 }
 
-// ---- settings ---------------------------------------------------------------------
+// ---- settings (memory-only until T23) ---------------------------------------------
 
 export function updateSettings(patch: Partial<Settings>) {
-  const settings = { ...state.settings, ...patch };
   if (patch.theme) mirrorTheme(patch.theme);
-  commit((p) => ({ ...p, settings }), () => ({ meta: { settings } }));
+  set({ ...state, settings: { ...state.settings, ...patch } });
 }
 
 /** Change one kind's scheduling options; `null` resets that kind to the defaults. */
@@ -291,43 +264,39 @@ export function updateScheduling(kind: CardKind, patch: Partial<Preset> | null) 
 }
 
 export function updatePrefs(patch: Partial<SessionPrefs>) {
-  const prefs = { ...state.prefs, ...patch };
-  commit((p) => ({ ...p, prefs }), () => ({ meta: { prefs } }));
+  set({ ...state, prefs: { ...state.prefs, ...patch } });
 }
 
 export function setLastChapter(n: number) {
-  if (state.lastChapter === n) return;
-  commit((p) => ({ ...p, lastChapter: n }), () => ({ meta: { lastChapter: n } }));
+  if (state.lastChapter !== n) set({ ...state, lastChapter: n });
 }
 
-// ---- import / reset ---------------------------------------------------------------
+// ---- import / reset ----------------------------------------------------------------
 
-export function importProgress(incoming: ProgressData, mode: "replace" | "merge") {
-  const next = mode === "replace" ? incoming : mergeProgress(state, incoming);
-  mirrorTheme(next.settings.theme);
-  replace(next);
+/** Import an export file (the server accepts current and old formats). Resolves with the skipped count. */
+export async function importProgress(file: unknown, mode: "replace" | "merge"): Promise<number> {
+  const slug = requireCourse();
+  const result = await withSaveNotice(() => api.importProgress(slug, mode, file));
+  mirrorTheme(result.progress.settings.theme);
+  set(result.progress);
+  return result.skipped;
 }
 
-export function resetChapterProgress(itemIds: Set<string>) {
-  const ids = [...itemIds];
-  commit(
-    (p) => {
-      const keep = <T,>(rec: Record<string, T>) => Object.fromEntries(Object.entries(rec).filter(([id]) => !itemIds.has(id)));
-      return { ...p, cards: keep(p.cards), exercises: keep(p.exercises), reviews: p.reviews.filter((r) => !itemIds.has(r.cardId)) };
-    },
-    () => ({ deleteItems: ids }),
-  );
+export async function exportProgress(): Promise<unknown> {
+  return api.exportProgress(requireCourse());
 }
 
-export function resetAllProgress() {
-  replace(resetAll(state));
+/** Reset one unit's progress (`unit`), or all of this course's. Settings are kept. */
+export async function resetProgress(unit?: number) {
+  const slug = requireCourse();
+  set(await withSaveNotice(() => api.resetProgress(slug, unit)));
 }
 
-/** Test hook: start over with a fresh store (and optionally a given repo). */
-export function __resetStoreForTests(r: ProgressRepo = new MemoryRepo()) {
-  repo = r;
-  state = emptyProgress();
-  status = { ready: true, notice: null };
-  initPromise = Promise.resolve();
+/** Test hook: forget the loaded course. */
+export function __resetStoreForTests() {
+  course = null;
+  loading = null;
+  state = SERVER_SNAPSHOT;
+  status = SERVER_STATUS;
   writes = Promise.resolve();
 }

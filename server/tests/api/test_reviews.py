@@ -142,7 +142,7 @@ def test_sessions_start_idempotently_and_complete_on_the_study_day(
     db.flush()
     a = client.post(f"{BASE}/sessions", json={"id": "s9", "mode": "quiz"}).json
     b = client.post(f"{BASE}/sessions", json={"id": "s9", "mode": "quiz"}).json
-    assert a == b and a is not None and a["completedAt"] is None
+    assert a == b and a is not None and "completedAt" not in a
     clock.ms = 1_790_593_140_000  # 2026-09-28 03:59 PDT: still the 27th's study day
     done = client.post(f"{BASE}/sessions/s9/complete").json
     assert done is not None and done["completedDay"] == "2026-09-27"

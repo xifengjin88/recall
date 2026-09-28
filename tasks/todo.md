@@ -319,12 +319,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `progress-store` loads progress from the API and implements `recordReview` / `overrideReview` / sessions by calling T20, using the returned card; flashcard button labels come from returned previews.
 
 **Acceptance criteria:**
-- [ ] A quiz answer appears in `reviews` and `cards` in Postgres; reload shows the same state
-- [ ] Wrong answers still come back within the session; labels still show `1m · 6m · 10m · 4d`
-- [ ] API failure shows the "Couldn't save" notice
+- [x] A quiz answer appears in `reviews` and `cards` in Postgres; reload shows the same state
+- [x] Wrong answers still come back within the session; labels still show `1m · 6m · 10m · 4d`
+- [x] API failure shows the "Couldn't save" notice
 
 **Verification:**
-- [ ] `cd web && npm test` · Manual: quiz + flashcards, then `psql -c 'select count(*) from reviews'`
+- [x] `cd web && npm test` · Manual: quiz + flashcards, then `psql -c 'select count(*) from reviews'`
 
 **Dependencies:** T20 · **Files:** web/app/state/progress-store.ts, web/app/state/api-repo.ts, web/app/routes/session.tsx, web/app/state/progress-store.test.ts · **Size:** M
 

@@ -22,7 +22,8 @@ import { Progress } from "~/components/ui/progress";
 import { SUBJECT, CHAPTERS } from "~/content";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { answerText, grade, responseText } from "~/lib/grade";
-import { cardFor, formatDue, preview, RATINGS, type Card, type Rating } from "~/lib/engine";
+import { formatDue, RATINGS, type Card, type Rating } from "~/lib/engine";
+import type { Previews } from "~/api/types";
 import { makeRng, nextInSession, pickQuestions, present, specFromSearch, type SessionSpec } from "~/lib/session";
 import type { RouteHandle } from "~/lib/shortcuts";
 import type { Question } from "~/lib/types";
@@ -32,6 +33,7 @@ import {
   getProgress,
   overrideReview,
   presetFor,
+  previewCard,
   recordReview,
   startSession,
 } from "~/state/progress-store";
@@ -337,13 +339,18 @@ function QuizQuestion({
     if (result) nextRef.current?.focus();
   }, [result]);
 
-  function submit() {
-    if (result || !response) return;
+  // While a rating is on its way to the server. A failed save shows the notice and leaves the
+  // question answerable; retrying reuses the review id, so the server never counts it twice.
+  const [saving, setSaving] = useState(false);
+
+  async function submit() {
+    if (result || !response || saving) return;
     const correct = grade(q, response);
     const answer = responseText(response);
     // Quiz answers map onto the engine's ratings.
     const rating: Rating = !correct ? "again" : hinted ? "hard" : "good";
-    const { before, after } = recordReview({
+    setSaving(true);
+    const saved = await recordReview({
       reviewId,
       cardId: q.id,
       kind: "question",
@@ -354,15 +361,22 @@ function QuizQuestion({
       answer,
       hinted,
       durationMs: Date.now() - shownAt,
-    });
+    }).catch(() => null);
+    setSaving(false);
+    if (!saved) return;
+    const { before, after } = saved;
     setAnsweredAt(Date.now());
     setResult({ correct, overridden: false, before, after });
     onAnswered({ q, correct, hinted, overridden: false, answer, rating, before, after });
   }
 
-  function override() {
-    if (!result || result.correct || !isTyped || !response) return;
-    const { before, after } = overrideReview(reviewId, result.before);
+  async function override() {
+    if (!result || result.correct || !isTyped || !response || saving) return;
+    setSaving(true);
+    const saved = await overrideReview(reviewId).catch(() => null);
+    setSaving(false);
+    if (!saved) return;
+    const { before, after } = saved;
     setResult({ correct: true, overridden: true, before, after });
     onOverride({ q, correct: true, hinted, overridden: true, answer: responseText(response), rating: "hard", before, after });
   }
@@ -417,7 +431,7 @@ function QuizQuestion({
 
       {!result ? (
         <div className="flex justify-end">
-          <Button size="lg" onClick={submit} disabled={!response}>
+          <Button size="lg" onClick={submit} disabled={!response || saving}>
             Check <KeyHint className="border-primary-foreground/30 bg-transparent text-primary-foreground/80">Enter</KeyHint>
           </Button>
         </div>
@@ -444,7 +458,7 @@ function QuizQuestion({
               See in notes
             </NoteLink>
             {!result.correct && isTyped ? (
-              <Button variant="outline" size="sm" onClick={override}>
+              <Button variant="outline" size="sm" onClick={override} disabled={saving}>
                 I was right <KeyHint>o</KeyHint>
               </Button>
             ) : null}
@@ -475,23 +489,34 @@ function Flashcards({ questions, sessionId, onRows, onFinish, onQuit }: RunnerPr
     if (!flipped) cardRef.current?.focus();
   }, [queue.shown, flipped]);
 
-  // What each button would schedule, like Anki's "<1m · 6m · 10m · 4d".
+  // What each button would schedule, like Anki's "<1m · 6m · 10m · 4d". The server computes
+  // them; they're fetched while the front is showing so they're ready at the flip.
+  const [previews, setPreviews] = useState<{ id: string; cards: Previews } | null>(null);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!q) return;
+    let live = true;
+    previewCard(q.id)
+      .then((cards) => live && setPreviews({ id: q.id, cards }))
+      .catch(() => {}); // labels are optional; rating still works
+    return () => {
+      live = false;
+    };
+  }, [q, queue.shown]);
   const labels = useMemo(() => {
-    if (!q || !flipped) return null;
-    const p = getProgress();
-    const card = cardFor(p.cards, q.id, "question", p.settings.scheduling);
-    const out = preview(card, flippedAt, presetFor("question"));
-    return Object.fromEntries(RATINGS.map((r) => [r, formatDue(out[r], flippedAt)])) as Record<Rating, string>;
-  }, [q, flipped, flippedAt]);
+    if (!q || !flipped || previews?.id !== q.id) return null;
+    return Object.fromEntries(RATINGS.map((r) => [r, formatDue(previews.cards[r], flippedAt)])) as Record<Rating, string>;
+  }, [q, flipped, flippedAt, previews]);
 
   const flip = () => {
     if (!flipped) setFlippedAt(Date.now());
     setFlipped((f) => !f);
   };
 
-  function rate(rating: Rating) {
-    if (!flipped || !q) return;
-    const { before, after } = recordReview({
+  async function rate(rating: Rating) {
+    if (!flipped || !q || saving) return;
+    setSaving(true);
+    const saved = await recordReview({
       reviewId: `${sessionId}:${queue.shown}`,
       cardId: q.id,
       kind: "question",
@@ -501,7 +526,10 @@ function Flashcards({ questions, sessionId, onRows, onFinish, onQuit }: RunnerPr
       correct: rating !== "again",
       answer: rating,
       durationMs: Date.now() - shownAt,
-    });
+    }).catch(() => null);
+    setSaving(false);
+    if (!saved) return;
+    const { before, after } = saved;
     const nextRows = [...rows, { q, correct: rating !== "again", hinted: false, overridden: false, answer: rating, rating, before, after }];
     setRows(nextRows);
     onRows(nextRows);
@@ -563,6 +591,7 @@ function Flashcards({ questions, sessionId, onRows, onFinish, onQuit }: RunnerPr
                 key={r}
                 variant={r === "again" ? "destructive" : r === "good" ? "default" : "outline"}
                 className="h-14 flex-col gap-0.5"
+                disabled={saving}
                 onClick={() => rate(r)}
               >
                 <span className="font-mono text-[0.7rem] opacity-80">{labels?.[r]}</span>

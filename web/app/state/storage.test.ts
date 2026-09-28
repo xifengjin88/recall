@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "fake-indexeddb/auto";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { newCard, QUESTION_PRESET } from "~/lib/engine";
 import { emptyProgress } from "~/lib/progress";
 import { IdbRepo } from "./idb-repo";
@@ -66,46 +66,5 @@ describe("IdbRepo", () => {
     expect(Object.keys(loaded.cards)).toEqual(["new"]);
     expect(loaded.settings.theme).toBe("dark");
     await repo.destroy();
-  });
-});
-
-describe("progress store", () => {
-  beforeEach(() => localStorage.clear());
-
-  it("migrates v1 localStorage progress into IndexedDB once, keeping a backup", async () => {
-    localStorage.setItem(
-      "tlpi-drill:progress",
-      JSON.stringify({ version: 1, items: { q1: { box: 2, due: "2026-10-01", mistake: false, updatedAt: 5 } }, attempts: [], settings: { theme: "dark" } }),
-    );
-    const store = await import("./progress-store");
-    const db = store.courseDbName("tlpi"); // old localStorage progress belongs to TLPI
-    await store.initProgress(db);
-    expect(store.getProgress().cards.q1).toMatchObject({ phase: "review", interval: 3 });
-    expect(localStorage.getItem("tlpi-drill:progress")).toBeNull();
-    expect(localStorage.getItem("tlpi-drill:progress:migrated-to-indexeddb")).toContain('"box":2');
-    expect(localStorage.getItem(store.THEME_KEY)).toBe("dark");
-    expect((await new IdbRepo(db).load())?.cards.q1.interval).toBe(3);
-  });
-
-  it("persists a review so it survives a reload", async () => {
-    const store = await import("./progress-store");
-    const db = freshDb();
-    const repo = new IdbRepo(db);
-    store.__resetStoreForTests(repo);
-    const { after } = store.recordReview({
-      reviewId: "r1",
-      cardId: "q9",
-      kind: "question",
-      source: "quiz",
-      sessionId: null,
-      rating: "again",
-      correct: false,
-      answer: "x",
-    });
-    expect(after.phase).toBe("learning");
-    await store.flushWrites();
-    const reloaded = (await new IdbRepo(db).load())!;
-    expect(reloaded.cards.q9.phase).toBe("learning");
-    expect(reloaded.reviews[0]).toMatchObject({ id: "r1", rating: "again", before: { phase: "new" } });
   });
 });

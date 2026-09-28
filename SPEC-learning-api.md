@@ -8,7 +8,7 @@ Everything about the learner's progress, served by Flask with the server as the 
 
 ## Shapes
 
-The wire format matches the web app's `ProgressData` v2 (`web/app/lib/progress.ts`), so the store can load it unchanged: camelCase, times in epoch ms, cards keyed by item key.
+The wire format matches the web app's `ProgressData` v2 (`web/app/lib/progress.ts`), so the store can load it unchanged: camelCase, times in epoch ms, cards keyed by item key. Fields the web types mark optional (`durationMs`, `meta`, `completedAt`, `completedDay`) are left out when unset; nullable ones (`sessionId`, `lastReview`) are sent as `null`.
 
 - `Card`: `{id, kind, phase, step, due, interval, ease, reps, lapses, lastReview, lastRating, leech, suspended, updatedAt}`
 - `Review`: `{id, cardId, kind, source, sessionId, at, rating, correct, answer, hinted, overridden, before, after, durationMs?, meta?}`. `before`/`after` are full cards (a superset of the client's `CardSnapshot`), so an override can re-rate from the exact pre-review state.

@@ -13,6 +13,11 @@ Rating = Literal["again", "hard", "good", "easy"]
 Kind = Literal["question", "exercise"]
 
 
+def optional() -> Any:
+    """A field the web app types as optional (`x?: T`): left out of the output when unset, not null."""
+    return Field(default=None, exclude_if=lambda v: v is None)
+
+
 class Wire(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="ignore")
 
@@ -51,16 +56,16 @@ class ReviewOut(Wire):
     overridden: bool = False
     before: dict[str, Any] = Field(default_factory=dict[str, Any])
     after: dict[str, Any] = Field(default_factory=dict[str, Any])
-    duration_ms: int | None = None
-    meta: dict[str, Any] | None = None
+    duration_ms: int | None = optional()
+    meta: dict[str, Any] | None = optional()
 
 
 class SessionOut(Wire):
     id: str
     mode: Literal["quiz", "flashcards", "exercise"]
     started_at: int
-    completed_at: int | None = None
-    completed_day: str | None = None  # study day, "YYYY-MM-DD"
+    completed_at: int | None = optional()
+    completed_day: str | None = optional()  # study day, "YYYY-MM-DD"
 
 
 class ExerciseStateOut(Wire):

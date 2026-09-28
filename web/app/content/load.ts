@@ -5,7 +5,7 @@
 
 import { data } from "react-router";
 import { api, ApiError } from "~/api/client";
-import { courseDbName, initProgress } from "~/state/progress-store";
+import { loadCourseProgress } from "~/state/progress-store";
 import { setCourse } from ".";
 
 let loading: { slug: string; promise: Promise<void> } | null = null;
@@ -27,7 +27,7 @@ async function load(slug: string): Promise<void> {
     const withNotes = outline.outline.filter((u) => u.hasNotes);
     const notes = await Promise.all(withNotes.map((u) => api.notes(slug, u.number)));
     setCourse(outline, content, new Map(notes.map((n) => [n.number, n.markdown])));
-    await initProgress(courseDbName(slug));
+    await loadCourseProgress(slug);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) throw data("Course not found", { status: 404 });
     throw err;

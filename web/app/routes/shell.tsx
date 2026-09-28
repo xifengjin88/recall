@@ -156,14 +156,9 @@ const NOTICES: Record<Exclude<Notice, null>, { title: string; text: string; tone
     text: "Your saved progress now lives in this browser's database (IndexedDB). A backup of the old copy was kept.",
     tone: "info",
   },
-  "no-storage": {
-    title: "Progress won't be saved",
-    text: "This browser won't let the app store data (private window or blocked site data?). You can still study, but progress is lost on reload.",
-    tone: "warn",
-  },
   "save-failed": {
     title: "Couldn't save progress",
-    text: "The last change didn't reach storage. Export your progress from Settings to be safe.",
+    text: "The last change didn't reach the server. Check that it's running (make dev-server), then try again.",
     tone: "warn",
   },
 };

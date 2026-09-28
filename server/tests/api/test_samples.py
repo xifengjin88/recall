@@ -9,6 +9,7 @@ tsc then fails if web/app/api/types.ts no longer matches what the server sends.
 import json
 import os
 from pathlib import Path
+from typing import Any
 
 import pytest
 from flask.testing import FlaskClient
@@ -26,9 +27,30 @@ ENDPOINTS = {
 }
 
 
-@pytest.mark.parametrize("name", ENDPOINTS)
-def test_sample_is_current(client: FlaskClient, name: str) -> None:
-    body = client.get(ENDPOINTS[name]).json
+# Learning endpoints, called in this order in one transaction so each sees the ones before.
+LEARNING: list[tuple[str, str, str, Any]] = [
+    ("session", "post", "/api/courses/demo/sessions", {"id": "s1", "mode": "quiz"}),
+    (
+        "review",
+        "post",
+        "/api/courses/demo/reviews",
+        {
+            "id": "s1:0",
+            "itemKey": "demo-q001",
+            "source": "quiz",
+            "sessionId": "s1",
+            "rating": "again",
+            "correct": False,
+            "answer": "a",
+            "durationMs": 3000,
+        },
+    ),
+    ("preview", "get", "/api/courses/demo/cards/demo-q001/preview", None),
+    ("progress", "get", "/api/courses/demo/progress", None),
+]
+
+
+def check(name: str, body: Any) -> None:
     text = json.dumps(body, indent=1, ensure_ascii=False, sort_keys=True) + "\n"
     path = SAMPLES / f"{name}.json"
     if os.environ.get("GEN_SAMPLES"):
@@ -37,3 +59,15 @@ def test_sample_is_current(client: FlaskClient, name: str) -> None:
     assert path.read_text() == text, (
         f"{path.name} is stale: GEN_SAMPLES=1 uv run pytest tests/api/test_samples.py"
     )
+
+
+@pytest.mark.parametrize("name", ENDPOINTS)
+def test_sample_is_current(client: FlaskClient, name: str) -> None:
+    check(name, client.get(ENDPOINTS[name]).json)
+
+
+def test_learning_samples_are_current(client: FlaskClient) -> None:
+    for name, method, path, body in LEARNING:
+        res = getattr(client, method)(path, json=body)
+        assert res.status_code == 200, res.json
+        check(name, res.json)
