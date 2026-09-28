@@ -7,6 +7,7 @@ from recall_engine import CardKind, resolve_preset
 
 from .errors import ContentError
 from .loader import Located, YamlDoc
+from .notes import extract_section
 from .schemas import CourseFile, Exercise, Match, Multi, Order, Output, Single, Typed, UnitFile
 
 
@@ -116,4 +117,20 @@ def check_course(course: CourseFile, doc: YamlDoc) -> list[ContentError]:
             unknown = sorted(set(options) - set(resolve_preset(CardKind(kind)).__dataclass_fields__))
             line = doc.line(("scheduling", kind, unknown[0] if unknown else first or ""))
             errors.append(ContentError("course.yaml", line, None, f"scheduling.{kind}: {err}"))
+    return errors
+
+
+def check_notes(notes: str, unit: UnitFile, rel: str, items: Iterable[Located[Any]]) -> list[ContentError]:
+    """Every section needs a heading in notes.md; every note_anchor must name one."""
+    errors: list[ContentError] = [
+        ContentError(f"{rel}/notes.md", None, None, f"no heading for section {s.key}")
+        for s in unit.sections
+        if extract_section(notes, section=s.key) is None
+    ]
+    for loc in items:
+        anchor: str | None = loc.item.note_anchor
+        if anchor and extract_section(notes, anchor=anchor) is None:
+            errors.append(
+                loc.error(f'note_anchor "{anchor}" is not a heading in notes.md', "note_anchor", loc.item.key)
+            )
     return errors

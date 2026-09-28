@@ -152,11 +152,11 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Port `headingId` / section extraction (ids like `s2.7`, slugs, `#` inside code fences ignored) and the rules "every section has a heading" and "every note_anchor exists".
 
 **Acceptance criteria:**
-- [ ] Heading ids equal the web app's for the same inputs (shared cases)
-- [ ] Missing section heading and bad anchor each produce the documented error
+- [x] Heading ids equal the web app's for the same inputs (shared cases)
+- [x] Missing section heading and bad anchor each produce the documented error
 
 **Verification:**
-- [ ] `uv run pytest tests/content/test_notes.py`
+- [x] `uv run pytest tests/content/test_notes.py`
 
 **Dependencies:** T9 · **Files:** src/recall_content/notes.py, src/recall_content/rules.py, tests/content/test_notes.py · **Size:** S
 

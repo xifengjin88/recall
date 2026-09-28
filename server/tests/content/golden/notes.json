@@ -1,0 +1,241 @@
+{
+ "generator": "web/scripts/gen-notes-golden.test.ts",
+ "headingIds": [
+  {
+   "text": "2.7 Processes",
+   "id": "s2.7"
+  },
+  {
+   "text": "2.10 Interprocess communication and synchronization",
+   "id": "s2.10"
+  },
+  {
+   "text": "  2.1 The core operating system: the kernel",
+   "id": "s2.1"
+  },
+  {
+   "text": "Process view vs kernel view",
+   "id": "process-view-vs-kernel-view"
+  },
+  {
+   "text": "Capabilities",
+   "id": "capabilities"
+  },
+  {
+   "text": "The `init` process",
+   "id": "the-init-process"
+  },
+  {
+   "text": "Self-test",
+   "id": "self-test"
+  },
+  {
+   "text": "Further reading (from the chapter)",
+   "id": "further-reading-from-the-chapter"
+  },
+  {
+   "text": "Kernel **mode** and _user_ mode",
+   "id": "kernel-mode-and-user-mode"
+  },
+  {
+   "text": "12. Not a section",
+   "id": "12-not-a-section"
+  },
+  {
+   "text": "2.4",
+   "id": "2-4"
+  },
+  {
+   "text": "  --weird--  ",
+   "id": "weird"
+  }
+ ],
+ "ch02": {
+  "toc": [
+   {
+    "id": "s2.1",
+    "text": "2.1 The core operating system: the kernel"
+   },
+   {
+    "id": "s2.2",
+    "text": "2.2 The shell"
+   },
+   {
+    "id": "s2.3",
+    "text": "2.3 Users and groups"
+   },
+   {
+    "id": "s2.4",
+    "text": "2.4 Single directory hierarchy, directories, links, and files"
+   },
+   {
+    "id": "s2.5",
+    "text": "2.5 File I/O model"
+   },
+   {
+    "id": "s2.6",
+    "text": "2.6 Programs"
+   },
+   {
+    "id": "s2.7",
+    "text": "2.7 Processes"
+   },
+   {
+    "id": "s2.8",
+    "text": "2.8 Memory mappings"
+   },
+   {
+    "id": "s2.9",
+    "text": "2.9 Static and shared libraries"
+   },
+   {
+    "id": "s2.10",
+    "text": "2.10 Interprocess communication and synchronization"
+   },
+   {
+    "id": "s2.11",
+    "text": "2.11 Signals"
+   },
+   {
+    "id": "s2.12",
+    "text": "2.12 Threads"
+   },
+   {
+    "id": "s2.13",
+    "text": "2.13 Process groups and shell job control"
+   },
+   {
+    "id": "s2.14",
+    "text": "2.14 Sessions, controlling terminals, and controlling processes"
+   },
+   {
+    "id": "s2.15",
+    "text": "2.15 Pseudoterminals"
+   },
+   {
+    "id": "s2.16",
+    "text": "2.16 Date and time"
+   },
+   {
+    "id": "s2.17",
+    "text": "2.17 Client-server architecture"
+   },
+   {
+    "id": "s2.18",
+    "text": "2.18 Realtime"
+   },
+   {
+    "id": "s2.19",
+    "text": "2.19 The /proc file system"
+   },
+   {
+    "id": "self-test",
+    "text": "Self-test"
+   },
+   {
+    "id": "further-reading-from-the-chapter",
+    "text": "Further reading (from the chapter)"
+   }
+  ],
+  "sections": [
+   {
+    "section": "2.1",
+    "markdown": "## 2.1 The core operating system: the kernel\n\n\"Operating system\" has two meanings:\n\n- the **whole package**: kernel plus shells, GUIs, file utilities and editors\n- the **central software** that manages CPU, RAM and devices, also called the **kernel**. This is the meaning the book uses.\n\nThe kernel binary usually lives at `/boot/vmlinuz`. The name evolved from `unix` to `vmunix` (virtual memory) to `vmlinuz`, where _z_ marks it as compressed.\n\n### Tasks performed by the kernel\n\n|Task|What it means|\n|---|---|\n|Process scheduling|**Preemptive multitasking.** Many processes are in memory at once, and the _scheduler_ decides who gets the CPU and for how long, not the processes themselves.|\n|Memory management|**Virtual memory** (see [[TLPI 06 - Processes]], §6.4): (1) processes are isolated from each other and from the kernel; (2) only part of a process needs to be in RAM, so more processes fit and CPU use improves.|\n|File system|Create, retrieve, update and delete files on disk.|\n|Process creation/termination|Loads programs, gives them resources, frees resources on exit.|\n|Device access|A standard interface to devices, and arbitration between processes.|\n|Networking|Sends and receives packets for processes, including routing.|\n|System call API|Kernel entry points that processes call. **The subject of this book.** See [[TLPI 03 - System Programming Concepts]], §3.1.|\n\nA multiuser OS also gives each user a **virtual private computer**: their own home directory, a share of the CPU, and a separate virtual address space for each program.\n\n### Kernel mode and user mode\n\n- **User mode:** the CPU can access only _user-space_ memory. Touching kernel space causes a **hardware exception**.\n- **Kernel mode** (also called _supervisor mode_): the CPU can access user and kernel space.\n- Only kernel mode can halt the system, access the memory-management hardware, or start device I/O.\n\n### Process view vs kernel view\n\n|A process…|The kernel…|\n|---|---|\n|doesn't know when it will next run|decides who runs, when, and for how long|\n|doesn't know where it is in RAM or whether pages are in swap|maps each process's virtual memory to RAM and swap|\n|refers to files only by name|translates names to physical disk locations|\n|can't talk to other processes directly|provides every IPC mechanism|\n|can't create a process or even end itself|creates and terminates processes on request|\n|can't talk to devices directly|does all device I/O (through device drivers)|\n\n> [!important]\n> When later chapters say \"a process can terminate by calling `exit()`\", read it as \"a process can **request that the kernel** terminate it.\"\n\n> [!example]- Try it\n>\n> ```bash\n> uname -r              # kernel version\n> ls -l /boot/vmlinuz*\n> strace -c ls          # count the system calls a simple command makes\n> ```"
+   },
+   {
+    "section": "2.2",
+    "markdown": "## 2.2 The shell\n\nA **shell** (_command interpreter_) reads commands and runs programs in response. On UNIX the shell is an **ordinary user process**, not part of the kernel, so different users can run different shells at once. The **login shell** is the process created to run a shell when you log in.\n\n|Shell|Author|Notable for|\n|---|---|---|\n|`sh` (Bourne)|Steve Bourne|The oldest widely used shell. Redirection, pipelines, globbing, variables, command substitution, background jobs, functions. Present on every UNIX.|\n|`csh` (C shell)|Bill Joy, UC Berkeley|C-like flow control. Added history, line editing, job control, aliases. **Not** Bourne compatible, so scripts stayed in `sh`.|\n|`ksh` (Korn)|David Korn, AT&T|Bourne compatible plus csh-style interactive features. Basis of the POSIX.2 shell.|\n|`bash`|Brian Fox, Chet Ramey (GNU)|GNU reimplementation of Bourne with interactive features. The most common shell on Linux. `sh` on Linux is usually bash emulating sh.|\n\nShells also run **shell scripts**: text files of commands, with variables, loops, conditionals, I/O commands and functions.\n\n> [!example]- Try it\n>\n> ```bash\n> echo $SHELL      # your login shell\n> cat /etc/shells  # shells installed here\n> ls -l /bin/sh    # often a link to bash or dash\n> ```"
+   },
+   {
+    "section": "2.3",
+    "markdown": "## 2.3 Users and groups\n\n### Users\n\nEach user has a unique **login name** and numeric **user ID (UID)**, defined by a line in `/etc/passwd`, which also contains:\n\n- **Group ID**: the GID of the user's first group\n- **Home directory**: where you start after login\n- **Login shell**: the program that interprets your commands\n\nThe encrypted password is usually kept in the **shadow password file** (`/etc/shadow`), which only privileged users can read.\n\n```text\n# name:password:UID:GID:comment:home:shell\nmtk:x:1000:100:Michael Kerrisk:/home/mtk:/bin/bash\n```\n\n### Groups\n\nGroups organize users for controlling access to shared files. Early UNIX allowed one group per user. BSD introduced membership in multiple groups, which POSIX.1-1990 adopted. Each line of `/etc/group` has:\n\n- **Group name**\n- **Group ID (GID)**\n- **User list**: comma-separated login names of members, apart from users whose `/etc/passwd` GID already names this group\n\n### Superuser\n\n- **UID 0**, normally named `root`.\n- Bypasses **all** permission checks: can access any file and signal any process.\n\n> [!example]- Try it\n>\n> ```bash\n> id                          # your UID, GID and groups\n> grep \"^$USER:\" /etc/passwd\n> ls -l /etc/passwd /etc/shadow\n> ```"
+   },
+   {
+    "section": "2.4",
+    "markdown": "## 2.4 Single directory hierarchy, directories, links, and files\n\nLinux has **one** directory tree rooted at `/`, unlike Windows, where each drive has its own tree.\n\n### File types\n\nEvery file has a type: **regular** (plain), **directory**, **symbolic link**, **device**, **pipe** or **socket**. \"File\" can mean any of these.\n\n### Directories and links\n\n- A **directory** is a special file holding a table of _filename → reference to file_.\n- Each entry is a **link**, also called a **hard link**. A file can have many links, so many names, in the same or different directories.\n- Every directory contains `.` (itself) and `..` (its parent). For `/`, `..` points to itself, so `/..` is `/`.\n\n### Symbolic links\n\n- A **symbolic (soft) link** is a specially marked file whose contents are the **name of another file**, its _target_.\n- The kernel usually **dereferences** (_follows_) symlinks in pathnames automatically and recursively, with a limit to stop circular chains.\n- A symlink to a file that doesn't exist is a **dangling link**.\n\n||Hard link|Symbolic link|\n|---|---|---|\n|What it is|A directory entry pointing to the file|A small file containing a pathname|\n|If the original name is removed|File survives while any hard link remains|Link becomes dangling|\n\nWhy both exist: [[TLPI 18 - Directories and Links]].\n\n### Filenames\n\n- Up to **255 characters** on most Linux file systems.\n- Any character except `/` and `\\0`.\n- Use the SUSv3 **portable filename character set** `[-._a-zA-Z0-9]` (65 characters). Other characters may need _escaping_ with `\\`.\n- Don't start names with `-`, because commands will read them as options.\n\n### Pathnames\n\n- A string with an optional leading `/` followed by filenames separated by `/`.\n- **Directory part** = everything before the last `/`. **Base part** = the final component.\n- **Absolute pathname**: starts with `/` and is resolved from root, e.g. `/home/mtk/.bashrc`.\n- **Relative pathname**: no leading `/`, resolved from the current working directory, e.g. `../mtk/.bashrc` from `/home/avr`.\n\n### Current working directory\n\n- Each process has one. It's where relative pathnames are resolved from.\n- **Inherited from the parent.** A login shell starts in the home directory from `/etc/passwd`, and `cd` changes it.\n\n### File ownership and permissions\n\nEach file has an owner UID and a GID. There are three user classes, **user (owner)**, **group** and **other**, each with **r / w / x** bits, for 9 bits in total.\n\n```text\n-  rwx  r-x  ---\n│  │    │    └── other\n│  │    └─────── group\n│  └──────────── user (owner)\n└─────────────── file type\n```\n\n|Bit|On a file|On a directory|\n|---|---|---|\n|`r`|read contents|list filenames|\n|`w`|modify contents|add, remove, rename entries|\n|`x`|execute (program or script)|_search_: access files inside|\n\n> [!warning] Common mix-up\n> Deleting a file needs **write permission on the directory**, because it changes the directory's table, not the file.\n\n> [!example]- Try it\n>\n> ```bash\n> ls -la ~                           # . and .. and permission strings\n> ls -di / /..                       # same inode number: /.. is /\n> ln -s nowhere dangle && ls -l dangle   # make a dangling link\n> ```"
+   },
+   {
+    "section": "2.5",
+    "markdown": "## 2.5 File I/O model\n\n**Universality of I/O:** the same system calls, `open()`, `read()`, `write()` and `close()`, work on **all** file types, including devices. The kernel translates them into file-system or device-driver operations.\n\n- The kernel provides one file type: a **sequential stream of bytes**. Disk files, disks and tapes can also be accessed randomly with `lseek()`.\n- Newline (ASCII 10, _linefeed_) ends a line. That's a convention of applications and libraries.\n- **There is no end-of-file character.** EOF is a `read()` that returns no data.\n\n### File descriptors\n\nAn open file is referred to by a **file descriptor**: a small non-negative integer, usually returned by `open()`. A process started by the shell inherits three:\n\n|fd|Name|stdio stream|\n|---|---|---|\n|0|standard input|`stdin`|\n|1|standard output|`stdout`|\n|2|standard error|`stderr`|\n\n### The stdio library\n\n`fopen()`, `fclose()`, `scanf()`, `printf()`, `fgets()`, `fputs()` and friends are **layered on top of** the I/O system calls. The book assumes you already know stdio.\n\n> [!example]- Try it\n>\n> ```bash\n> ls -l /proc/self/fd     # fds 0, 1, 2 of the ls process itself\n> ls nope 2> err.txt      # redirect fd 2 only\n> ```"
+   },
+   {
+    "section": "2.6",
+    "markdown": "## 2.6 Programs\n\n- **Source code:** human-readable text, e.g. C.\n- **Binary machine code:** produced by compiling and linking. It is treated as the same program as its source.\n- **Script:** a text file of commands processed directly by an interpreter such as the shell.\n\n### Filters\n\nA **filter** reads `stdin`, transforms the data, and writes `stdout`. Examples: `cat`, `grep`, `tr`, `sort`, `wc`, `sed`, `awk`.\n\n### Command-line arguments\n\n```c\nint main(int argc, char *argv[])\n/* argc    : number of arguments, including the program name\n   argv[0] : the program's own name\n   argv[1..argc-1] : the arguments, as strings */\n```"
+   },
+   {
+    "section": "2.7",
+    "markdown": "## 2.7 Processes\n\nA **process** is an instance of an executing program. When a program runs, the kernel loads its code into virtual memory, allocates space for variables, and sets up bookkeeping such as the PID, termination status, user IDs and group IDs.\n\n- **Limited resources** such as memory are allocated and adjusted over the process's lifetime.\n- **Renewable resources** such as CPU and network bandwidth are shared fairly.\n- Everything is released when the process terminates.\n\n### Process memory layout\n\n```text\n high addresses\n┌──────────────┐\n│    Stack     │  grows/shrinks with function calls; locals + call linkage\n├──────────────┤\n│      ↓       │\n│      ↑       │\n├──────────────┤\n│     Heap     │  dynamic allocation (malloc)\n├──────────────┤\n│     Data     │  static / global variables\n├──────────────┤\n│     Text     │  program instructions (read-only)\n└──────────────┘\n low addresses\n```\n\n### Process creation and program execution\n\n- `fork()` creates a **child** as a duplicate of the **parent**. The child gets **copies** of the data, stack and heap. The read-only **text is shared**.\n- The child then either runs other functions in the same code, or calls `execve()` to load a new program. That **destroys** the existing text, data, stack and heap and replaces them.\n- Library wrappers such as `execl` and `execvp` all start with _exec_. \"`exec()`\" is shorthand, and **no function is actually named `exec()`**.\n\n```mermaid\nflowchart LR\n  P[Parent] -- \"fork()\" --> C[Child: copy of parent]\n  C -- \"execve()\" --> N[Child running a new program]\n  C -- \"_exit(status)\" --> W[\"Parent collects status via wait()\"]\n```\n\n### Process ID and parent process ID\n\n- **PID:** a unique integer process ID.\n- **PPID:** the PID of the process that asked the kernel to create this one.\n\n### Process termination\n\n- A process ends by calling `_exit()` (or the library function `exit()`), or by being **killed by a signal**.\n- It yields a **termination status**, a small non-negative integer the parent reads with `wait()`.\n- The **exit status** is specifically the argument given to `_exit()`. The _termination status_ is either that value or an indication of the signal that killed the process.\n- By convention **0 = success** and nonzero = error. The shell stores the last status in `$?`.\n\n### Credentials\n\n|ID|Purpose|Comes from|\n|---|---|---|\n|Real UID / GID|Who the process belongs to|Parent. A login shell gets them from `/etc/passwd`.|\n|Effective UID / GID|**Used for permission checks**, together with supplementary GIDs|Usually equal to the real IDs. Can be changed, e.g. by set-user-ID.|\n|Supplementary GIDs|Additional groups|Parent. A login shell gets them from `/etc/group`.|\n\n> [!warning] Common mix-up\n> Permission checks use the **effective** IDs. A **privileged process** is one whose **effective UID is 0**.\n\n### Privileged processes\n\nA process becomes privileged by being created by a privileged process (e.g. a login shell started by root), or through the **set-user-ID** mechanism. That gives the process an effective UID equal to the UID of the program file it is executing.\n\n### Capabilities\n\n- Since kernel 2.2, root's privileges are split into distinct **capabilities**.\n- A privileged operation is allowed only if the process has the matching capability. EUID 0 means all capabilities.\n- Names start with `CAP_`, e.g. `CAP_KILL`. Details in [[TLPI 39 - Capabilities]].\n\n### The init process\n\n- Created by the kernel at boot from `/sbin/init`. It is the \"parent of all processes\".\n- Always **PID 1**, runs with superuser privileges, and **can't be killed, even by root**. It ends only at shutdown.\n- Creates and monitors the processes a running system needs.\n\n### Daemon processes\n\nA **daemon** is a special-purpose process that is:\n\n- **long-lived**, often running from boot to shutdown\n- **in the background** with **no controlling terminal**\n\nExamples: `syslogd` (system log) and `httpd` (web server).\n\n### Environment list\n\n- A set of `NAME=value` **environment variables** stored in the process's **user-space** memory.\n- `fork()` gives the child a **copy**, which is one way a parent passes information to a child.\n- On `exec()` the new program either keeps the old environment or receives a new one.\n- Shell: `export MYVAR='Hello world'` (`setenv` in csh). C: `extern char **environ;`\n- Examples: `HOME` and `PATH`.\n\n### Resource limits\n\n- Set with `setrlimit()`. Each resource has a **soft limit**, which is the actual cap, and a **hard limit**, which is the ceiling for the soft limit.\n- An unprivileged process can set the soft limit anywhere from 0 to the hard limit, but can **only lower** the hard limit.\n- Inherited across `fork()`. The shell command is `ulimit` (`limit` in csh).\n\n> [!example]- Try it\n>\n> ```bash\n> echo $$; ps -o pid,ppid,cmd     # your shell's PID and its parent\n> false; echo $?                  # prints 1\n> ps -p 1 -o pid,user,cmd         # init (often systemd)\n> ls -l /usr/bin/passwd           # the 's' bit = set-user-ID root\n> ulimit -Sn; ulimit -Hn          # soft and hard open-file limits\n> env | head                      # your environment list\n> ```"
+   },
+   {
+    "section": "2.8",
+    "markdown": "## 2.8 Memory mappings\n\n`mmap()` creates a new mapping in the calling process's virtual address space.\n\n||File mapping|Anonymous mapping|\n|---|---|---|\n|Backed by|A region of a file|Nothing|\n|Initial contents|File data, loaded page by page on demand|Zeros|\n\nSharing happens when two processes map the same file region, or when a child inherits a mapping through `fork()`.\n\n||Private mapping|Shared mapping|\n|---|---|---|\n|Changes visible to other processes?|No|Yes|\n|Changes written to the file?|No|Yes|\n\n**Uses:** loading a program's text from its executable, allocating zero-filled memory, memory-mapped file I/O, and IPC through shared mappings."
+   },
+   {
+    "section": "2.9",
+    "markdown": "## 2.9 Static and shared libraries\n\nAn **object library** is a file of compiled object code for a set of related functions.\n\n||Static library (_archive_)|Shared library|\n|---|---|---|\n|At link time|Linker **copies** the needed modules into the executable (_statically linked_)|Linker just **records** that the library is needed|\n|At run time|Nothing extra|The **dynamic linker** loads the library and resolves the calls|\n|Disk and memory|Duplicated in every program|One copy on disk and one in memory, shared|\n|Updating a function|**Relink** every program|Rebuild the library; programs pick it up on their next run|\n\n> [!example]- Try it\n>\n> ```bash\n> ldd /bin/ls     # shared libraries ls needs at run time\n> ```"
+   },
+   {
+    "section": "2.10",
+    "markdown": "## 2.10 Interprocess communication and synchronization\n\nFiles can carry data between processes, but they're slow and inflexible, so Linux provides:\n\n|Mechanism|Used for|\n|---|---|\n|Signals|Indicating that an event occurred|\n|Pipes (`\\|`) and FIFOs|Transferring data|\n|Sockets|Transferring data on the same host or across a network|\n|File locking|Locking file regions against other processes|\n|Message queues|Exchanging messages (packets of data)|\n|Semaphores|Synchronizing processes|\n|Shared memory|Sharing memory; changes are visible immediately|\n\n> [!info] Why so many overlapping mechanisms?\n> History. **FIFOs came from System V** and **sockets came from BSD**, and both survived although they do much the same job for unrelated local processes."
+   },
+   {
+    "section": "2.11",
+    "markdown": "## 2.11 Signals\n\n- \"**Software interrupts**\": a notification that an event or exceptional condition happened.\n- Each type is an integer with a symbolic name `SIGxxxx`.\n- Sent by the **kernel**, **another process** (with permission), or the **process itself**.\n\nThe kernel sends a signal when, for example:\n\n- the user types the interrupt character (**Control-C**)\n- a **child terminates**\n- a **timer** set by the process expires\n- the process accesses an **invalid memory address**\n\nSend from the shell with `kill`, or from C with `kill()`.\n\n**Default actions** (depending on the signal): ignore it, be killed, or be suspended until resumed by a special signal. For most signals a program can instead **ignore** the signal or install a **signal handler**, a function run automatically when the signal is delivered.\n\n- **Pending:** generated but not yet delivered. Normally delivered at the process's next scheduling, or immediately if it's running.\n- **Blocked:** a signal in the **signal mask** stays pending until it is unblocked.\n\n> [!example]- Try it\n>\n> ```bash\n> kill -l            # list signal names and numbers\n> sleep 100 &\n> kill -TERM %1      # send SIGTERM to that job\n> ```"
+   },
+   {
+    "section": "2.12",
+    "markdown": "## 2.12 Threads\n\n- A process can have multiple **threads**. Think of them as processes sharing one virtual memory.\n- Threads **share** code, data and heap, but **each has its own stack**.\n- They communicate through shared globals, synchronized with **mutexes** and **condition variables**, and can also use any mechanism from [[#2.10 Interprocess communication and synchronization|§2.10]].\n- **Advantages:** easy data sharing; some algorithms fit threads more naturally than multiple processes; parallelism on multiprocessor hardware."
+   },
+   {
+    "section": "2.13",
+    "markdown": "## 2.13 Process groups and shell job control\n\n- Each command the shell runs gets its own process. `ls -l | sort -k5n | less` creates **three**.\n- **Job control** is in every major shell except Bourne. It lets you run and manage multiple commands at once.\n- A pipeline's processes are placed in one **process group** (a _job_). Members share a **process group ID** equal to the PID of the **process group leader**.\n- The kernel can signal a **whole group** at once. That's how the shell suspends or resumes an entire pipeline."
+   },
+   {
+    "section": "2.14",
+    "markdown": "## 2.14 Sessions, controlling terminals, and controlling processes\n\n- A **session** is a collection of process groups. All members share a **session ID**, the PID of the **session leader** that created it. With job control, the shell is the session leader.\n- The **controlling terminal** is established when the session leader first opens a terminal device. A terminal controls **at most one** session.\n- The session leader becomes the **controlling process** and receives **`SIGHUP`** if the terminal disconnects, e.g. when the window closes.\n- One **foreground process group** can read from and write to the terminal. **Control-C** kills it and **Control-Z** stops (suspends) it.\n- Any number of **background jobs**, started by ending a command with `&`.\n\n```mermaid\nflowchart TD\n  S[\"Session (SID = shell PID)\"] --> F[\"Foreground job: ls | sort | less\"]\n  S --> B1[\"Background job: make &\"]\n  S --> SH[\"Shell (session leader, controlling process)\"]\n  T[Controlling terminal] -.-> S\n```\n\n> [!example]- Try it\n>\n> ```bash\n> sleep 100 | cat &\n> ps -o pid,pgid,sid,tty,cmd    # both share a PGID; all share your shell's SID\n> jobs; fg %1                   # then Ctrl-Z, then bg\n> ```"
+   },
+   {
+    "section": "2.15",
+    "markdown": "## 2.15 Pseudoterminals\n\n- A **pseudoterminal** is a connected pair of virtual devices, **master** and **slave**, forming a two-way IPC channel.\n- The slave **behaves like a terminal**, so a terminal-oriented program runs on it while a _driver program_ on the master acts as the user.\n- Data goes through normal terminal processing. For example, in the default mode a carriage return becomes a newline.\n- Used by terminal windows and network logins such as `ssh` and `telnet`.\n\n> [!example]- Try it\n>\n> ```bash\n> tty      # e.g. /dev/pts/0: you're on a pseudoterminal slave\n> ```"
+   },
+   {
+    "section": "2.16",
+    "markdown": "## 2.16 Date and time\n\n- **Real time**\n    - **Calendar time:** seconds since **the Epoch**, midnight 1 January 1970 UTC.\n    - **Elapsed (wall-clock) time:** measured from some point, typically when the process started.\n- **Process (CPU) time:** total CPU used since the process started.\n    - **System CPU time:** time in **kernel mode** (system calls and kernel services).\n    - **User CPU time:** time in **user mode** (your code).\n- The `time` command reports real, user and sys time.\n\n> [!example]- Try it\n>\n> ```bash\n> date +%s                              # seconds since the Epoch\n> time find / -name x 2>/dev/null       # real vs user vs sys\n> ```"
+   },
+   {
+    "section": "2.17",
+    "markdown": "## 2.17 Client-server architecture\n\n- **Client:** sends a _request_ message asking for a service.\n- **Server:** examines the request, acts, and sends back a _response_.\n- Usually many clients talk to one or a few servers, on the same host or across a network, using [[#2.10 Interprocess communication and synchronization|IPC]].\n- Services include databases, remote files, business logic, shared hardware (printers) and web pages.\n\n**Why put a service in a server:**\n\n- **Efficiency:** one managed resource is cheaper than one per machine.\n- **Control, coordination and security:** one place to prevent conflicting updates and restrict access.\n- **Heterogeneous environments:** clients and server can run on different hardware and OSes."
+   },
+   {
+    "section": "2.18",
+    "markdown": "## 2.18 Realtime\n\n- **Realtime applications** must respond to input within a **guaranteed deadline**. Examples: assembly lines, ATMs, aircraft navigation.\n- Speed alone isn't the definition. The _guarantee_ is.\n- Traditional UNIX isn't realtime, because realtime needs conflict with multiuser time-sharing. Realtime Linux variants exist, and mainline Linux is moving toward native support.\n- **POSIX.1b** added asynchronous I/O, shared memory, memory-mapped files, memory locking, realtime clocks and timers, alternative scheduling policies, realtime signals, message queues and semaphores.\n\n> [!note] Terminology\n> **real time** (two words) = calendar or elapsed time · **realtime** (one word) = guaranteed-response systems"
+   },
+   {
+    "section": "2.19",
+    "markdown": "## 2.19 The /proc file system\n\n- A **virtual file system** mounted at `/proc` that exposes **kernel data structures** as files and directories.\n- `/proc/PID` holds information about each running process.\n- Files are mostly human-readable text, so programs and scripts just open, read and write them. Modifying usually requires privilege.\n- **Linux-specific** and not standardized. More in [[TLPI 12 - System and Process Information]], §12.1.\n\n> [!example]- Try it\n>\n> ```bash\n> head /proc/self/status    # info about the head process itself\n> head /proc/cpuinfo\n> ls /proc | head           # numeric names are PIDs\n> ```"
+   },
+   {
+    "section": "2.20",
+    "markdown": null
+   }
+  ],
+  "anchors": [
+   {
+    "anchor": "Capabilities",
+    "markdown": "### Capabilities\n\n- Since kernel 2.2, root's privileges are split into distinct **capabilities**.\n- A privileged operation is allowed only if the process has the matching capability. EUID 0 means all capabilities.\n- Names start with `CAP_`, e.g. `CAP_KILL`. Details in [[TLPI 39 - Capabilities]]."
+   },
+   {
+    "anchor": "Process view vs kernel view",
+    "markdown": "### Process view vs kernel view\n\n|A process…|The kernel…|\n|---|---|\n|doesn't know when it will next run|decides who runs, when, and for how long|\n|doesn't know where it is in RAM or whether pages are in swap|maps each process's virtual memory to RAM and swap|\n|refers to files only by name|translates names to physical disk locations|\n|can't talk to other processes directly|provides every IPC mechanism|\n|can't create a process or even end itself|creates and terminates processes on request|\n|can't talk to devices directly|does all device I/O (through device drivers)|\n\n> [!important]\n> When later chapters say \"a process can terminate by calling `exit()`\", read it as \"a process can **request that the kernel** terminate it.\"\n\n> [!example]- Try it\n>\n> ```bash\n> uname -r              # kernel version\n> ls -l /boot/vmlinuz*\n> strace -c ls          # count the system calls a simple command makes\n> ```"
+   },
+   {
+    "anchor": "The init process",
+    "markdown": "### The init process\n\n- Created by the kernel at boot from `/sbin/init`. It is the \"parent of all processes\".\n- Always **PID 1**, runs with superuser privileges, and **can't be killed, even by root**. It ends only at shutdown.\n- Creates and monitors the processes a running system needs."
+   },
+   {
+    "anchor": "Nope",
+    "markdown": null
+   }
+  ]
+ }
+}

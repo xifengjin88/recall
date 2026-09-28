@@ -6,7 +6,14 @@ from typing import Any
 from .errors import ContentError, ContentErrors
 from .hashing import content_hash
 from .loader import UNIT_FOLDER, Located, load_list, load_model
-from .rules import check_course, check_exercise, check_question, check_sections, check_unique_keys
+from .rules import (
+    check_course,
+    check_exercise,
+    check_notes,
+    check_question,
+    check_sections,
+    check_unique_keys,
+)
 from .schemas import CourseFile, CourseMeta, ParsedCourse, ParsedUnit, UnitFile
 
 
@@ -75,6 +82,9 @@ def parse_course(root: Path) -> ParsedCourse:
             errors.extend(check_exercise(x, unit))
 
         notes_path = folder / "notes.md"
+        notes = notes_path.read_text() if notes_path.exists() else None
+        if notes is not None:
+            errors.extend(check_notes(notes, unit, rel, [*questions, *exercises]))
         units.append(
             ParsedUnit(
                 number=unit.number,
@@ -84,7 +94,7 @@ def parse_course(root: Path) -> ParsedCourse:
                 sections=unit.sections,
                 questions=tuple(q.item for q in questions),
                 exercises=tuple(x.item for x in exercises),
-                notes=notes_path.read_text() if notes_path.exists() else None,
+                notes=notes,
             )
         )
 
