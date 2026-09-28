@@ -165,12 +165,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** One-off script (vitest-run in web/) that writes `courses/tlpi/course.yaml` (64-entry outline), `units/02-fundamental-concepts/{unit.yaml,questions.yaml,notes.md}` from the current `ch02.ts`, `toc.ts`, `subject.ts` and `notes/ch02.md`.
 
 **Acceptance criteria:**
-- [ ] `parse_course("courses/tlpi")` → 0 errors, 1 content unit, 19 sections, 50 questions, 64 outline entries
-- [ ] Every question's fields match the TS source (script asserts equality on read-back)
-- [ ] `notes.md` is byte-identical to `app/content/notes/ch02.md`
+- [x] `parse_course("courses/tlpi")` → 0 errors, 1 content unit, 19 sections, 50 questions, 64 outline entries
+- [x] Every question's fields match the TS source (script asserts equality on read-back)
+- [x] `notes.md` is byte-identical to `app/content/notes/ch02.md`
 
 **Verification:**
-- [ ] `uv run pytest tests/content/test_tlpi.py` · `cmp web/app/content/notes/ch02.md courses/tlpi/units/02-fundamental-concepts/notes.md`
+- [x] `uv run pytest tests/content/test_tlpi.py` · `cmp web/app/content/notes/ch02.md courses/tlpi/units/02-fundamental-concepts/notes.md`
 
 **Dependencies:** T1, T9, T10 · **Files:** web/scripts/export-course.test.ts, courses/tlpi/**, tests/content/test_tlpi.py · **Size:** M
 

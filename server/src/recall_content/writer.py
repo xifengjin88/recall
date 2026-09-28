@@ -8,16 +8,26 @@ from pydantic import BaseModel
 
 from .schemas import ParsedCourse
 
+# Field order in written files: identity first, then the question, then answers, then help text.
+_ORDER = (
+    "key", "type", "title", "section", "sections", "book_ref", "difficulty", "estimate", "tags",
+    "prompt", "code", "goal", "background", "requirements", "constraints", "example",
+    "options", "answer", "answers", "accept", "case_sensitive", "items", "pairs", "keep_order", "tests",
+    "hint", "hints", "stretch", "explanation", "note_anchor", "retired",
+)  # fmt: skip
+
 
 def _plain(model: BaseModel) -> dict[str, Any]:
-    """snake_case dict without defaults, with key and type first for readability."""
+    """snake_case dict without defaults, in the order an author reads it."""
     data = model.model_dump(mode="json", exclude_defaults=True)
-    first = {k: data.pop(k) for k in ("key", "type") if k in data}
-    return {**first, **data}
+    ordered = {k: data.pop(k) for k in _ORDER if k in data}
+    return {**ordered, **data}
 
 
-def _dump(data: Any) -> str:
-    return yaml.safe_dump(data, sort_keys=False, allow_unicode=True, width=110, default_flow_style=False)
+def _dump(data: Any, spaced: bool = False) -> str:
+    text = yaml.safe_dump(data, sort_keys=False, allow_unicode=True, width=110, default_flow_style=False)
+    # A blank line between items keeps long question and exercise files scannable.
+    return text.replace("\n- key:", "\n\n- key:") if spaced else text
 
 
 def write_course(parsed: ParsedCourse, root: Path) -> None:
@@ -36,8 +46,8 @@ def write_course(parsed: ParsedCourse, root: Path) -> None:
         unit_yaml["sections"] = [s.model_dump(mode="json") for s in unit.sections]
         (folder / "unit.yaml").write_text(_dump(unit_yaml))
         if unit.questions:
-            (folder / "questions.yaml").write_text(_dump([_plain(q) for q in unit.questions]))
+            (folder / "questions.yaml").write_text(_dump([_plain(q) for q in unit.questions], spaced=True))
         if unit.exercises:
-            (folder / "exercises.yaml").write_text(_dump([_plain(x) for x in unit.exercises]))
+            (folder / "exercises.yaml").write_text(_dump([_plain(x) for x in unit.exercises], spaced=True))
         if unit.notes is not None:
             (folder / "notes.md").write_text(unit.notes)

@@ -57,7 +57,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 - [x] T8 Content schemas and hashing
 - [x] T9 Folder loader with line numbers and content rules
 - [x] T10 Notes heading rules
-- [ ] T11 Convert TLPI into `courses/tlpi/`
+- [x] T11 Convert TLPI into `courses/tlpi/`
 
 **Checkpoint B:** golden parity 100%, engine coverage 100%, `courses/tlpi` validates clean. **Write and approve SPEC-store, SPEC-content-import, SPEC-catalog-api.**
 

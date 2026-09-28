@@ -1,0 +1,42 @@
+number: 2
+title: Fundamental Concepts
+note_title: TLPI 02 - Fundamental Concepts
+sections:
+- key: '2.1'
+  title: 'The Core Operating System: The Kernel'
+- key: '2.2'
+  title: The Shell
+- key: '2.3'
+  title: Users and Groups
+- key: '2.4'
+  title: Single Directory Hierarchy, Directories, Links, and Files
+- key: '2.5'
+  title: File I/O Model
+- key: '2.6'
+  title: Programs
+- key: '2.7'
+  title: Processes
+- key: '2.8'
+  title: Memory Mappings
+- key: '2.9'
+  title: Static and Shared Libraries
+- key: '2.10'
+  title: Interprocess Communication and Synchronization
+- key: '2.11'
+  title: Signals
+- key: '2.12'
+  title: Threads
+- key: '2.13'
+  title: Process Groups and Shell Job Control
+- key: '2.14'
+  title: Sessions, Controlling Terminals, and Controlling Processes
+- key: '2.15'
+  title: Pseudoterminals
+- key: '2.16'
+  title: Date and Time
+- key: '2.17'
+  title: Client-Server Architecture
+- key: '2.18'
+  title: Realtime
+- key: '2.19'
+  title: The /proc File System
