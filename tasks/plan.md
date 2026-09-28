@@ -54,7 +54,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 - [x] T7 Queue functions, purity, coverage, performance
 
 ### Phase 3: Content model (parallel with Phase 2)
-- [ ] T8 Content schemas and hashing
+- [x] T8 Content schemas and hashing
 - [ ] T9 Folder loader with line numbers and content rules
 - [ ] T10 Notes heading rules
 - [ ] T11 Convert TLPI into `courses/tlpi/`

@@ -124,12 +124,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Pydantic models for course meta, outline, unit, sections, the question union (incl. the two `output` shapes) and exercises; camelCase aliases; `extra="forbid"`; canonical-JSON SHA-256 per item and per course.
 
 **Acceptance criteria:**
-- [ ] Every question type parses from a valid dict and rejects an unknown field
-- [ ] `output` with both or neither shape is rejected with a clear message
-- [ ] Hash is identical across runs and key order
+- [x] Every question type parses from a valid dict and rejects an unknown field
+- [x] `output` with both or neither shape is rejected with a clear message
+- [x] Hash is identical across runs and key order
 
 **Verification:**
-- [ ] `uv run pytest tests/content/test_schemas.py && uv run pyright src/recall_content`
+- [x] `uv run pytest tests/content/test_schemas.py && uv run pyright src/recall_content`
 
 **Dependencies:** T2 · **Files:** src/recall_content/{schemas,hashing}.py, tests/content/test_schemas.py · **Size:** S
 
