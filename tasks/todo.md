@@ -175,9 +175,9 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Dependencies:** T1, T9, T10 · **Files:** web/scripts/export-course.test.ts, courses/tlpi/**, tests/content/test_tlpi.py · **Size:** M
 
 ### Checkpoint B: Engine + content model
-- [ ] Golden parity 100%; engine coverage 100%; `courses/tlpi` validates clean
-- [ ] `make test lint security` green
-- [ ] **Write and approve SPEC-store, SPEC-content-import, SPEC-catalog-api** before Phase 4
+- [x] Golden parity 100%; engine coverage 100%; `courses/tlpi` validates clean
+- [x] `make test lint security` green
+- [x] **Write and approve SPEC-store, SPEC-content-import, SPEC-catalog-api** before Phase 4
 
 ---
 

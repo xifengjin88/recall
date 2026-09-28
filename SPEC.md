@@ -24,9 +24,9 @@ This file is the index of the engineering specs. The product spec (what the lear
 | `platform` | Monorepo layout, Python tooling, Postgres in Compose, shared commands, security checks | — | [SPEC-platform.md](SPEC-platform.md) |
 | `sm2-engine` | Pure Python scheduler with golden-case parity to the TS engine; time-zone aware | `platform` | [SPEC-sm2-engine.md](SPEC-sm2-engine.md) |
 | `content-model` | Pydantic content schemas, the YAML + Markdown file format, parser and content rules | `platform` | [SPEC-content-model.md](SPEC-content-model.md) |
-| `store` | Postgres schema, SQLAlchemy models, Alembic migrations, sessions, default learner | `sm2-engine`, `content-model` | to write |
-| `content-import` | `recall content validate / import / export` CLI; TLPI conversion to files | `content-model`, `store` | to write |
-| `catalog-api` | Read-only course, outline, content and notes endpoints | `store` | to write |
+| `store` | Postgres schema, SQLAlchemy models, Alembic migrations, sessions, default learner | `sm2-engine`, `content-model` | [SPEC-store.md](SPEC-store.md) |
+| `content-import` | `recall content validate / import / export` CLI; TLPI conversion to files | `content-model`, `store` | [SPEC-content-import.md](SPEC-content-import.md) |
+| `catalog-api` | Read-only course, outline, content and notes endpoints | `store` | [SPEC-catalog-api.md](SPEC-catalog-api.md) |
 | `learning-api` | Review events (server runs SM-2), sessions, exercises, settings, progress import/export, course card counts | `sm2-engine`, `store`, `catalog-api` | to write |
 | `web-client` | React app on the API: course grid, `/c/:course` routes, rating events, retire TS engine and IndexedDB (after one-time upload) | `catalog-api`, `learning-api` | to write |
 
