@@ -19,7 +19,10 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { Progress } from "~/components/ui/progress";
+import type { Route } from "./+types/session";
+import { api } from "~/api/client";
 import { SUBJECT, CHAPTERS } from "~/content";
+import { ensureCourse } from "~/content/load";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { answerText, grade, responseText } from "~/lib/grade";
 import { formatDue, RATINGS, type Card, type Rating } from "~/lib/engine";
@@ -67,22 +70,31 @@ export const handle: RouteHandle = {
   ],
 };
 
-export default function SessionRoute() {
+// Picks the session's questions once per URL. Filters and order are the app's; which cards are in
+// today's queue (learning, due, new within the daily limits) is the server's answer.
+export async function clientLoader({ params, request }: Route.ClientLoaderArgs) {
+  await ensureCourse(params.course);
+  const spec = specFromSearch(new URL(request.url).searchParams);
+  const questions = await pickQuestions(CHAPTERS, spec, {
+    cards: getProgress().cards,
+    queue: (candidates) => api.queue(params.course, { kind: "question", candidates }),
+  });
+  return { questions };
+}
+
+export default function SessionRoute({ loaderData }: Route.ComponentProps) {
   const [params] = useSearchParams();
   const key = params.toString();
   const spec = useMemo(() => specFromSearch(new URLSearchParams(key)), [key]);
   // A new search string (e.g. "Retry missed") is a new session.
-  return <SessionRunner key={key} spec={spec} />;
+  return <SessionRunner key={key} spec={spec} picked={loaderData.questions} />;
 }
 
 const newId = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
 
-function SessionRunner({ spec }: { spec: SessionSpec }) {
+function SessionRunner({ spec, picked }: { spec: SessionSpec; picked: Question[] }) {
   const navigate = useNavigate();
-  const [questions] = useState(() => {
-    const p = getProgress();
-    return pickQuestions(CHAPTERS, spec, { cards: p.cards, reviews: p.reviews, now: Date.now(), preset: presetFor("question") });
-  });
+  const [questions] = useState(picked); // fixed for the session, even as answers change the queue
   const [sessionId] = useState(newId);
   const [startedAt] = useState(Date.now);
   const [rows, setRows] = useState<ResultRow[] | null>(null);

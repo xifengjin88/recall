@@ -34,7 +34,12 @@ export function preview(card: Card, now: number, preset: Preset = PRESETS[card.k
 
 export function formatDue(after: Card, now: number): string {
   if (after.phase === "review") return formatDays(after.interval);
-  const mins = Math.round((after.due - now) / 60_000);
+  return formatWait(after.due - now);
+}
+
+/** A wait in ms as "<1m", "6m", "3h" or days. */
+export function formatWait(ms: number): string {
+  const mins = Math.round(ms / 60_000);
   if (mins < 1) return "<1m";
   if (mins < 60) return `${mins}m`;
   if (mins < 24 * 60) return `${Math.round(mins / 60)}h`;

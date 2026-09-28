@@ -4,7 +4,7 @@ from typing import Any
 
 from flask import Blueprint, Response, jsonify, request
 
-from ..app import get_db
+from ..app import get_db, now_ms
 from ..services import catalog
 
 bp = Blueprint("catalog", __name__, url_prefix="/api/courses")
@@ -12,7 +12,7 @@ bp = Blueprint("catalog", __name__, url_prefix="/api/courses")
 
 @bp.get("")
 def list_courses() -> dict[str, Any]:
-    return {"courses": catalog.list_courses(get_db())}
+    return {"courses": catalog.list_courses(get_db(), now_ms())}
 
 
 @bp.get("/<slug>")

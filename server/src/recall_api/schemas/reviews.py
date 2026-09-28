@@ -44,3 +44,11 @@ class ExercisePatch(Strict):
 
 class AttemptRequest(Strict):
     mode: Literal["redo", "quick"]
+
+
+class QueueRequest(Strict):
+    kind: Literal["question", "exercise"]
+    learn_ahead: bool = True
+    # Item keys in the order to introduce new ones (after the client's filters and shuffle);
+    # omitted = every active item of this kind in book order.
+    candidates: list[str] | None = Field(default=None, max_length=10_000)

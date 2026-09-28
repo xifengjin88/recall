@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..errors import not_found
 from ..models import Course, Item, Notes, Unit
+from .queue import today_counts
 
 
 def get_course(session: Session, slug: str) -> Course:
@@ -16,7 +17,8 @@ def get_course(session: Session, slug: str) -> Course:
     return course
 
 
-def list_courses(session: Session) -> list[dict[str, Any]]:
+def list_courses(session: Session, now: int) -> list[dict[str, Any]]:
+
     counts: dict[Any, int] = {
         course_id: n
         for course_id, n in session.execute(
@@ -42,6 +44,7 @@ def list_courses(session: Session) -> list[dict[str, Any]]:
             "unitCount": counts.get(c.id, 0),
             "questionCount": item_counts.get((c.id, "question"), 0),
             "exerciseCount": item_counts.get((c.id, "exercise"), 0),
+            "today": today_counts(session, c, now),
         }
         for c in courses
     ]

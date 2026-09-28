@@ -3,6 +3,7 @@
 
 import type { Card, CardKind, Preset, PresetOverrides, Rating } from "~/lib/engine";
 import type { ExerciseState, ProgressData, ReviewRecord, ReviewSource, SessionPrefs, Theme } from "~/lib/progress";
+import type { TodayQueue } from "~/lib/session";
 import type { Chapter } from "~/lib/types";
 
 export interface CourseSummary {
@@ -14,6 +15,8 @@ export interface CourseSummary {
   unitCount: number;
   questionCount: number;
   exerciseCount: number;
+  /** Questions in today's queue (the course home's counts). */
+  today: { learning: number; review: number; fresh: number };
 }
 
 export interface CoursesResponse {
@@ -79,6 +82,14 @@ export interface ImportResult {
 
 /** Only the fields sent change. First touch starts the exercise; "skipped" also suspends its card. */
 export type ExercisePatch = Partial<Pick<ExerciseState, "status" | "notes" | "testsPassed" | "hintsRevealed">>;
+
+export type { TodayQueue };
+
+/** The course home: the question queue (no learn-ahead), exercises due for a redo, the next question due. */
+export interface TodayInfo extends TodayQueue {
+  redo: string[];
+  nextDue: number | null;
+}
 
 /** Per kind: engine + course defaults, the learner's overrides, and the options the engine uses. */
 export interface SchedulingInfo {

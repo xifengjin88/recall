@@ -14,6 +14,8 @@ import type {
   ReviewRequest,
   ReviewResult,
   SchedulingInfo,
+  TodayInfo,
+  TodayQueue,
   UnitNotes,
 } from "./types";
 
@@ -83,6 +85,10 @@ export const api = {
     request<ExerciseState>(`/courses/${enc(slug)}/exercises/${enc(key)}`, json("PATCH", patch)),
   startAttempt: (slug: string, key: string, mode: Exclude<AttemptMode, "first">) =>
     request<ExerciseState>(`/courses/${enc(slug)}/exercises/${enc(key)}/attempts`, json("POST", { mode })),
+  /** Today's queue; `candidates` (item keys in the order to introduce new ones) default to all, in book order. */
+  queue: (slug: string, body: { kind: CardKind; learnAhead?: boolean; candidates?: string[] }) =>
+    request<TodayQueue>(`/courses/${enc(slug)}/queue`, json("POST", body)),
+  today: (slug: string) => request<TodayInfo>(`/courses/${enc(slug)}/today`),
 
   // ---- settings ----
   settings: () => request<LearnerSettings>("/settings"),

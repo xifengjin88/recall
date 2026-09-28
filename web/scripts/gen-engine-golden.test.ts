@@ -30,7 +30,7 @@ import {
   type Rating,
 } from "../app/lib/engine";
 import type { ReviewRecord } from "../app/lib/progress";
-import { doneToday, todayQueue } from "../app/lib/session";
+import { doneToday, todayQueue } from "../app/lib/engine/queue";
 
 const OUT = fileURLToPath(new URL("../../server/tests/engine/golden/sm2.json", import.meta.url));
 const TZ = process.env.TZ!;

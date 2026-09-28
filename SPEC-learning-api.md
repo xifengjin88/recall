@@ -32,7 +32,7 @@ All paths are under `/api/courses/<slug>` unless noted. Unknown course → 404 `
 | `POST /sessions/<id>/complete` | → session with `completedAt` and `completedDay` (the learner's study day) |
 | `PATCH /exercises/<key>` | partial `ExerciseState` → `ExerciseState` (first touch moves it to in progress) |
 | `POST /exercises/<key>/attempts` | `{mode: "redo" \| "quick"}` → `ExerciseState` (tests and hints reset, notes kept) |
-| `GET /queue` | `?kind=question\|exercise&learnAhead=0\|1` → `{learning, review, fresh}` item keys from `today_queue` over the course's active items in book order |
+| `POST /queue` | `{kind, learnAhead = true, candidates?}` → `{learning, review, fresh}` item keys from `today_queue`. `candidates` are item keys in the order to introduce new ones (the session picker filters and shuffles first); omitted = the course's active items in book order (unit, section position, authored order). A POST because the candidate list can be long |
 | `GET /today` | → `{learning, review, fresh, redo: [keys], nextDue: ms \| null}` for the course home |
 | `GET /scheduling` | → `{defaults: {question, exercise}, overrides, effective}` (engine defaults + course defaults, learner overrides, their combination) |
 | `PATCH /scheduling` | `{kind, changes: {...} \| null}` → same as GET. Values are validated with the Settings form's ranges (and min ≤ max interval); a `null` option removes that override, `changes: null` resets the kind |

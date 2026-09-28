@@ -28,6 +28,7 @@ def test_course_list(client: FlaskClient) -> None:
                 "unitCount": 1,
                 "questionCount": 8,
                 "exerciseCount": 1,
+                "today": {"learning": 0, "review": 0, "fresh": 5},  # course.yaml: 5 new/day
             },
             {
                 "slug": "tlpi",
@@ -38,6 +39,7 @@ def test_course_list(client: FlaskClient) -> None:
                 "unitCount": 1,
                 "questionCount": 50,
                 "exerciseCount": 0,
+                "today": {"learning": 0, "review": 0, "fresh": 20},
             },
         ]
     }

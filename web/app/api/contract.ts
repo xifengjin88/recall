@@ -11,6 +11,8 @@ import type {
   Previews,
   ReviewResult,
   SchedulingInfo,
+  TodayInfo,
+  TodayQueue,
   UnitNotes,
 } from "./types";
 import content from "./samples/content.json";
@@ -21,10 +23,12 @@ import exercise from "./samples/exercise.json";
 import notes from "./samples/notes.json";
 import preview from "./samples/preview.json";
 import progress from "./samples/progress.json";
+import queue from "./samples/queue.json";
 import review from "./samples/review.json";
 import scheduling from "./samples/scheduling.json";
 import session from "./samples/session.json";
 import settings from "./samples/settings.json";
+import today from "./samples/today.json";
 
 // JSON imports widen string literals ("learning" → string), so objects with literal unions can't use
 // `satisfies` directly. `Loose<T>` keeps every key and nesting but relaxes literals to string/number:
@@ -52,4 +56,6 @@ export const samples = {
   exercise: exercise satisfies Loose<ExerciseState> as ExerciseState,
   scheduling: scheduling satisfies Loose<SchedulingInfo> as SchedulingInfo,
   settings: settings satisfies Loose<LearnerSettings> as LearnerSettings,
+  queue: queue satisfies TodayQueue,
+  today: today satisfies TodayInfo,
 };

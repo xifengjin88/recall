@@ -12,7 +12,7 @@ import {
   resetAll,
   type ReviewRecord,
 } from "./progress";
-import { doneToday, makeRng, nextInSession, pickQuestions, present, specFromSearch, specToSearch, todayQueue, type SessionSpec } from "./session";
+import { makeRng, nextInSession, pickQuestions, present, specFromSearch, specToSearch, type SessionSpec, type TodayQueue } from "./session";
 import { forecast, streak, weakest } from "./stats";
 import type { Chapter, LoadedChapter, Question } from "./types";
 import { validateBook } from "./validate";
@@ -208,32 +208,35 @@ describe("sessions", () => {
     seed: 42,
     ...over,
   });
-  const ctx = (cards: Record<string, Card> = {}, reviews: ReviewRecord[] = []) => ({ cards, reviews, now: NOW, preset: QUESTION_PRESET });
-  const ids = (s: SessionSpec, c = ctx()) => pickQuestions([ch], s, c).map((q) => q.id);
+  // Stands in for the server's queue (POST /queue): a fixed answer, limited to the candidates it's asked about.
+  const fakeQueue = (answer: TodayQueue, asked: string[][] = []) => async (candidates: string[]) => {
+    asked.push(candidates);
+    const only = (xs: string[]) => xs.filter((x) => candidates.includes(x));
+    return { learning: only(answer.learning), review: only(answer.review), fresh: candidates.filter((c) => answer.fresh.includes(c)) };
+  };
+  const NONE: TodayQueue = { learning: [], review: [], fresh: [] };
+  const ctx = (cards: Record<string, Card> = {}, queue = fakeQueue(NONE)) => ({ cards, queue });
+  const ids = async (s: SessionSpec, c = ctx()) => (await pickQuestions([ch], s, c)).map((q) => q.id);
 
-  it("scopes, filters and limits", () => {
+  it("scopes, filters and limits", async () => {
     // book order: by section (t is in 1.2), then authored order
-    expect(ids(spec({}))).toEqual(["s", "m", "y", "r", "t"]);
-    expect(ids(spec({ scope: "sections", sections: ["1.2"] }))).toEqual(["t"]);
-    expect(ids(spec({ types: ["typed", "order"] }))).toEqual(["y", "r"]);
-    expect(ids(spec({ length: 10, order: "shuffled" })).sort()).toEqual(["m", "r", "s", "t", "y"]);
+    expect(await ids(spec({}))).toEqual(["s", "m", "y", "r", "t"]);
+    expect(await ids(spec({ scope: "sections", sections: ["1.2"] }))).toEqual(["t"]);
+    expect(await ids(spec({ types: ["typed", "order"] }))).toEqual(["y", "r"]);
+    expect((await ids(spec({ length: 10, order: "shuffled" }))).sort()).toEqual(["m", "r", "s", "t", "y"]);
     const cards = { m: review("m", 3, { lastRating: "again" }), s: review("s", 5, { due: dayStartMs(addDays(DAY, 2)) }) };
-    expect(ids(spec({ scope: "due" }), ctx(cards))).toEqual(["m"]);
-    expect(ids(spec({ scope: "mistakes" }), ctx(cards))).toEqual(["m"]);
+    expect(await ids(spec({ scope: "mistakes" }), ctx(cards))).toEqual(["m"]);
   });
 
-  it("today's queue: learning, then due reviews, then new cards, within daily limits", () => {
-    const cards = {
-      r: review("r", 3),
-      t: { ...review("t", 0), phase: "learning" as const, due: NOW - 1 },
-      s: review("s", 5, { due: dayStartMs(addDays(DAY, 3)) }),
-    };
-    expect(ids(spec({ scope: "today" }), ctx(cards))).toEqual(["t", "r", "m", "y"]);
-    const q = todayQueue(["s", "m", "t", "y", "r"], cards, NOW, { ...QUESTION_PRESET, newPerDay: 3 }, { newDone: 2, reviewsDone: 0 });
-    expect(q.fresh).toEqual(["m"]);
-    const done = doneToday([rev("a", "x", true), rev("b", "y", true, { before: { phase: "review", interval: 3, ease: 2.5, due: 0 } })], NOW);
-    expect(done.question).toEqual({ newDone: 1, reviewsDone: 1 });
-    expect(todayQueue(["r"], cards, NOW, { ...QUESTION_PRESET, reviewsPerDay: 1 }, done.question).review).toEqual([]);
+  it("today's queue comes from the server: learning, due reviews, then new cards", async () => {
+    const asked: string[][] = [];
+    const queue = fakeQueue({ learning: ["t"], review: ["r"], fresh: ["m", "y", "s"] }, asked);
+    expect(await ids(spec({ scope: "today" }), ctx({}, queue))).toEqual(["t", "r", "s", "m", "y"]);
+    expect(asked[0]).toEqual(["s", "m", "y", "r", "t"]); // candidates in book order
+    expect(await ids(spec({ scope: "due" }), ctx({}, queue))).toEqual(["t", "r"]); // no new cards
+    // filters narrow the candidates before the server applies its daily limits
+    await ids(spec({ scope: "today", types: ["typed", "order"] }), ctx({}, queue));
+    expect(asked.at(-1)).toEqual(["y", "r"]);
   });
 
   it("brings relearning cards back when due, or early when nothing else is left", () => {
@@ -244,8 +247,8 @@ describe("sessions", () => {
     expect(nextInSession([], [{ id: "a", due: NOW + 30 * 60_000 }], NOW, 20 * 60_000)).toBeNull();
   });
 
-  it("retry uses exactly the given ids (acceptance 6)", () => {
-    const got = pickQuestions([ch], spec({ scope: "ids", ids: ["r", "s"], length: 10, types: ["multi"] }), ctx());
+  it("retry uses exactly the given ids (acceptance 6)", async () => {
+    const got = await pickQuestions([ch], spec({ scope: "ids", ids: ["r", "s"], length: 10, types: ["multi"] }), ctx());
     expect(got.map((q) => q.id).sort()).toEqual(["r", "s"]);
   });
 

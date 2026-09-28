@@ -8,9 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { APP } from "~/config";
 import { useListNav } from "~/hooks/use-hotkeys";
 import { LIST_SHORTCUTS, type RouteHandle } from "~/lib/shortcuts";
+import { flushWrites } from "~/state/progress-store";
+import type { CourseSummary } from "~/api/types";
 
 export async function clientLoader() {
+  await flushWrites(); // counts should include what was just answered in a course
   return api.courses();
+}
+
+/** "3 learning · 12 due · 20 new", like the course home's Today card. */
+function todayText({ learning, review, fresh }: CourseSummary["today"]): string {
+  const parts = [[learning, "learning"], [review, "due"], [fresh, "new"]].filter(([n]) => n) as [number, string][];
+  return parts.length ? `Today: ${parts.map(([n, label]) => `${n} ${label}`).join(" · ")}` : "Nothing to study today";
 }
 
 export function meta() {
@@ -56,6 +65,7 @@ export default function Courses({ loaderData }: Route.ComponentProps) {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {c.description ? <p className="text-sm text-muted-foreground">{c.description}</p> : null}
+                    <p className="text-sm font-medium tabular-nums">{todayText(c.today)}</p>
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <span className="flex items-center gap-1.5 text-muted-foreground">
                         <BookOpenIcon className="size-4" aria-hidden />

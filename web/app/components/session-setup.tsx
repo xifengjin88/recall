@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { Label } from "~/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
-import { CHAPTERS, getChapter } from "~/content";
-import { resolvePreset } from "~/lib/engine";
+import { api } from "~/api/client";
+import { CHAPTERS, getChapter, SUBJECT } from "~/content";
 import type { SessionLength, SessionOrder } from "~/lib/progress";
 import { newSeed, pickQuestions, SCOPE_LABELS, specToSearch, type Scope, type SessionSpec } from "~/lib/session";
 import { QUESTION_TYPES, type QuestionType } from "~/lib/types";
@@ -77,18 +77,23 @@ function SetupForm({ entry }: { entry: SetupEntry }) {
     difficulty,
     seed: 0,
   };
-  const count = useMemo(
-    () =>
-      pickQuestions(CHAPTERS, { ...spec, length: "all" }, {
-        cards: progress.cards,
-        reviews: progress.reviews,
-        now: Date.now(),
-        preset: resolvePreset("question", progress.settings.scheduling),
-      }).length,
+  // How many questions match; for today's queue and due cards the server decides (null while asking).
+  const [count, setCount] = useState<number | null>(null);
+  const specKey = JSON.stringify(spec);
+  useEffect(() => {
+    let live = true;
+    pickQuestions(CHAPTERS, { ...spec, length: "all" }, {
+      cards: progress.cards,
+      queue: (candidates) => api.queue(SUBJECT.id, { kind: "question", candidates }),
+    })
+      .then((qs) => live && setCount(qs.length))
+      .catch(() => live && setCount(0));
+    return () => {
+      live = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(spec), progress.cards, progress.reviews, progress.settings.scheduling],
-  );
-  const sessionSize = length === "all" ? count : Math.min(length, count);
+  }, [specKey, progress.cards, progress.settings.scheduling]);
+  const sessionSize = count === null ? 0 : length === "all" ? count : Math.min(length, count);
 
   function start(e: React.FormEvent) {
     e.preventDefault();
@@ -188,7 +193,7 @@ function SetupForm({ entry }: { entry: SetupEntry }) {
 
       <DialogFooter className="items-center sm:justify-between">
         <p className="text-sm text-muted-foreground" aria-live="polite">
-          {count === 0 ? "No questions match these options." : `${sessionSize} of ${count} matching questions`}
+          {count === null ? "Counting…" : count === 0 ? "No questions match these options." : `${sessionSize} of ${count} matching questions`}
         </p>
         <Button type="submit" disabled={!sessionSize}>
           Start <KeyHint className="border-primary-foreground/30 bg-transparent text-primary-foreground/80">Enter</KeyHint>

@@ -12,13 +12,15 @@ import { Card, CardContent } from "~/components/ui/card";
 import { ALL_EXERCISES, CHAPTERS, SUBJECT, getChapter, TOC } from "~/content";
 import { useHotkeys, useListNav } from "~/hooks/use-hotkeys";
 import { formatDay, studyDay, today } from "~/lib/dates";
-import { formatDue, resolvePreset } from "~/lib/engine";
+import { formatWait } from "~/lib/engine";
 import { chapterStatus, mastery } from "~/lib/mastery";
 import { LIST_SHORTCUTS, type RouteHandle } from "~/lib/shortcuts";
-import { bookOrder, doneToday, todayQueue } from "~/lib/session";
 import { streak } from "~/lib/stats";
 import { cn } from "~/lib/utils";
-import { useProgress } from "~/state/progress-store";
+import { flushWrites, useProgress } from "~/state/progress-store";
+import { api } from "~/api/client";
+import { ensureCourse } from "~/content/load";
+import type { Route } from "./+types/home";
 import { coursePath } from "~/lib/paths";
 
 export const handle: RouteHandle = {
@@ -26,11 +28,18 @@ export const handle: RouteHandle = {
   shortcuts: [{ keys: ["r"], label: "Study today's queue" }, { keys: ["c"], label: "Continue last chapter" }, ...LIST_SHORTCUTS],
 };
 
+// Today's counts come from the server; they refresh each time the course home is opened.
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  await ensureCourse(params.course);
+  await flushWrites(); // e.g. the session just finished
+  return { today: await api.today(params.course) };
+}
+
 export function meta() {
   return [{ title: `${APP.name}` }];
 }
 
-export default function Home() {
+export default function Home({ loaderData }: Route.ComponentProps) {
   const progress = useProgress();
   const day = today();
   const [setup, setSetup] = useState<SetupEntry | null>(null);
@@ -38,16 +47,11 @@ export default function Home() {
   useListNav(listRef);
 
   const now = Date.now();
-  const done = doneToday(progress.reviews, now);
-  const scheduling = progress.settings.scheduling;
-  const q = todayQueue(bookOrder(CHAPTERS).map((x) => x.id), progress.cards, now, resolvePreset("question", scheduling), done.question, false);
-  const ex = todayQueue(ALL_EXERCISES.map((e) => e.id), progress.cards, now, resolvePreset("exercise", scheduling), done.exercise, false);
-  const redo = [...ex.learning, ...ex.review].map((id) => ALL_EXERCISES.find((e) => e.id === id)!);
+  const q = loaderData.today;
+  const redo = q.redo.map((id) => ALL_EXERCISES.find((e) => e.id === id)).filter((e) => e !== undefined);
   const dueNow = q.learning.length + q.review.length;
   const total = dueNow + q.fresh.length;
-  const nextDue = Object.values(progress.cards)
-    .filter((c) => c.kind === "question" && !c.suspended && c.phase !== "new" && c.due > now)
-    .sort((a, b) => a.due - b.due)[0];
+  const nextDue = q.nextDue;
   const days = streak(progress.sessions, day);
   const last = progress.lastChapter !== null ? getChapter(progress.lastChapter) : undefined;
 
@@ -69,8 +73,8 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">
                 {total > 0
                   ? `${total} card${total === 1 ? "" : "s"} in today's queue`
-                  : nextDue
-                    ? `All done. Next: ${studyDay(nextDue.due) === today(now) ? `in ${formatDue(nextDue, now)}` : formatDay(studyDay(nextDue.due))}`
+                  : nextDue !== null
+                    ? `All done. Next: ${studyDay(nextDue) === today(now) ? `in ${formatWait(nextDue - now)}` : formatDay(studyDay(nextDue))}`
                     : "Nothing left today."}
               </p>
             </div>

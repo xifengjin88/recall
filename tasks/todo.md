@@ -360,11 +360,11 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `GET …/queue?scope=today|due` (ids from `today_queue`) used by session setup; course grid and course Home counts (learning, due, new, redos) computed server-side.
 
 **Acceptance criteria:**
-- [ ] Counts on the grid, course Home and session setup agree with each other
-- [ ] Daily limits respect per-course overrides and the learner's 04:00 boundary
+- [x] Counts on the grid, course Home and session setup agree with each other
+- [x] Daily limits respect per-course overrides and the learner's 04:00 boundary
 
 **Verification:**
-- [ ] `uv run pytest tests/api/test_queue.py` · Manual: counts before and after a session
+- [x] `uv run pytest tests/api/test_queue.py` · Manual: counts before and after a session
 
 **Dependencies:** T23 · **Files:** src/recall_api/services/queue.py, src/recall_api/api/queue.py, tests/api/test_queue.py, web/app/routes/course-home.tsx, web/app/components/session-setup.tsx · **Size:** M
 

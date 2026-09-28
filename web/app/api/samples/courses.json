@@ -8,6 +8,11 @@
    "short": "DEMO",
    "slug": "demo",
    "title": "Demo Course",
+   "today": {
+    "fresh": 5,
+    "learning": 0,
+    "review": 0
+   },
    "unitCount": 1
   },
   {
@@ -18,6 +23,11 @@
    "short": "TLPI",
    "slug": "tlpi",
    "title": "The Linux Programming Interface",
+   "today": {
+    "fresh": 20,
+    "learning": 0,
+    "review": 0
+   },
    "unitCount": 1
   }
  ]
