@@ -72,7 +72,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 **Checkpoint C (half milestone):** open the grid, enter TLPI, take a quiz; content comes from Postgres, progress still in IndexedDB. **Write and approve SPEC-learning-api, SPEC-web-client.**
 
 ### Phase 5: Progress on the server
-- [ ] T18 Progress tables and migration
+- [x] T18 Progress tables and migration
 - [ ] T19 Progress import / export / load endpoints
 - [ ] T20 Review events and sessions endpoints (server runs SM-2)
 - [ ] T21 Web: quiz and flashcards send rating events

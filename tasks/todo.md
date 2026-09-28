@@ -278,11 +278,11 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** Models + migration for cards, reviews, sessions, exercise_states, learner_settings (theme, key hints, prefs, time zone), course_settings (scheduling overrides), all scoped by learner and course, with the indexes from the architecture doc.
 
 **Acceptance criteria:**
-- [ ] Migration up/down clean on a DB that already has content
-- [ ] Constraints: one card per (learner, item); review ids unique; rating/phase enums enforced
+- [x] Migration up/down clean on a DB that already has content
+- [x] Constraints: one card per (learner, item); review ids unique; rating/phase enums enforced
 
 **Verification:**
-- [ ] `uv run alembic upgrade head && uv run pytest tests/store`
+- [x] `uv run alembic upgrade head && uv run pytest tests/store`
 
 **Dependencies:** Checkpoint C · **Files:** src/recall_api/models.py, migrations/versions/0002_progress.py, tests/store/test_progress_models.py · **Size:** S
 
