@@ -34,4 +34,6 @@ def test_sample_is_current(client: FlaskClient, name: str) -> None:
     if os.environ.get("GEN_SAMPLES"):
         SAMPLES.mkdir(parents=True, exist_ok=True)
         path.write_text(text)
-    assert path.read_text() == text, f"{path.name} is stale: GEN_SAMPLES=1 uv run pytest tests/api/test_samples.py"
+    assert path.read_text() == text, (
+        f"{path.name} is stale: GEN_SAMPLES=1 uv run pytest tests/api/test_samples.py"
+    )

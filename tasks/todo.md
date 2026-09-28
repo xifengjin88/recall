@@ -265,9 +265,9 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Dependencies:** T16 · **Files:** web/app/lib/paths.ts + link call sites (split into two commits if > 5 files) · **Size:** M
 
 ### Checkpoint C: Content from Postgres (half milestone)
-- [ ] Grid → TLPI → quiz works; content from Postgres; progress still in IndexedDB
-- [ ] `make test lint security` green
-- [ ] **Write and approve SPEC-learning-api, SPEC-web-client** before Phase 5
+- [x] Grid → TLPI → quiz works; content from Postgres; progress still in IndexedDB
+- [x] `make test lint security` green
+- [x] **Write and approve SPEC-learning-api, SPEC-web-client** before Phase 5
 
 ---
 

@@ -27,8 +27,8 @@ This file is the index of the engineering specs. The product spec (what the lear
 | `store` | Postgres schema, SQLAlchemy models, Alembic migrations, sessions, default learner | `sm2-engine`, `content-model` | [SPEC-store.md](SPEC-store.md) |
 | `content-import` | `recall content validate / import / export` CLI; TLPI conversion to files | `content-model`, `store` | [SPEC-content-import.md](SPEC-content-import.md) |
 | `catalog-api` | Read-only course, outline, content and notes endpoints | `store` | [SPEC-catalog-api.md](SPEC-catalog-api.md) |
-| `learning-api` | Review events (server runs SM-2), sessions, exercises, settings, progress import/export, course card counts | `sm2-engine`, `store`, `catalog-api` | to write |
-| `web-client` | React app on the API: course grid, `/c/:course` routes, rating events, retire TS engine and IndexedDB (after one-time upload) | `catalog-api`, `learning-api` | to write |
+| `learning-api` | Review events (server runs SM-2), sessions, exercises, settings, progress import/export, course card counts | `sm2-engine`, `store`, `catalog-api` | [SPEC-learning-api.md](SPEC-learning-api.md) |
+| `web-client` | React app on the API: course grid, `/c/:course` routes, rating events, retire TS engine and IndexedDB (after one-time upload) | `catalog-api`, `learning-api` | [SPEC-web-client.md](SPEC-web-client.md) |
 
 Build order: `platform` → `sm2-engine`, `content-model` (parallel) → `store` → `content-import`, `catalog-api` → `learning-api` → `web-client`
 
