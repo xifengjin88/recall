@@ -188,11 +188,11 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** SQLAlchemy 2.0 models for learners (with default row), courses, units, sections, notes, items (jsonb body, content_hash, retired), import_runs; `db.py` engine/session; Alembic initial migration; pytest fixture with per-test rolled-back transaction on `recall_test`.
 
 **Acceptance criteria:**
-- [ ] `alembic upgrade head` on an empty DB creates all tables and the default learner; `downgrade base` removes them
-- [ ] Unique `(course_id, key)` and FK constraints enforced (tested)
+- [x] `alembic upgrade head` on an empty DB creates all tables and the default learner; `downgrade base` removes them
+- [x] Unique `(course_id, key)` and FK constraints enforced (tested)
 
 **Verification:**
-- [ ] `make db-reset && cd server && uv run alembic upgrade head && uv run pytest tests/store`
+- [x] `make db-reset && cd server && uv run alembic upgrade head && uv run pytest tests/store`
 
 **Dependencies:** Checkpoint B · **Files:** src/recall_api/{db,models}.py, migrations/versions/0001_content.py, tests/conftest.py, tests/store/test_models.py · **Size:** M
 

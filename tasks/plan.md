@@ -62,7 +62,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 **Checkpoint B:** golden parity 100%, engine coverage 100%, `courses/tlpi` validates clean. **Write and approve SPEC-store, SPEC-content-import, SPEC-catalog-api.**
 
 ### Phase 4: First vertical slice, content from Postgres
-- [ ] T12 Content tables, models, first migration
+- [x] T12 Content tables, models, first migration
 - [ ] T13 `recall content validate / import / export` CLI
 - [ ] T14 Catalog API (courses, outline, content, notes)
 - [ ] T15 Web: API client, generated types, Vite proxy check
