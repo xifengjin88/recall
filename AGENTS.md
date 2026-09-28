@@ -12,16 +12,16 @@ Instructions for coding agents working in this repository. Claude Code reads thi
 
 ## Current state and migration in progress
 
-Today the repo is a single React app at the root, with content bundled in the JS and progress in the browser's IndexedDB. **Milestone 1** (see `SPEC.md`) turns it into a monorepo:
+The React app now lives in `web/` (task T1); content is still bundled in its JS and progress still lives in the browser's IndexedDB. **Milestone 1** (see `SPEC.md`) completes the monorepo:
 
 ```
-web/        the React app (moved from the root in task T1)
+web/        the React app
 server/     Python: recall_engine (pure SM-2), recall_content (schemas + parser), recall_api (Flask)
 courses/    course content: YAML + Markdown, imported into Postgres by `recall content import`
 compose.yaml  PostgreSQL 17
 ```
 
-Check `tasks/todo.md` for which tasks are done before assuming a path exists. Until T1 lands, web paths below are at the repo root instead of under `web/`.
+Check `tasks/todo.md` for which tasks are done before assuming a path exists. Web paths below (`app/…`) are relative to `web/`.
 
 ## Workflow
 
@@ -32,7 +32,7 @@ Check `tasks/todo.md` for which tasks are done before assuming a path exists. Un
 
 ## Commands
 
-Web (repo root today, `web/` after T1):
+Web (run inside `web/`; the Vite dev server proxies `/api` to the Flask server on :5001):
 
 ```sh
 npm run dev          # Vite dev server

@@ -11,13 +11,13 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `git mv` the React app (app/, public/, scripts/, package files, configs, Dockerfile, nginx.conf) into `web/`, reinstall node_modules there, and add the `/api` → `http://localhost:5001` proxy to `web/vite.config.ts`. Root keeps docs/, specs, CLAUDE.md, README.md.
 
 **Acceptance criteria:**
-- [ ] `cd web && npm test` passes all 54 tests; `npm run typecheck` and `npm run build` pass
-- [ ] `git log --follow web/app/lib/engine/sm2.ts` shows the file's history
-- [ ] App at `npm run dev` looks and behaves as before
+- [x] `cd web && npm test` passes all 54 tests; `npm run typecheck` and `npm run build` pass
+- [x] `git log --follow web/app/lib/engine/sm2.ts` shows the file's history
+- [x] App at `npm run dev` looks and behaves as before
 
 **Verification:**
-- [ ] `cd web && npm ci && npm test && npm run typecheck && npm run build`
-- [ ] Manual: open the dev server, take one quiz question
+- [x] `cd web && npm ci && npm test && npm run typecheck && npm run build`
+- [x] Manual: open the dev server, take one quiz question
 
 **Dependencies:** None · **Files:** web/vite.config.ts, web/package.json (paths only), moved tree · **Size:** M
 

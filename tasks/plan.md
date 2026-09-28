@@ -41,7 +41,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 ## Task list
 
 ### Phase 1: Platform
-- [ ] T1 Move the web app into `web/`
+- [x] T1 Move the web app into `web/`
 - [ ] T2 Python project skeleton in `server/`
 - [ ] T3 Postgres in Compose, Makefile, env, docs
 

@@ -5,6 +5,7 @@ Spaced-repetition study app: quizzes, flashcards and exercises scheduled by one 
 React 19 · React Router 8 (framework mode, SPA) · Tailwind v4 · shadcn/ui · Dexie (IndexedDB) · Vitest. Progress stays in the browser.
 
 ```sh
+cd web
 npm install
 npm run dev        # http://localhost:5173
 npm test           # unit tests for app/lib
