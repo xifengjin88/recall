@@ -1,0 +1,178 @@
+{
+ "chapters": [
+  {
+   "exercises": [
+    {
+     "bookRef": "1-1",
+     "difficulty": 1,
+     "estimate": "20 min",
+     "goal": "Print hello.",
+     "hints": [
+      "Use write(2)."
+     ],
+     "id": "demo-ex01",
+     "requirements": [
+      "Print \"hello\" and a newline."
+     ],
+     "sections": [
+      "1.1"
+     ],
+     "tests": [
+      {
+       "expect": "stdout is hello",
+       "name": "prints hello",
+       "run": "./hello"
+      },
+      {
+       "expect": "0",
+       "name": "exit status",
+       "run": "./hello; echo $?"
+      }
+     ],
+     "title": "Write `hello`"
+    }
+   ],
+   "note": "DEMO 01 - Basics",
+   "number": 1,
+   "questions": [
+    {
+     "answer": "b",
+     "difficulty": 1,
+     "explanation": "Because b.",
+     "id": "demo-q001",
+     "options": [
+      "a",
+      "b",
+      "c"
+     ],
+     "prompt": "Pick **b**.",
+     "section": "1.1",
+     "type": "single"
+    },
+    {
+     "answers": [
+      "a",
+      "c"
+     ],
+     "difficulty": 2,
+     "explanation": "Exactly a and c.",
+     "id": "demo-q002",
+     "options": [
+      "a",
+      "b",
+      "c"
+     ],
+     "prompt": "Pick a and c.",
+     "section": "1.1",
+     "tags": [
+      "set"
+     ],
+     "type": "multi"
+    },
+    {
+     "answer": false,
+     "difficulty": 1,
+     "explanation": "It is blue.",
+     "id": "demo-q003",
+     "prompt": "The sky is green.",
+     "section": "1.2",
+     "type": "truefalse"
+    },
+    {
+     "accept": [
+      "x",
+      "ex"
+     ],
+     "difficulty": 1,
+     "explanation": "It's x.",
+     "hint": "One letter.",
+     "id": "demo-q004",
+     "noteAnchor": "Details",
+     "prompt": "Type `x`.",
+     "section": "1.2",
+     "type": "typed"
+    },
+    {
+     "accept": [
+      "hi"
+     ],
+     "code": {
+      "lang": "bash",
+      "source": "$ echo hi"
+     },
+     "difficulty": 2,
+     "explanation": "echo prints its argument.",
+     "id": "demo-q005",
+     "prompt": "What does it print?",
+     "section": "1.2",
+     "type": "output"
+    },
+    {
+     "answer": "0",
+     "code": {
+      "lang": "c",
+      "source": "int main(void) { return 0; }\n"
+     },
+     "difficulty": 2,
+     "explanation": "main returns 0.",
+     "id": "demo-q006",
+     "options": [
+      "0",
+      "1"
+     ],
+     "prompt": "Which line?",
+     "section": "1.1",
+     "type": "output"
+    },
+    {
+     "difficulty": 1,
+     "explanation": "Counting.",
+     "id": "demo-q007",
+     "items": [
+      "one",
+      "two",
+      "three"
+     ],
+     "prompt": "Order them.",
+     "section": "1.1",
+     "type": "order"
+    },
+    {
+     "difficulty": 1,
+     "explanation": "Upper case.",
+     "id": "demo-q008",
+     "pairs": [
+      {
+       "definition": "A",
+       "term": "a"
+      },
+      {
+       "definition": "B",
+       "term": "b"
+      },
+      {
+       "definition": "C",
+       "term": "c"
+      }
+     ],
+     "prompt": "Match them.",
+     "section": "1.2",
+     "type": "match"
+    }
+   ],
+   "sections": [
+    {
+     "id": "1.1",
+     "title": "First Section"
+    },
+    {
+     "id": "1.2",
+     "title": "Second Section"
+    }
+   ],
+   "title": "Basics"
+  }
+ ],
+ "contentHash": "sha256:c1eb3b07b93a44e3c044cfab81f5d4439dc3a0c8bbcbddc80d51c554365fa370",
+ "slug": "demo"
+}

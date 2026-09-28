@@ -1,0 +1,6 @@
+{
+ "error": {
+  "code": "course_not_found",
+  "message": "No course with slug \"nope\"."
+ }
+}

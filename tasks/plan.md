@@ -65,7 +65,7 @@ Parallel-safe: T4–T7 (engine) alongside T8–T11 (content model). Everything f
 - [x] T12 Content tables, models, first migration
 - [x] T13 `recall content validate / import / export` CLI
 - [x] T14 Catalog API (courses, outline, content, notes)
-- [ ] T15 Web: API client, generated types, Vite proxy check
+- [x] T15 Web: API client, generated types, Vite proxy check
 - [ ] T16 Web: course grid at `/` and `/c/:course` layout loading content
 - [ ] T17 Web: course-scoped links and notes from the API
 

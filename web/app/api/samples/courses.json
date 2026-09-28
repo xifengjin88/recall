@@ -1,0 +1,24 @@
+{
+ "courses": [
+  {
+   "author": "Test Author",
+   "description": "A tiny course used by the content tests.",
+   "exerciseCount": 1,
+   "questionCount": 8,
+   "short": "DEMO",
+   "slug": "demo",
+   "title": "Demo Course",
+   "unitCount": 1
+  },
+  {
+   "author": "Michael Kerrisk",
+   "description": null,
+   "exerciseCount": 0,
+   "questionCount": 50,
+   "short": "TLPI",
+   "slug": "tlpi",
+   "title": "The Linux Programming Interface",
+   "unitCount": 1
+  }
+ ]
+}

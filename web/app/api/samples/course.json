@@ -1,0 +1,22 @@
+{
+ "author": "Test Author",
+ "contentHash": "sha256:c1eb3b07b93a44e3c044cfab81f5d4439dc3a0c8bbcbddc80d51c554365fa370",
+ "description": "A tiny course used by the content tests.",
+ "outline": [
+  {
+   "hasContent": true,
+   "hasNotes": true,
+   "number": 1,
+   "title": "Basics"
+  },
+  {
+   "hasContent": false,
+   "hasNotes": false,
+   "number": 2,
+   "title": "Coming Later"
+  }
+ ],
+ "short": "DEMO",
+ "slug": "demo",
+ "title": "Demo Course"
+}

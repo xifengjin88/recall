@@ -226,14 +226,14 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 
 ## Task 15: Web API client and types
 
-**Description:** Typed fetch client (`web/app/api/client.ts`) with the error shape; TS types generated from the Pydantic JSON Schema (`make types`), or hand-written with a contract test if the generator dependency isn't approved.
+**Description:** Typed fetch client (`web/app/api/client.ts`) with the error shape; hand-written response types (`web/app/api/types.ts`) checked by `contract.ts` against real responses saved by `server/tests/api/test_samples.py` (no generator dependency).
 
 **Acceptance criteria:**
-- [ ] `tsc` fails if a server field is renamed (proven once)
-- [ ] Client surfaces API errors as typed errors
+- [x] `tsc` fails if a server field is renamed (proven once)
+- [x] Client surfaces API errors as typed errors
 
 **Verification:**
-- [ ] `make types && cd web && npm run typecheck && npm test`
+- [x] `cd server && uv run pytest tests/api/test_samples.py && cd ../web && npm run typecheck && npm test`
 
 **Dependencies:** T14 · **Files:** web/app/api/client.ts, web/app/api/types.gen.ts, server/scripts/export_schema.py, Makefile · **Size:** S
 
