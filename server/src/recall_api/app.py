@@ -41,8 +41,10 @@ def create_app(session_factory: SessionFactory | None = None) -> Flask:
     register_error_handlers(app)
 
     from .api.catalog import bp as catalog
+    from .api.progress import bp as progress
 
     app.register_blueprint(catalog)
+    app.register_blueprint(progress)
 
     @app.get("/api/health")
     def health() -> dict[str, bool]:

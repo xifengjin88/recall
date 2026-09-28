@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 from flask import Flask, Response, jsonify
+from pydantic import ValidationError
 from werkzeug.exceptions import HTTPException, MethodNotAllowed, NotFound
 
 log = logging.getLogger(__name__)
@@ -33,6 +34,13 @@ def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(ApiError)
     def _api_error(err: ApiError) -> tuple[Response, int]:
         return jsonify(_body(err.code, err.message, err.details)), err.status
+
+    @app.errorhandler(ValidationError)
+    def _invalid(err: ValidationError) -> tuple[Response, int]:
+        details = [
+            {"field": ".".join(str(p) for p in e["loc"]), "message": str(e["msg"])} for e in err.errors()
+        ]
+        return jsonify(_body("invalid_request", "The request body is not valid.", details)), 400
 
     @app.errorhandler(NotFound)
     def _not_found(_err: NotFound) -> tuple[Response, int]:

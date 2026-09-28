@@ -291,12 +291,12 @@ Plan: [plan.md](plan.md). Specs: [SPEC.md](../SPEC.md). Sizes: S = 1–2 files, 
 **Description:** `GET /api/courses/<slug>/progress`, `PUT …/progress` (replace or merge; accepts current v2 and old v1 export files), `GET …/progress/export`.
 
 **Acceptance criteria:**
-- [ ] A Settings › Export file from today's app round-trips PUT → GET unchanged
-- [ ] v1 box-format file imports with the same results as the TS `migrateV1` (shared fixture)
-- [ ] Merge keeps the newer record per item
+- [x] A Settings › Export file from today's app round-trips PUT → GET unchanged
+- [x] v1 box-format file imports with the same results as the TS `migrateV1` (shared fixture)
+- [x] Merge keeps the newer record per item
 
 **Verification:**
-- [ ] `uv run pytest tests/api/test_progress_io.py`
+- [x] `uv run pytest tests/api/test_progress_io.py`
 
 **Dependencies:** T18 · **Files:** src/recall_api/schemas/progress.py, src/recall_api/services/progress.py, src/recall_api/api/progress.py, tests/api/test_progress_io.py · **Size:** M
 

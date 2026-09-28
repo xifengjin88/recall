@@ -1,0 +1,284 @@
+{
+ "tz": "America/New_York",
+ "input": {
+  "version": 1,
+  "items": {
+   "demo-q001": {
+    "box": 3,
+    "due": "2026-10-01",
+    "mistake": false,
+    "updatedAt": 1790000000000
+   },
+   "demo-q002": {
+    "box": 1,
+    "due": "2026-09-29",
+    "mistake": true,
+    "updatedAt": 1790000100000
+   },
+   "demo-q003": {
+    "box": 0,
+    "due": null,
+    "mistake": false,
+    "updatedAt": 0
+   },
+   "demo-q007": {
+    "box": 5,
+    "due": "2026-11-02",
+    "mistake": false,
+    "updatedAt": 1790000200000
+   }
+  },
+  "attempts": [
+   {
+    "id": "x1",
+    "questionId": "demo-q002",
+    "sessionId": "s1",
+    "mode": "quiz",
+    "at": 1790000100000,
+    "correct": false,
+    "hinted": false,
+    "overridden": false,
+    "answer": "a",
+    "boxBefore": 0,
+    "boxAfter": 1
+   },
+   {
+    "id": "x2",
+    "questionId": "demo-q001",
+    "sessionId": "s1",
+    "mode": "flashcards",
+    "at": 1790000000000,
+    "correct": true,
+    "hinted": false,
+    "overridden": false,
+    "answer": "easy",
+    "rating": "easy",
+    "boxBefore": 1,
+    "boxAfter": 3
+   },
+   {
+    "id": "x3",
+    "questionId": "demo-q007",
+    "sessionId": "s2",
+    "mode": "quiz",
+    "at": 1790000200000,
+    "correct": true,
+    "hinted": true,
+    "overridden": false,
+    "answer": "one two three",
+    "boxBefore": 4,
+    "boxAfter": 5
+   }
+  ],
+  "sessions": [
+   {
+    "id": "s1",
+    "mode": "quiz",
+    "startedAt": 1789999000000,
+    "completedAt": 1790000150000,
+    "completedDay": "2026-09-21"
+   },
+   {
+    "id": "s2",
+    "mode": "quiz",
+    "startedAt": 1790000180000
+   }
+  ],
+  "exercises": {
+   "demo-ex01": {
+    "status": "in-progress",
+    "testsPassed": [
+     "prints hello"
+    ],
+    "hintsRevealed": 1,
+    "notes": "use write(2)",
+    "updatedAt": 1790000300000
+   }
+  },
+  "settings": {
+   "theme": "dark",
+   "showKeyHints": false,
+   "obsidianVault": "Vault"
+  },
+  "prefs": {
+   "length": 20,
+   "order": "book",
+   "types": [
+    "single"
+   ],
+   "difficulty": 2
+  },
+  "lastChapter": 1
+ },
+ "expected": {
+  "version": 2,
+  "cards": {
+   "demo-q001": {
+    "id": "demo-q001",
+    "kind": "question",
+    "phase": "review",
+    "step": 0,
+    "due": 1790841600000,
+    "interval": 7,
+    "ease": 2.5,
+    "reps": 1,
+    "lapses": 0,
+    "lastReview": 1790000000000,
+    "lastRating": "good",
+    "leech": false,
+    "suspended": false,
+    "updatedAt": 1790000000000
+   },
+   "demo-q002": {
+    "id": "demo-q002",
+    "kind": "question",
+    "phase": "review",
+    "step": 0,
+    "due": 1790668800000,
+    "interval": 1,
+    "ease": 2.5,
+    "reps": 1,
+    "lapses": 0,
+    "lastReview": 1790000100000,
+    "lastRating": "again",
+    "leech": false,
+    "suspended": false,
+    "updatedAt": 1790000100000
+   },
+   "demo-q007": {
+    "id": "demo-q007",
+    "kind": "question",
+    "phase": "review",
+    "step": 0,
+    "due": 1793610000000,
+    "interval": 35,
+    "ease": 2.5,
+    "reps": 1,
+    "lapses": 0,
+    "lastReview": 1790000200000,
+    "lastRating": "good",
+    "leech": false,
+    "suspended": false,
+    "updatedAt": 1790000200000
+   }
+  },
+  "reviews": [
+   {
+    "id": "x1",
+    "cardId": "demo-q002",
+    "kind": "question",
+    "source": "quiz",
+    "sessionId": "s1",
+    "at": 1790000100000,
+    "rating": "again",
+    "correct": false,
+    "answer": "a",
+    "hinted": false,
+    "overridden": false,
+    "before": {
+     "phase": "new",
+     "interval": 0,
+     "ease": 2.5,
+     "due": 0
+    },
+    "after": {
+     "phase": "review",
+     "interval": 1,
+     "ease": 2.5,
+     "due": 0
+    }
+   },
+   {
+    "id": "x2",
+    "cardId": "demo-q001",
+    "kind": "question",
+    "source": "flashcard",
+    "sessionId": "s1",
+    "at": 1790000000000,
+    "rating": "easy",
+    "correct": true,
+    "answer": "easy",
+    "hinted": false,
+    "overridden": false,
+    "before": {
+     "phase": "review",
+     "interval": 1,
+     "ease": 2.5,
+     "due": 0
+    },
+    "after": {
+     "phase": "review",
+     "interval": 7,
+     "ease": 2.5,
+     "due": 0
+    }
+   },
+   {
+    "id": "x3",
+    "cardId": "demo-q007",
+    "kind": "question",
+    "source": "quiz",
+    "sessionId": "s2",
+    "at": 1790000200000,
+    "rating": "hard",
+    "correct": true,
+    "answer": "one two three",
+    "hinted": true,
+    "overridden": false,
+    "before": {
+     "phase": "review",
+     "interval": 16,
+     "ease": 2.5,
+     "due": 0
+    },
+    "after": {
+     "phase": "review",
+     "interval": 35,
+     "ease": 2.5,
+     "due": 0
+    }
+   }
+  ],
+  "sessions": [
+   {
+    "id": "s1",
+    "mode": "quiz",
+    "startedAt": 1789999000000,
+    "completedAt": 1790000150000,
+    "completedDay": "2026-09-21"
+   },
+   {
+    "id": "s2",
+    "mode": "quiz",
+    "startedAt": 1790000180000
+   }
+  ],
+  "exercises": {
+   "demo-ex01": {
+    "status": "in-progress",
+    "notes": "use write(2)",
+    "attempt": "first",
+    "attemptStartedAt": null,
+    "testsPassed": [
+     "prints hello"
+    ],
+    "hintsRevealed": 1,
+    "updatedAt": 1790000300000
+   }
+  },
+  "settings": {
+   "theme": "dark",
+   "showKeyHints": false,
+   "scheduling": {}
+  },
+  "prefs": {
+   "length": 20,
+   "order": "book",
+   "types": [
+    "single"
+   ],
+   "difficulty": 2
+  },
+  "lastChapter": 1
+ }
+}

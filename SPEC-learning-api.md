@@ -21,7 +21,7 @@ All paths are under `/api/courses/<slug>` unless noted. Unknown course → 404 `
 | Method + path | Body → response |
 |---|---|
 | `GET /progress` | → `ProgressData` for this course: cards, reviews, sessions, exercises, settings (theme, key hints, this course's scheduling overrides), prefs, lastChapter |
-| `PUT /progress` | `{mode: "replace" \| "merge", file}` where `file` is an export (v2, or the old v1 box format, converted like `migrateV1`) → `ProgressData`. Merge keeps the newer record per item. Items whose keys aren't in the course are skipped and counted |
+| `PUT /progress` | `{mode: "replace" \| "merge", file}` where `file` is an export (v2, or the old v1 box format, converted like `migrateV1`) → `{progress: ProgressData, skipped}`. Merge keeps the newer record per item and the current settings. Records whose item keys aren't in the course are skipped and counted |
 | `GET /progress/export` | → export file `{app, subject, version: 2, exportedAt, data}` |
 | `DELETE /progress` | `?unit=N` resets one unit's items, otherwise everything (settings kept) → `ProgressData` |
 | `POST /reviews` | `{id, itemKey, source, sessionId, rating, correct, answer, hinted?, durationMs?, meta?}` → `{review, card}`. The server loads (or creates) the card, applies `answer()` with the learner's clock and the resolved preset, and stores card + review in one transaction. **Idempotent by `id`**: a repeated id returns the stored result unchanged |
