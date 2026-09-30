@@ -1,0 +1,227 @@
+- key: sd11-q001
+  type: truefalse
+  section: "11.1"
+  difficulty: 1
+  prompt: Most NoSQL databases are key-value stores underneath.
+  answer: true
+  explanation: For example, Cassandra's columns sit on top of key-value storage. For a system like Facebook, use them for user profiles and images.
+
+- key: sd11-q002
+  type: multi
+  section: "11.2"
+  difficulty: 2
+  prompt: Which are **weaknesses** of a key-value store?
+  options:
+    - No queries on values without extra indexes
+    - No joins and usually no multi-key transactions
+    - You must design keys around access patterns up front
+    - Slow lookups by key
+  answers:
+    - No queries on values without extra indexes
+    - No joins and usually no multi-key transactions
+    - You must design keys around access patterns up front
+  explanation: Lookups by key are O(1) and fast. The store treats the value as opaque bytes.
+
+- key: sd11-q003
+  type: truefalse
+  section: "11.2"
+  difficulty: 2
+  prompt: Key-value stores are automatically scalable.
+  answer: false
+  explanation: Scalability comes from the sharding strategy. In interviews, say how the store is sharded and replicated.
+
+- key: sd11-q004
+  type: match
+  section: "11.2"
+  difficulty: 3
+  prompt: Match each Dynamo problem to its answer.
+  pairs:
+    - { term: "Which node owns a key?", definition: "Consistent hashing with virtual nodes" }
+    - { term: Conflicting versions, definition: "Vector clocks; the app merges them" }
+    - { term: A node is briefly down, definition: "Hinted handoff: another node holds its writes" }
+    - { term: Replicas drift apart, definition: "Merkle-tree anti-entropy repair" }
+    - { term: "Who's alive?", definition: "Gossip" }
+  explanation: Dynamo (2007) combines everything from the sharding lectures, with quorums R + W > N such as (3, 2, 2).
+
+- key: sd11-q005
+  type: single
+  section: "11.2"
+  difficulty: 2
+  prompt: In DynamoDB, what does a **sort key** add to the partition key?
+  options:
+    - Items with the same partition key are stored together, sorted, allowing range queries within a partition
+    - It picks the physical partition
+    - It enables joins
+    - It encrypts the item
+  answer: Items with the same partition key are stored together, sorted, allowing range queries within a partition
+  explanation: E.g. chat_id + timestamp. A hot partition key is still a problem (about 3,000 reads and 1,000 writes/s per partition); items are up to 400 KB.
+
+- key: sd11-q006
+  type: single
+  section: "11.3"
+  difficulty: 1
+  prompt: What is an object store?
+  options:
+    - A key-value store for large files, with path-like keys and file bytes plus metadata as values
+    - A database for object-oriented code
+    - A cache for small objects
+    - A graph database
+  answer: A key-value store for large files, with path-like keys and file bytes plus metadata as values
+  explanation: Amazon S3 is the course's example. "Folders" are just key prefixes in a flat key space.
+
+- key: sd11-q007
+  type: match
+  section: "11.3"
+  difficulty: 2
+  prompt: Match each S3 property.
+  pairs:
+    - { term: Durability, definition: "11 nines, across at least 3 availability zones" }
+    - { term: Consistency, definition: "Strong read-after-write" }
+    - { term: Latency, definition: "About 100-200 ms to first byte" }
+    - { term: Large files, definition: "Multipart upload beyond 5 GB per PUT" }
+  explanation: About 3,500 writes and 5,500 reads per second per prefix, with no limit on prefixes.
+
+- key: sd11-q008
+  type: multi
+  section: "11.3"
+  difficulty: 2
+  prompt: Why not store images in the database?
+  options:
+    - Blobs bloat backups, replication and the DB's cache
+    - DB storage costs far more than S3
+    - S3 plus a CDN serves images close to users
+    - Databases can't store binary data
+  answers:
+    - Blobs bloat backups, replication and the DB's cache
+    - DB storage costs far more than S3
+    - S3 plus a CDN serves images close to users
+  explanation: Databases can store blobs; it's just a poor fit. Store the key/URL and metadata in the DB.
+
+- key: sd11-q009
+  type: order
+  section: "11.3"
+  difficulty: 3
+  prompt: Order the standard photo-upload flow.
+  items:
+    - The app server gives the client a pre-signed upload URL
+    - The client PUTs the image bytes straight to S3
+    - The client tells the app server the upload is done
+    - The app server saves the photo key and metadata in the DB
+    - Viewers load it through a CDN
+  explanation: Large files never pass through the app servers.
+
+- key: sd11-q010
+  type: single
+  section: "11.4"
+  difficulty: 1
+  prompt: What makes an in-memory DB different from a cache?
+  options:
+    - It also saves data to disk, so it's a real database
+    - It's slower
+    - It can't hold data structures
+    - It only runs on one machine
+  answer: It also saves data to disk, so it's a real database
+  explanation: Example — Redis with persistence turned on, giving microsecond-level speed with durability.
+
+- key: sd11-q011
+  type: match
+  section: "11.4"
+  difficulty: 3
+  prompt: How much data can Redis lose on a crash?
+  pairs:
+    - { term: No persistence, definition: "Everything" }
+    - { term: RDB snapshots, definition: "Minutes of writes" }
+    - { term: "AOF, fsync everysec", definition: "About 1 second" }
+    - { term: "AOF, fsync always", definition: "About none, but slow" }
+  explanation: RDB + AOF together is recommended for durability.
+
+- key: sd11-q012
+  type: match
+  section: "11.4"
+  difficulty: 2
+  prompt: Match each Redis structure to a use.
+  pairs:
+    - { term: Sorted set, definition: "Leaderboards and rankings" }
+    - { term: List, definition: "Queues and timelines" }
+    - { term: INCR, definition: "Real-time counters" }
+    - { term: GEOSEARCH, definition: "Drivers near me" }
+  explanation: Hashes, sets, TTLs, pub/sub and streams are also available.
+
+- key: sd11-q013
+  type: match
+  section: "11.5"
+  difficulty: 2
+  prompt: Cache or in-memory DB?
+  pairs:
+    - { term: Distributed cache, definition: "Speeds up reads; the DB is the source of truth" }
+    - { term: In-memory DB, definition: "In-memory speed and persistence; it is the source of truth" }
+    - { term: Wiping a cache, definition: "Slower, then refills from the DB" }
+  explanation: Redis can be either — you choose the persistence level.
+
+- key: sd11-q014
+  type: single
+  section: "11.5"
+  difficulty: 3
+  prompt: Uber — where should live driver locations and trip state go?
+  options:
+    - "Location: a cache is fine (the next ping restores it). Trip state: in-memory DB with persistence or a durable DB."
+    - Both in Memcached
+    - Both in S3
+    - "Location: SQL with transactions. Trip state: cache."
+  answer: "Location: a cache is fine (the next ping restores it). Trip state: in-memory DB with persistence or a durable DB."
+  explanation: Old locations are worthless and overwritten every few seconds; trip state mustn't be lost mid-ride. Say which data you'd lose and why that's OK.
+
+- key: sd11-q015
+  type: match
+  section: "11.6"
+  difficulty: 2
+  prompt: Pick the store.
+  pairs:
+    - { term: User profiles, definition: "Key-value / document DB keyed by user_id" }
+    - { term: Images and videos, definition: "Object store + CDN" }
+    - { term: Leaderboard, definition: "Redis sorted set" }
+    - { term: Config and leader election, definition: "etcd / ZooKeeper" }
+    - { term: Orders and payments, definition: "SQL with transactions" }
+  explanation: A plain key-value store is a poor fit for multi-row ACID.
+
+- key: sd11-q016
+  type: single
+  section: "11.7"
+  difficulty: 2
+  prompt: "A huge group chat in DynamoDB (partition = chat_id) gets too many writes. What's the fix?"
+  options:
+    - Split the partition key, e.g. chat_id#bucket
+    - Add a GSI
+    - Increase the item size limit
+    - Switch to S3
+  answer: Split the partition key, e.g. chat_id#bucket
+  explanation: Each partition handles about 1,000 writes/s; hashing can't spread a single busy key.
+
+- key: sd11-q017
+  type: single
+  section: "11.7"
+  difficulty: 2
+  prompt: Why is a key-value store a perfect fit for a URL shortener?
+  options:
+    - short_code → long_url is a pure lookup by key, with no joins or value queries
+    - It needs multi-row transactions
+    - It stores large video files
+    - It needs full-text search
+  answer: short_code → long_url is a pure lookup by key, with no joins or value queries
+  explanation: Reads outnumber writes about 100:1, so put a Redis cache in front for popular links.
+
+- key: sd11-q018
+  type: multi
+  section: "11.8"
+  difficulty: 2
+  prompt: Which are key-value pitfalls in interviews?
+  options:
+    - Saying they scale without saying how they're sharded and replicated
+    - Using S3 for small, hot, frequently updated records
+    - Treating a cache as the source of truth for data you can't lose
+    - Storing images in S3 with the URL in the DB
+  answers:
+    - Saying they scale without saying how they're sharded and replicated
+    - Using S3 for small, hot, frequently updated records
+    - Treating a cache as the source of truth for data you can't lose
+  explanation: Also remember Redis persistence is a setting, and a plain key-value store doesn't do multi-row transactions.

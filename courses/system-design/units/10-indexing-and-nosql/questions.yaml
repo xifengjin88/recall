@@ -1,0 +1,238 @@
+- key: sd10-q001
+  type: single
+  section: "10.2"
+  difficulty: 1
+  prompt: What is a database index?
+  options:
+    - A separate sorted structure pointing to rows, so the DB can find rows without scanning the table
+    - A copy of the table on another machine
+    - The table's primary storage file
+    - A cache of recent queries
+  answer: A separate sorted structure pointing to rows, so the DB can find rows without scanning the table
+  explanation: Like the index at the back of a book. Indexes exist in both SQL and NoSQL databases.
+
+- key: sd10-q002
+  type: single
+  section: "10.2"
+  difficulty: 2
+  prompt: With a sorted index on SALARY over 1,000,000 rows, about how many steps find the start of `salary BETWEEN 90000 AND 100000`?
+  options:
+    - About 20 (binary search)
+    - About 1,000,000
+    - About 1,000
+    - Exactly 1
+  answer: About 20 (binary search)
+  explanation: log₂ 1M ≈ 20, then walk forward until 100,000. Without an index it's a full table scan of all 1M rows.
+
+- key: sd10-q003
+  type: single
+  section: "10.3"
+  difficulty: 2
+  prompt: How does a traditional DB's use of RAM differ from Redis/Memcached?
+  options:
+    - The DB keeps data on disk and uses a smaller amount of RAM for essentials like indexes and hot pages
+    - The DB keeps everything in RAM
+    - The DB never uses RAM
+    - Redis stores data on disk first
+  answer: The DB keeps data on disk and uses a smaller amount of RAM for essentials like indexes and hot pages
+  explanation: For Redis/Memcached, RAM is the main storage. Indexing in RAM means the lookup starts in memory; only the needed rows come from disk.
+
+- key: sd10-q004
+  type: order
+  section: "10.3"
+  difficulty: 1
+  prompt: Order these from fastest to slowest.
+  items:
+    - Memory reference (about 100 ns)
+    - SSD random read (about 150 µs)
+    - Disk seek (about 10 ms)
+  explanation: Disk is roughly 1,000× to 100,000× slower than RAM.
+
+- key: sd10-q005
+  type: match
+  section: "10.4"
+  difficulty: 2
+  prompt: Match each index structure to what it's good for.
+  pairs:
+    - { term: B-tree / B+tree, definition: "Equality, ranges and ORDER BY; the default in most SQL DBs" }
+    - { term: Hash index, definition: "Only equality lookups, no ranges" }
+    - { term: LSM tree, definition: "Very heavy writes (Cassandra, RocksDB)" }
+    - { term: Inverted index, definition: "Full-text search (Elasticsearch)" }
+    - { term: Spatial index, definition: "\"Drivers near me\" queries" }
+  explanation: B-trees have hundreds of children per node, so they're only 3-4 levels deep even for billions of rows.
+
+- key: sd10-q006
+  type: match
+  section: "10.4"
+  difficulty: 3
+  prompt: B-tree or LSM tree?
+  pairs:
+    - { term: B-tree, definition: "Updates pages in place: fast reads, slower random writes" }
+    - { term: LSM tree, definition: "Appends writes and merges later: fast writes, reads may check several files" }
+    - { term: Cassandra, definition: "An LSM-based store" }
+  explanation: This is a common interview contrast.
+
+- key: sd10-q007
+  type: multi
+  section: "10.5"
+  difficulty: 2
+  prompt: "A composite index on `(last_name, first_name)`: which queries can use it?"
+  options:
+    - WHERE last_name = 'Kim'
+    - WHERE last_name = 'Kim' AND first_name = 'Jin'
+    - WHERE first_name = 'Jin'
+  answers:
+    - WHERE last_name = 'Kim'
+    - WHERE last_name = 'Kim' AND first_name = 'Jin'
+  explanation: Leftmost prefix rule — like a phone book, you can't look people up by first name alone.
+
+- key: sd10-q008
+  type: match
+  section: "10.5"
+  difficulty: 2
+  prompt: Match each kind of index.
+  pairs:
+    - { term: Clustered index, definition: "The table is stored in this index's order" }
+    - { term: Secondary index, definition: "In InnoDB, each entry stores the primary key" }
+    - { term: Covering index, definition: "Holds every column the query needs, so rows are never read" }
+    - { term: Unique index, definition: "Enforces that no two rows share the value" }
+  explanation: Keep InnoDB primary keys short, since every secondary index repeats them.
+
+- key: sd10-q009
+  type: multi
+  section: "10.6"
+  difficulty: 2
+  prompt: What do indexes cost?
+  options:
+    - Slower writes, since every index must be updated
+    - More storage and RAM
+    - They may go unused, e.g. with a function in the WHERE clause
+    - Slower equality lookups
+  answers:
+    - Slower writes, since every index must be updated
+    - More storage and RAM
+    - They may go unused, e.g. with a function in the WHERE clause
+  explanation: Index the columns in your most common WHERE, JOIN and ORDER BY clauses, and no more.
+
+- key: sd10-q010
+  type: truefalse
+  section: "10.7"
+  difficulty: 2
+  prompt: Indexing and sharding solve the same problem.
+  answer: false
+  explanation: An index speeds up lookups within a machine; sharding spreads data across machines. You usually need both.
+
+- key: sd10-q011
+  type: multi
+  section: "10.8"
+  difficulty: 2
+  prompt: What do NoSQL databases usually give up, and gain?
+  options:
+    - "Give up: joins and flexible queries"
+    - "Gain: easy horizontal scaling and high availability"
+    - "Gain: flexible schemas and high write throughput"
+    - "Gain: multi-table ACID transactions by default"
+  answers:
+    - "Give up: joins and flexible queries"
+    - "Gain: easy horizontal scaling and high availability"
+    - "Gain: flexible schemas and high write throughput"
+  explanation: They're usually BASE/eventually consistent by default, but often configurable.
+
+- key: sd10-q012
+  type: match
+  section: "10.9"
+  difficulty: 1
+  prompt: Match each database type to what it's great for.
+  pairs:
+    - { term: Key-value, definition: "Sessions, carts, very fast lookups by ID" }
+    - { term: Document, definition: "Profiles and catalogs with nested, changing fields" }
+    - { term: Wide-column, definition: "Huge write volume: messages, feeds, time-series" }
+    - { term: Graph, definition: "Friends of friends, recommendations, fraud rings" }
+    - { term: Object store, definition: "Images, videos and backups" }
+  explanation: Relational DBs are best for money, orders and inventory; search engines for full-text search.
+
+- key: sd10-q013
+  type: single
+  section: "10.9"
+  difficulty: 2
+  prompt: Is Cassandra key-value or wide-column?
+  options:
+    - Wide-column, though wide-column stores are key-value stores underneath
+    - Key-value only
+    - Document
+    - Relational
+  answer: Wide-column, though wide-column stores are key-value stores underneath
+  explanation: Cassandra has column families; only the data model is shown as columns.
+
+- key: sd10-q014
+  type: truefalse
+  section: "10.10"
+  difficulty: 1
+  prompt: In an interview, using SQL is a mistake because SQL can't scale.
+  answer: false
+  explanation: Either is fine. SQL scales too — MySQL Cluster, Vitess, and sharded MySQL/Postgres at Instagram, Pinterest, Notion and Figma.
+
+- key: sd10-q015
+  type: match
+  section: "10.10"
+  difficulty: 2
+  prompt: Pick the database for each need.
+  pairs:
+    - { term: Money and bookings, definition: "SQL with transactions" }
+    - { term: URL shortener lookups, definition: "Key-value" }
+    - { term: "Chat messages read by (chat_id, time)", definition: "Wide-column" }
+    - { term: Text search, definition: "A search engine next to the main DB" }
+  explanation: Always say why in one sentence.
+
+- key: sd10-q016
+  type: single
+  section: "10.11"
+  difficulty: 2
+  prompt: What is **polyglot persistence**?
+  options:
+    - Mixing databases, each for what it does best
+    - Storing data in several languages
+    - Replicating one database to many regions
+    - Using only NoSQL
+  answer: Mixing databases, each for what it does best
+  explanation: In the Uber design — profiles in a distributed DB, locations and trip state in Redis, photos in an object store + CDN, search in Elasticsearch, analytics via Hadoop/Spark.
+
+- key: sd10-q017
+  type: single
+  section: "10.12"
+  difficulty: 2
+  prompt: "`WHERE salary > 150000 ORDER BY salary DESC LIMIT 10` takes 4 s. What's the best fix?"
+  options:
+    - A covering index on (salary, name)
+    - Add more app servers
+    - Cache the whole table
+    - Shard the table
+  answer: A covering index on (salary, name)
+  explanation: The sorted index lets the DB jump to 150k and read 10 entries in order, and covering means the table is never touched.
+
+- key: sd10-q018
+  type: match
+  section: "10.12"
+  difficulty: 2
+  prompt: E-commerce — pick the store for each part.
+  pairs:
+    - { term: Orders, definition: "SQL with transactions" }
+    - { term: Product catalog, definition: "Document store for varied attributes" }
+    - { term: Shopping cart, definition: "Key-value store (Redis/DynamoDB)" }
+  explanation: Taking one off stock and creating the order must happen together.
+
+- key: sd10-q019
+  type: multi
+  section: "10.13"
+  difficulty: 2
+  prompt: Which are database pitfalls in interviews?
+  options:
+    - "\"NoSQL because it scales\" with no access pattern"
+    - Using a hash index for range queries
+    - Storing images in the DB instead of an object store
+    - Naming the index each key query needs
+  answers:
+    - "\"NoSQL because it scales\" with no access pattern"
+    - Using a hash index for range queries
+    - Storing images in the DB instead of an object store
+  explanation: Also avoid indexing every column, forgetting the leftmost prefix rule, and treating a search index or cache as the source of truth.

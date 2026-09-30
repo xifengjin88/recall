@@ -52,11 +52,25 @@ describe("notes", () => {
   });
 
   it("resolves wikilinks to in-app links, or plain text when the notes don't exist", () => {
-    const has = (n: number) => n === 6;
+    const has = (title: string) => (title === "TLPI 06 - Processes" ? 6 : undefined);
     expect(resolveWikilinks("see [[#Capabilities|caps]]", has)).toBe("see [caps](#capabilities)");
     expect(resolveWikilinks("[[#2.10 Interprocess communication|§2.10]]", has)).toBe("[§2.10](#s2.10)");
     expect(resolveWikilinks("[[TLPI 06 - Processes]]", has)).toBe("[TLPI 06 - Processes](/chapters/6/notes)");
     expect(resolveWikilinks("[[TLPI 18 - Directories and Links]]", has)).toBe("TLPI 18 - Directories and Links");
+  });
+
+  it("resolves any course's note titles, including links to a heading", () => {
+    const find = (title: string) => (title === "Load Balancers and App Servers" ? 3 : undefined);
+    expect(resolveWikilinks("[[Load Balancers and App Servers]]", find)).toBe("[Load Balancers and App Servers](/chapters/3/notes)");
+    expect(resolveWikilinks("[[Load Balancers and App Servers#3.7 Making it redundant|redundancy]]", find)).toBe(
+      "[redundancy](/chapters/3/notes#s3.7)",
+    );
+    expect(resolveWikilinks("[[Some Future Note]]", find)).toBe("Some Future Note");
+  });
+
+  it("leaves wikilink-looking text in code alone (Mermaid node shapes, inline code)", () => {
+    const md = "```mermaid\nflowchart LR\n  LB[[Load Balancer]] --> A\n```\nSee `[[x]]` and [[Gone]].";
+    expect(resolveWikilinks(md, () => undefined)).toBe("```mermaid\nflowchart LR\n  LB[[Load Balancer]] --> A\n```\nSee `[[x]]` and Gone.");
   });
 });
 

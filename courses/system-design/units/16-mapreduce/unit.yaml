@@ -1,0 +1,26 @@
+number: 16
+title: MapReduce
+note_title: Distributed Processing using MapReduce
+sections:
+- key: '16.1'
+  title: What the lecture says
+- key: '16.2'
+  title: Why MapReduce exists
+- key: '16.3'
+  title: The programming model
+- key: '16.4'
+  title: How it runs, end to end
+- key: '16.5'
+  title: Handling failures
+- key: '16.6'
+  title: Performance tricks
+- key: '16.7'
+  title: Refinements
+- key: '16.8'
+  title: Real numbers from the paper
+- key: '16.9'
+  title: Where MapReduce fits today
+- key: '16.10'
+  title: Scenarios to walk through
+- key: '16.11'
+  title: Pitfalls to avoid in interviews

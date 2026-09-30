@@ -1,0 +1,285 @@
+- key: sd03-q001
+  type: single
+  section: "3.2"
+  difficulty: 2
+  prompt: Why doesn't the load balancer just hand the client an app server's IP?
+  options:
+    - Exposing app server IPs is a security issue; the LB stays in the request path
+    - DNS can't store private IPs
+    - App servers don't have IP addresses
+    - It would make round robin impossible
+  answer: Exposing app server IPs is a security issue; the LB stays in the request path
+  explanation: Clients only see the LB's public IP; app servers use private IPs. The LB forwards the request, gets the response and sends it back.
+
+- key: sd03-q002
+  type: multi
+  section: "3.2"
+  difficulty: 2
+  prompt: Which are benefits of putting a load balancer in front of app servers?
+  options:
+    - Health checks route around dead servers
+    - SSL/TLS termination off the app servers
+    - Zero-downtime deploys by draining servers
+    - Automatically starting a replacement for a dead server
+  answers:
+    - Health checks route around dead servers
+    - SSL/TLS termination off the app servers
+    - Zero-downtime deploys by draining servers
+  explanation: An LB only **stops sending traffic** to a dead server. Replacing it is the job of an orchestrator (Kubernetes) or an autoscaling group.
+
+- key: sd03-q003
+  type: match
+  section: "3.2"
+  difficulty: 2
+  prompt: Match each component to its main job.
+  pairs:
+    - { term: Reverse proxy, definition: "Hides servers, terminates TLS, caches, compresses" }
+    - { term: Load balancer, definition: "Spreads requests across many servers doing the same job" }
+    - { term: API gateway, definition: "API-focused proxy: auth, rate limits, versioning" }
+  explanation: NGINX, HAProxy and Envoy can do all three. A reverse proxy and an API gateway are useful even with one backend; a load balancer isn't.
+
+- key: sd03-q004
+  type: match
+  section: "3.3"
+  difficulty: 2
+  prompt: L4 or L7?
+  pairs:
+    - { term: Layer 4 LB, definition: "Forwards packets by IP and port without reading them" }
+    - { term: Layer 7 LB, definition: "Ends the connection and routes by HTTP path, headers or cookies" }
+    - { term: AWS NLB, definition: "Amazon's managed L4 load balancer" }
+    - { term: AWS ALB, definition: "Amazon's managed L7 load balancer" }
+  explanation: L4 is faster and works for any TCP/UDP traffic; L7 costs more CPU but can do content-based routing and cookie stickiness.
+
+- key: sd03-q005
+  type: single
+  section: "3.3"
+  difficulty: 2
+  prompt: Which layer does **cookie-based session persistence** need?
+  options:
+    - L7, because the LB has to read the cookie
+    - L4, because cookies travel in TCP headers
+    - L3, because it's IP-based
+    - Any layer
+  answer: L7, because the LB has to read the cookie
+  explanation: IP-based persistence works at L4 since only the IP is needed.
+
+- key: sd03-q006
+  type: match
+  section: "3.4"
+  difficulty: 2
+  prompt: Match each LB algorithm to when it fits best.
+  pairs:
+    - { term: Round robin, definition: "Identical servers, short similar requests" }
+    - { term: Weighted round robin, definition: "Servers with different capacity" }
+    - { term: Least connections, definition: "Long-lived or uneven connections such as WebSockets" }
+    - { term: Consistent hashing, definition: "Servers that hold per-key state such as caches" }
+    - { term: Power of two choices, definition: "Pick 2 random servers and use the less loaded one" }
+  explanation: Static algorithms (RR, weighted RR, hash) ignore load; dynamic ones (least connections, least response time, P2C) adapt but need monitoring.
+
+- key: sd03-q007
+  type: single
+  section: "3.4"
+  difficulty: 3
+  prompt: With `hash(key) % N`, roughly what share of keys move when N goes from 4 to 5?
+  options:
+    - About 80%
+    - About 20%
+    - About 1/N
+    - None
+  answer: About 80%
+  explanation: With consistent hashing only about **1/N** of keys move, which matters whenever servers hold state.
+
+- key: sd03-q008
+  type: single
+  section: "3.4"
+  difficulty: 2
+  prompt: How does GeoDNS fit into load balancing?
+  options:
+    - It picks the LB closest to the user; that LB spreads load over servers in the same region
+    - It replaces the load balancer entirely
+    - It routes requests by URL path
+    - It caches static content
+  answer: It picks the LB closest to the user; that LB spreads load over servers in the same region
+  explanation: A student's answer the instructor agreed with. "Capabilities" (server capacity) is another general factor that can feed into any algorithm.
+
+- key: sd03-q009
+  type: match
+  section: "3.5"
+  difficulty: 3
+  prompt: Keep the three meanings straight.
+  pairs:
+    - { term: Stateless, definition: "The server stores no user information, so any request can go to any server" }
+    - { term: Persistence (storage), definition: "Data survives a restart because it's on disk" }
+    - { term: Persistence (load balancing), definition: "Sticky sessions: the same user keeps going to the same server" }
+  explanation: The instructor calls stateless and persistence "completely different concepts".
+
+- key: sd03-q010
+  type: multi
+  section: "3.5"
+  difficulty: 2
+  prompt: When do **stateful** app servers make sense?
+  options:
+    - A multiplayer game session with shared live data
+    - A chat server holding users' long-lived connections
+    - One server owning all bookings for a flight to avoid conflicts
+    - A typical REST API behind an autoscaler
+  answers:
+    - A multiplayer game session with shared live data
+    - A chat server holding users' long-lived connections
+    - One server owning all bookings for a flight to avoid conflicts
+  explanation: State on app servers is usually session-based and temporary; anything that must last goes in a database too.
+
+- key: sd03-q011
+  type: multi
+  section: "3.5"
+  difficulty: 3
+  prompt: Why is IP-based persistence a poor fit for many users?
+  options:
+    - Many users share one IP behind NAT, creating hot servers
+    - A mobile user's IP changes when they move, so their state can't be found
+    - It needs an L7 load balancer
+    - It can't route any traffic at L4
+  answers:
+    - Many users share one IP behind NAT, creating hot servers
+    - A mobile user's IP changes when they move, so their state can't be found
+  explanation: Prefer cookie-based persistence at L7, or better, stateless servers with a shared session store.
+
+- key: sd03-q012
+  type: single
+  section: "3.5"
+  difficulty: 3
+  prompt: A shopping cart must outlast one session and lives on a particular app server. How should requests be routed?
+  options:
+    - A master service assigns ranges of users to servers (any sharding technique works)
+    - Cookie-based persistence
+    - Plain round robin
+    - IP hash
+  answer: A master service assigns ranges of users to servers (any sharding technique works)
+  explanation: Cookies are fine for session-length data, but a cart that must outlive the session calls for the master/partitioner approach, and should also be saved to the DB.
+
+- key: sd03-q013
+  type: multi
+  section: "3.5"
+  difficulty: 2
+  prompt: What are the downsides of sticky sessions?
+  options:
+    - No automatic failover; a dead server loses its sessions
+    - Uneven load as long sessions pile up
+    - New servers only get new sessions
+    - Requests can't be encrypted
+  answers:
+    - No automatic failover; a dead server loses its sessions
+    - Uneven load as long sessions pile up
+    - New servers only get new sessions
+  explanation: Draining is harder too. Alternatives are a shared session store, signed client-side cookies, or consistent hashing.
+
+- key: sd03-q014
+  type: order
+  section: "3.6"
+  difficulty: 3
+  prompt: Put the flight-booking race on stateless servers in order.
+  items:
+    - Server X books seat 12C for A on the primary
+    - Replicas haven't caught up yet
+    - Server Y reads a stale replica showing 12C available
+    - Server Y tries to book 12C for B, causing a conflict
+  explanation: "Fixes: one server owns each flight, quorum reads, or an atomic `UPDATE … WHERE owner IS NULL` on the primary (0 rows = sold out)."
+
+- key: sd03-q015
+  type: match
+  section: "3.6"
+  difficulty: 1
+  prompt: How do you scale each?
+  pairs:
+    - { term: Writes, definition: "Shard, so each machine owns fewer items" }
+    - { term: Reads, definition: "Replicate (sharding also works)" }
+    - { term: Check-and-book, definition: "One atomic conditional update on the primary" }
+  explanation: The pattern to remember from the lecture.
+
+- key: sd03-q016
+  type: match
+  section: "3.7"
+  difficulty: 3
+  prompt: Match each technique for making the LB tier redundant.
+  pairs:
+    - { term: DNS round robin, definition: "Several A records; clients cache for the TTL, so failover is slow" }
+    - { term: Floating VIP (VRRP), definition: "Standby takes over the shared IP when heartbeats stop" }
+    - { term: ECMP, definition: "The router spreads packets across many LB nodes sharing one IP" }
+    - { term: Anycast, definition: "The same IP announced from many locations; users reach the nearest" }
+  explanation: Big systems stack these layers — GeoDNS/anycast picks a region, ECMP or a VIP spreads over L4 LBs, which spread over L7 proxies, which spread over app servers.
+
+- key: sd03-q017
+  type: truefalse
+  section: "3.7"
+  difficulty: 1
+  prompt: DNS-based failover is effectively instant.
+  answer: false
+  explanation: Clients cache DNS answers for the TTL, so recovery takes about the TTL. Keep failover TTLs low or use anycast.
+
+- key: sd03-q018
+  type: single
+  section: "3.8"
+  difficulty: 2
+  prompt: "Flash sale: checkout takes much longer than browsing. Which algorithm avoids overloading some servers?"
+  options:
+    - Least connections or power of two choices
+    - Round robin
+    - IP hash
+    - Random with no health checks
+  answer: Least connections or power of two choices
+  explanation: Round robin ignores current load. Also note that once the web tier scales, the bottleneck moves to Redis/DB connections.
+
+- key: sd03-q019
+  type: single
+  section: "3.8"
+  difficulty: 2
+  prompt: 3,000 employees behind one office NAT IP all land on the same server. What's the fix?
+  options:
+    - Cookie-based persistence at L7, or better, stateless servers
+    - Switch to IP hash
+    - Give the office a bigger server
+    - Use DNS round robin
+  answer: Cookie-based persistence at L7, or better, stateless servers
+  explanation: IP-hash sends everyone from one NAT IP to one server while the others sit idle.
+
+- key: sd03-q020
+  type: single
+  section: "3.9"
+  difficulty: 3
+  prompt: What was the main lesson of the AWS ELB outage on Christmas Eve 2012?
+  options:
+    - Redundancy across zones doesn't help if every zone shares one control plane
+    - Load balancers should always be self-hosted
+    - Round robin is unsafe at scale
+    - DNS TTLs should be long
+  answer: Redundancy across zones doesn't help if every zone shares one control plane
+  explanation: Netflix's services were healthy, but devices couldn't reach them because ELBs failed across all zones. It pushed Netflix toward multi-region resilience.
+
+- key: sd03-q021
+  type: single
+  section: "3.9"
+  difficulty: 3
+  prompt: What lets Google Maglev and Meta Katran scale the L4 LB tier out on ordinary servers?
+  options:
+    - ECMP spreads packets across LB nodes, and consistent hashing keeps each connection on one backend
+    - Sticky sessions stored in a shared database
+    - A single very large hardware appliance
+    - Round robin DNS in front of every backend
+  answer: ECMP spreads packets across LB nodes, and consistent hashing keeps each connection on one backend
+  explanation: Consistent routing means a failed LB node or backend disrupts very few connections. GitHub's GLB adds graceful draining with primary/secondary servers per flow.
+
+- key: sd03-q022
+  type: multi
+  section: "3.10"
+  difficulty: 2
+  prompt: Which are interview pitfalls?
+  options:
+    - Drawing one LB box without mentioning redundancy
+    - Using sticky sessions by default
+    - Using round robin for long-lived connections
+    - Using stateless servers with a shared session store
+  answers:
+    - Drawing one LB box without mentioning redundancy
+    - Using sticky sessions by default
+    - Using round robin for long-lived connections
+  explanation: Also avoid claiming the LB replaces dead servers, using `hash % N` for stateful routing, and forgetting that scaling app servers moves the bottleneck to the cache or DB.

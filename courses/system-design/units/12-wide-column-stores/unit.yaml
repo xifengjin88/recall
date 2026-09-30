@@ -1,0 +1,22 @@
+number: 12
+title: Wide-Column Stores
+note_title: Wide Column Stores - HBase, Cassandra
+sections:
+- key: '12.1'
+  title: What the lecture says
+- key: '12.2'
+  title: The data model
+- key: '12.3'
+  title: 'Google''s web-crawl example (video 2): Bigtable''s "Webtable"'
+- key: '12.4'
+  title: How it's stored and scaled
+- key: '12.5'
+  title: Index tables (video 3)
+- key: '12.6'
+  title: 'Limits: rows can''t grow forever'
+- key: '12.7'
+  title: When to use a wide-column store
+- key: '12.8'
+  title: Scenarios to walk through
+- key: '12.9'
+  title: Pitfalls to avoid in interviews

@@ -1,0 +1,248 @@
+- key: sd02-q001
+  type: order
+  section: "2.1"
+  difficulty: 1
+  prompt: Put the steps of the **FUSHD** framework in order.
+  items:
+    - Features
+    - Use cases
+    - Store
+    - High-level design
+    - Detail design
+  explanation: "Features (2-3 core) → Use cases (flows/states, simple screens) → Store (essential data, no tables) → High-level design (extend the scalable web backend) → Detail design (go deep on what the interviewer picks). The scale assumption is clarified after use cases."
+
+- key: sd02-q002
+  type: single
+  section: "2.2"
+  difficulty: 1
+  prompt: How many core features should you narrow an open-ended design question to?
+  options:
+    - 2-3
+    - "1"
+    - 5-10
+    - Every feature the product has
+  answer: 2-3
+  explanation: Narrow to 2-3 core features, design around them, and say you'll add more later.
+
+- key: sd02-q003
+  type: single
+  section: "2.2"
+  difficulty: 2
+  prompt: What's the recommended way to settle on features with the interviewer?
+  options:
+    - Propose features yourself and ask for confirmation
+    - Ask the interviewer to list the features they want
+    - Pick features silently and start drawing
+    - Cover every feature to be safe
+  answer: Propose features yourself and ask for confirmation
+  explanation: Proposing shows ownership; the interviewer may then add or drop features. Also ask if it's OK to stick to these and add more later.
+
+- key: sd02-q004
+  type: multi
+  section: "2.2"
+  difficulty: 2
+  prompt: Which questions help you pick core features?
+  options:
+    - Which features does an MVP require?
+    - Which feature would the system be incomplete without?
+    - Which features use the most interesting technology?
+    - Which features need the most servers?
+  answers:
+    - Which features does an MVP require?
+    - Which feature would the system be incomplete without?
+  explanation: A ride-hailing service is incomplete if you can't hail a ride and get in the cab.
+
+- key: sd02-q005
+  type: multi
+  section: "2.2"
+  difficulty: 1
+  prompt: Which two core features were chosen for Uber/Lyft?
+  options:
+    - Rider and driver profiles
+    - Rider can hail a ride; driver can give a ride
+    - Turn-by-turn maps and directions
+    - Surge pricing
+  answers:
+    - Rider and driver profiles
+    - Rider can hail a ride; driver can give a ride
+  explanation: Profiles come for free with the scalable web application framework and help pin down what to store. Maps are out of scope (the driver uses Google Maps).
+
+- key: sd02-q006
+  type: truefalse
+  section: "2.3"
+  difficulty: 1
+  prompt: The course models a ride-hailing app as a set of states the backend moves riders and drivers through.
+  answer: true
+  explanation: It's very state-based; the backend coordinates the transitions. For a mobile app, draw a simple screen per state.
+
+- key: sd02-q007
+  type: order
+  section: "2.3"
+  difficulty: 2
+  prompt: Put the ride flow in order.
+  items:
+    - Rider presses Request Ride
+    - System finds an available driver close to the rider
+    - Driver accepts; rider gets the driver's ETA
+    - Driver presses Pickup; both go to Riding
+    - Driver presses End Ride after drop-off
+  explanation: ETA and accept/reject are extras an MVP could skip and add later.
+
+- key: sd02-q008
+  type: single
+  section: "2.4"
+  difficulty: 2
+  prompt: Why does the course skip detailed capacity estimation up front?
+  options:
+    - If the system must scale, the high-level design is the same anyway
+    - Interviewers never ask for estimates
+    - Estimates are only for frontend roles
+    - The numbers are always the same for every system
+  answer: If the system must scale, the high-level design is the same anyway
+  explanation: Clarify whether it must scale to millions of users; do estimates later in detail design if wanted. About 20-25% of interviewers do expect them (often from Grokking), so be prepared.
+
+- key: sd02-q009
+  type: multi
+  section: "2.5"
+  difficulty: 2
+  prompt: Which data does the **driver** need that the rider doesn't (in the essential-data list)?
+  options:
+    - Location
+    - State
+    - Name
+    - Email
+  answers:
+    - Location
+  explanation: Both have name, email and state. Only the driver's location is tracked, to find nearby drivers and send ETAs. An optional Ride object helps later analysis.
+
+- key: sd02-q010
+  type: single
+  section: "2.5"
+  difficulty: 2
+  prompt: Rider `WAITING` and driver `WAITING` mean…
+  options:
+    - "Rider: waiting for the driver to arrive. Driver: available and waiting for riders."
+    - The same thing for both
+    - "Rider: waiting for a ride request to be accepted. Driver: waiting at pickup."
+    - Both are waiting for payment
+  answer: "Rider: waiting for the driver to arrive. Driver: available and waiting for riders."
+  explanation: Same name, different meaning. The rider states are NOT_RIDING, REQUESTING, WAITING, RIDING; the driver's are NOT_DRIVING, WAITING, REQUESTED, PICKING_UP, RIDING.
+
+- key: sd02-q011
+  type: match
+  section: "2.6"
+  difficulty: 2
+  prompt: Match each Uber/Lyft component to what it holds or does.
+  pairs:
+    - { term: Distributed database, definition: "Rider and driver profiles (name, email)" }
+    - { term: In-memory database, definition: "Active states and driver locations, which change often" }
+    - { term: Matching system, definition: "Pool of available drivers in a spatial index; finds one near the rider" }
+    - { term: App servers, definition: "Stateless REST API; scale by adding machines" }
+  explanation: It's the scalable web application framework extended to cab hailing.
+
+- key: sd02-q012
+  type: typed
+  section: "2.6"
+  difficulty: 2
+  prompt: What kind of index does the Matching System keep active drivers' locations in?
+  accept: [spatial index, a spatial index, spatial]
+  explanation: A spatial index finds drivers near a location; covered in the Spatial Indexing unit.
+
+- key: sd02-q013
+  type: single
+  section: "2.6"
+  difficulty: 2
+  prompt: When a driver accepts, what does the app server set the states to?
+  options:
+    - "Driver: PICKING_UP, rider: WAITING"
+    - "Driver: RIDING, rider: RIDING"
+    - "Driver: REQUESTED, rider: REQUESTING"
+    - "Driver: WAITING, rider: WAITING"
+  answer: "Driver: PICKING_UP, rider: WAITING"
+  explanation: Then it tells the rider a driver is on the way, including the driver's ETA. Every state change sends a notification with the data the device needs.
+
+- key: sd02-q014
+  type: single
+  section: "2.6"
+  difficulty: 2
+  prompt: A driver keeps rejecting. What does the Matching System do?
+  options:
+    - Tries new nearby drivers until one accepts or it runs out
+    - Cancels the ride immediately
+    - Forces the driver to accept
+    - Returns an error to the load balancer
+  answer: Tries new nearby drivers until one accepts or it runs out
+  explanation: When one accepts, it returns the driver info to the app server.
+
+- key: sd02-q015
+  type: multi
+  section: "2.6"
+  difficulty: 2
+  prompt: What happens to a driver's periodic location ping?
+  options:
+    - The app server writes it to the in-memory DB
+    - The app server sends it to the Matching System
+    - It's written to the CDN
+    - It's appended to the job queue for workers
+  answers:
+    - The app server writes it to the in-memory DB
+    - The app server sends it to the Matching System
+  explanation: Every active driver (anyone not NOT_DRIVING) pings periodically through an HTTP handler; the value is overwritten each time, so it isn't stale.
+
+- key: sd02-q016
+  type: single
+  section: "2.8"
+  difficulty: 1
+  prompt: How can you check that the rider is really in the car when the driver presses "Riding"?
+  options:
+    - Check that the rider's and driver's locations are the same
+    - Ask the rider to confirm by email
+    - Check the driver's state only
+    - Trust the driver
+  answer: Check that the rider's and driver's locations are the same
+  explanation: If the rider has turned off location services, notify them to turn it back on.
+
+- key: sd02-q017
+  type: match
+  section: "2.9"
+  difficulty: 2
+  prompt: In-memory DB or cache?
+  pairs:
+    - { term: In-memory DB, definition: "Stores data and usually persists it to disk" }
+    - { term: Cache, definition: "Speeds up common lookups; not responsible for storing data" }
+    - { term: "RAM", definition: "What \"memory\" means: the RAM of the machine running it" }
+  explanation: Just want faster requests? Cache. Using it to store data with no separate DB? In-memory DB.
+
+- key: sd02-q018
+  type: single
+  section: "2.9"
+  difficulty: 2
+  prompt: When should something be **its own system** in a design?
+  options:
+    - When it's a core part of the functionality and not simple CRUD
+    - Whenever it has its own database table
+    - Whenever it could run on a separate machine
+    - Never; keep everything in the app servers
+  answer: When it's a core part of the functionality and not simple CRUD
+  explanation: Examples are the matching system and a feed-ranking system. Every other call still goes through the app servers.
+
+- key: sd02-q019
+  type: single
+  section: "2.9"
+  difficulty: 2
+  prompt: How does the Matching System reach a driver's phone?
+  options:
+    - A mobile push notification, or better, a WebSocket connection
+    - The phone polls the Matching System's database
+    - Through the CDN
+    - By SMS only
+  answer: A mobile push notification, or better, a WebSocket connection
+  explanation: It's the server sending a message to a client; the Messaging App section covers it.
+
+- key: sd02-q020
+  type: truefalse
+  section: "2.9"
+  difficulty: 1
+  prompt: Interviewers expect formal approaches such as C4 or SEI diagrams.
+  answer: false
+  explanation: Most people don't use them. Extra diagrams are fine if the interviewer is OK with them. Practice "self-mocks" by asking yourself what-if questions.

@@ -1,0 +1,24 @@
+number: 18
+title: 'Capstone: Scaling a Web App'
+note_title: Scalable web application anatomy
+sections:
+- key: '18.1'
+  title: The whole diagram fits in one request path and two async paths
+- key: '18.2'
+  title: Every scaling step moves the single point of failure
+- key: '18.3'
+  title: CDNs and replicated load balancers keep traffic off the origin
+- key: '18.4'
+  title: Stateless servers push all state into the data tier
+- key: '18.5'
+  title: Memcached absorbs reads, but misses and invalidation are the hard part
+- key: '18.6'
+  title: Replicas scale reads; only sharding scales writes
+- key: '18.7'
+  title: Queues trade immediacy for resilience
+- key: '18.8'
+  title: Offline pipelines turn raw events into metrics the app serves
+- key: '18.9'
+  title: Key numbers
+- key: '18.10'
+  title: Key terms

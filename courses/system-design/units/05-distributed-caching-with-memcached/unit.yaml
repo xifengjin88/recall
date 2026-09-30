@@ -1,0 +1,16 @@
+number: 5
+title: Distributed Caching with Memcached
+note_title: Distributed Caching Using Memcached
+sections:
+- key: '5.1'
+  title: What the lecture says
+- key: '5.2'
+  title: The article, section by section
+- key: '5.3'
+  title: Gaps the article leaves
+- key: '5.4'
+  title: Scenarios to walk through
+- key: '5.5'
+  title: Case studies
+- key: '5.6'
+  title: Pitfalls to avoid in interviews

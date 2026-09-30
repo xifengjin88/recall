@@ -1,0 +1,30 @@
+number: 10
+title: Indexing and NoSQL
+note_title: Databases - Intro to Indexing and NoSQL
+sections:
+- key: '10.1'
+  title: What the lecture says
+- key: '10.2'
+  title: What an index is
+- key: '10.3'
+  title: RAM vs disk
+- key: '10.4'
+  title: How real indexes are built
+- key: '10.5'
+  title: Types of index to know
+- key: '10.6'
+  title: The cost of indexes
+- key: '10.7'
+  title: Indexing in interviews
+- key: '10.8'
+  title: Why NoSQL exists
+- key: '10.9'
+  title: Types of databases you should know
+- key: '10.10'
+  title: SQL or NoSQL in interviews
+- key: '10.11'
+  title: Polyglot persistence
+- key: '10.12'
+  title: Scenarios to walk through
+- key: '10.13'
+  title: Pitfalls to avoid in interviews

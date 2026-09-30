@@ -1,0 +1,246 @@
+- key: sd09-q001
+  type: single
+  section: "9.1"
+  difficulty: 1
+  prompt: What does consistent hashing minimize?
+  options:
+    - The movement of data when adding a new node
+    - Read latency
+    - The number of replicas
+    - Memory used by the hash function
+  answer: The movement of data when adding a new node
+  explanation: "\"Consistent\" isn't CAP consistency — a consistent hash function changes minimally as the range of the function changes."
+
+- key: sd09-q002
+  type: single
+  section: "9.1"
+  difficulty: 2
+  prompt: Per the instructor, how should you bring up consistent hashing in an interview?
+  options:
+    - Start with normal sharding, then move to consistent hashing if needed
+    - Open with it to show you've studied
+    - Never mention it
+    - Only if asked about CAP
+  answer: Start with normal sharding, then move to consistent hashing if needed
+  explanation: Opening with consistent hashing is "usually a dead giveaway" that you're repeating what you studied. Normal sharding is more common and flexible.
+
+- key: sd09-q003
+  type: single
+  section: "9.2"
+  difficulty: 2
+  prompt: Growing from 10 to 11 servers, about what share of keys move with consistent hashing?
+  options:
+    - About 1/11 (roughly 8-9%)
+    - About 91%
+    - About 50%
+    - None
+  answer: About 1/11 (roughly 8-9%)
+  explanation: With `hash mod N` about 91% move. Consistent hashing moves only the keys the new machine takes over.
+
+- key: sd09-q004
+  type: order
+  section: "9.3"
+  difficulty: 1
+  prompt: Order the steps of a ring lookup.
+  items:
+    - Treat a big hash space as a circle
+    - Hash each machine onto the ring
+    - Hash the key onto the same ring
+    - The first machine clockwise from the key owns it
+  explanation: Past the top of the ring, wrap around to the start.
+
+- key: sd09-q005
+  type: output
+  section: "9.3"
+  difficulty: 2
+  prompt: Using the instructor's sorted ring, which machine owns a key that hashes to **8000**?
+  code:
+    lang: text
+    source: |-
+      [   0 -> Machine 1,
+        253 -> Machine 2,
+       6893 -> Machine 3,
+       9474 -> Machine 2,
+      10383 -> Machine 1 ]
+  options: [Machine 1, Machine 2, Machine 3]
+  answer: Machine 2
+  explanation: Binary-search for the first position greater than 8000, which is 9474 → Machine 2. Lookup is O(log M) over M spots.
+
+- key: sd09-q006
+  type: output
+  section: "9.3"
+  difficulty: 3
+  prompt: Same ring. Which machine owns a key that hashes to **10500**?
+  code:
+    lang: text
+    source: |-
+      [   0 -> Machine 1,
+        253 -> Machine 2,
+       6893 -> Machine 3,
+       9474 -> Machine 2,
+      10383 -> Machine 1 ]
+  options: [Machine 1, Machine 2, Machine 3]
+  answer: Machine 1
+  explanation: Nothing is greater than 10500, so wrap around to position 0 → Machine 1.
+
+- key: sd09-q007
+  type: single
+  section: "9.4"
+  difficulty: 2
+  prompt: M5 is added between M3 (5000) and M4 (7500) at 6000. Which machine gives up keys?
+  options:
+    - Only M4 (keys 5001-6000)
+    - Every machine
+    - Only M3
+    - None; M5 starts empty
+  answer: Only M4 (keys 5001-6000)
+  explanation: M5 broadcasts "added at 6000" and the owner of that range moves its keys. Keep serving from the old owner, log and replay writes, then switch.
+
+- key: sd09-q008
+  type: match
+  section: "9.5"
+  difficulty: 2
+  prompt: Model 1 or Model 2?
+  pairs:
+    - { term: Model 1, definition: "One spot per machine; uneven arcs" }
+    - { term: Model 2, definition: "Many spots per machine (virtual nodes); even arcs" }
+    - { term: A machine fails in Model 1, definition: "All its load lands on one neighbor, which may cascade" }
+    - { term: A machine fails in Model 2, definition: "Its load spreads across many machines" }
+  explanation: "\"Any industrial system will have Model 2.\" Real systems use about 100-256 spots per machine."
+
+- key: sd09-q009
+  type: truefalse
+  section: "9.5"
+  difficulty: 2
+  prompt: A machine taking 3 spots on the ring means its data is copied 3 times.
+  answer: false
+  explanation: Spots divide the key space, not the data — the machine owns 3 smaller arcs instead of one big one. Replication is separate.
+
+- key: sd09-q010
+  type: single
+  section: "9.5"
+  difficulty: 3
+  prompt: In the 10-server simulation, what happened with **one** spot per server?
+  options:
+    - One server got about 25% of keys and another about 0.1%
+    - Every server got exactly 10%
+    - All keys went to one server
+    - Keys spread within ±1 point of 10%
+  answer: One server got about 25% of keys and another about 0.1%
+  explanation: With 200 spots each, every server was within about ±1.4 points of 10%.
+
+- key: sd09-q011
+  type: single
+  section: "9.5"
+  difficulty: 2
+  prompt: How do you give a bigger machine more load on a ring?
+  options:
+    - Give it more virtual nodes
+    - Put it at position 0
+    - Give it a longer hash
+    - You can't
+  answer: Give it more virtual nodes
+  explanation: E.g. 100 vnodes for 32 GB servers and 400 for 128 GB ones.
+
+- key: sd09-q012
+  type: single
+  section: "9.6"
+  difficulty: 2
+  prompt: What's the main architectural difference from dynamic sharding?
+  options:
+    - No locator or master; every node or client has a copy of the ring
+    - Consistent hashing needs a bigger locator
+    - Dynamic sharding can't add machines
+    - Consistent hashing only works for SQL
+  answer: No locator or master; every node or client has a copy of the ring
+  explanation: It's masterless — any node can take a request and forward it to the owner, or the client library goes straight to the owner.
+
+- key: sd09-q013
+  type: single
+  section: "9.7"
+  difficulty: 2
+  prompt: How is data replicated on the ring with replication factor 3?
+  options:
+    - The owner plus the next distinct machines clockwise
+    - Three random machines
+    - Three spots on the same machine
+    - The owner and the machine before it
+  answer: The owner plus the next distinct machines clockwise
+  explanation: With virtual nodes, skip spots of machines already used so copies are on 3 physical machines (Dynamo's preference list). Cassandra works this way.
+
+- key: sd09-q014
+  type: order
+  section: "9.7"
+  difficulty: 3
+  prompt: Order how gossip handles a failed node.
+  items:
+    - A node's checks on a peer stop getting acknowledgments
+    - It marks the peer down and spreads the news
+    - Reads and writes go to the failed node's replicas
+    - The node comes back and catches up from its replicas
+  explanation: If it's gone for good, it's removed from the ring or replaced.
+
+- key: sd09-q015
+  type: match
+  section: "9.8"
+  difficulty: 3
+  prompt: Match each alternative to its tradeoff.
+  pairs:
+    - { term: Jump hash, definition: "Near-perfect balance with no memory, but can't remove an arbitrary node" }
+    - { term: Rendezvous (HRW), definition: "Score every node per key; O(n) per lookup" }
+    - { term: Maglev, definition: "O(1) lookups from a precomputed table that's slow to rebuild" }
+    - { term: Bounded loads, definition: "Skip a node that's over its load limit" }
+  explanation: The ring hash handles any add or remove but stays somewhat uneven and costs memory for many vnodes.
+
+- key: sd09-q016
+  type: multi
+  section: "9.8"
+  difficulty: 2
+  prompt: What does consistent hashing **not** solve?
+  options:
+    - A single hot key
+    - Range scans
+    - Nodes temporarily disagreeing on the ring
+    - Minimizing key movement when adding a node
+  answers:
+    - A single hot key
+    - Range scans
+    - Nodes temporarily disagreeing on the ring
+  explanation: It spreads keys, not the load on one key. Hashed keys make range scans impossible. Membership must converge.
+
+- key: sd09-q017
+  type: truefalse
+  section: "9.8"
+  difficulty: 2
+  prompt: Redis Cluster uses consistent hashing.
+  answer: false
+  explanation: It uses 16,384 fixed hash slots — a different way to get the same result.
+
+- key: sd09-q018
+  type: order
+  section: "9.9"
+  difficulty: 2
+  prompt: Order a good interview flow for a distributed key-value store.
+  items:
+    - Start with hash(key) mod N
+    - Explain that adding a server moves most keys
+    - Switch to a ring with virtual nodes
+    - Replicate to the next 3 nodes with R + W > N
+    - Handle failures with gossip and replicas
+  explanation: Then name the limits — hot keys (salt them), no range scans, membership convergence.
+
+- key: sd09-q019
+  type: multi
+  section: "9.10"
+  difficulty: 2
+  prompt: Which are consistent-hashing pitfalls?
+  options:
+    - Drawing one spot per machine without virtual nodes
+    - Confusing "consistent" hashing with CAP consistency
+    - Claiming it fixes hot keys
+    - Starting with basic sharding first
+  answers:
+    - Drawing one spot per machine without virtual nodes
+    - Confusing "consistent" hashing with CAP consistency
+    - Claiming it fixes hot keys
+  explanation: Also avoid saying spots are copies, forgetting how nodes agree on the ring, and saying Redis Cluster uses it.

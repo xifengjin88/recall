@@ -1,0 +1,40 @@
+number: 15
+title: Distributed File Systems (GFS)
+note_title: Distributed File System Design (GFS)
+sections:
+- key: '15.1'
+  title: What the lecture says
+- key: '15.2'
+  title: 'Why GFS was built differently: its assumptions'
+- key: '15.3'
+  title: Interface
+- key: '15.4'
+  title: 'Architecture: one master, many chunkservers, clients'
+- key: '15.5'
+  title: How a read works
+- key: '15.6'
+  title: Why 64 MB chunks?
+- key: '15.7'
+  title: Metadata on the master
+- key: '15.8'
+  title: Consistency model
+- key: '15.9'
+  title: 'Writes: leases and change ordering'
+- key: '15.10'
+  title: Separating data flow from control flow
+- key: '15.11'
+  title: Record append
+- key: '15.12'
+  title: Snapshot (copy-on-write)
+- key: '15.13'
+  title: Master operations
+- key: '15.14'
+  title: Fault tolerance
+- key: '15.15'
+  title: Measurements (2003)
+- key: '15.16'
+  title: 'Part C: Mapping to HDFS and interviews'
+- key: '15.17'
+  title: Scenarios to walk through
+- key: '15.18'
+  title: Pitfalls to avoid in interviews

@@ -1,0 +1,220 @@
+- key: sd12-q001
+  type: single
+  section: "12.1"
+  difficulty: 1
+  prompt: What is a wide-column store underneath?
+  options:
+    - A key-value store whose value is expressed as columns
+    - A relational database with joins
+    - A graph database
+    - An object store
+  answer: A key-value store whose value is expressed as columns
+  explanation: That makes it easy to express database models. If you're not comfortable with the model, a plain key-value store is fine in interviews.
+
+- key: sd12-q002
+  type: order
+  section: "12.2"
+  difficulty: 2
+  prompt: Order the levels of the wide-column "map of maps", outermost first.
+  items:
+    - Row key
+    - Column family
+    - Column qualifier
+    - Timestamp (version)
+  explanation: Bigtable is "a sparse, distributed, persistent, multidimensional sorted map" indexed by (row key, column key, timestamp).
+
+- key: sd12-q003
+  type: match
+  section: "12.2"
+  difficulty: 2
+  prompt: Match each wide-column term.
+  pairs:
+    - { term: Row key, definition: "Primary key; rows are sorted and sharded by it" }
+    - { term: Column family, definition: "Group of related columns declared up front and stored together" }
+    - { term: Column qualifier, definition: "Column name created on the fly; millions per row possible" }
+    - { term: Timestamp, definition: "Lets a cell keep several versions" }
+  explanation: The table is sparse — missing columns take no space.
+
+- key: sd12-q004
+  type: single
+  section: "12.2"
+  difficulty: 2
+  prompt: In the course's Users example, what does one read of `user123` return?
+  options:
+    - The profile and the user's video previews, with no join
+    - Only the profile
+    - Only the list of video IDs
+    - Every user's profile
+  answer: The profile and the user's video previews, with no join
+  explanation: "`profile:` holds name and email; `videos:vidN` columns hold title, thumbnail and link."
+
+- key: sd12-q005
+  type: single
+  section: "12.3"
+  difficulty: 2
+  prompt: Why does Bigtable's Webtable use **reversed** URLs as row keys?
+  options:
+    - Rows are sorted by key, so all pages of one domain sit together for fast range scans
+    - Reversed strings hash more evenly
+    - URLs are too long otherwise
+    - To hide URLs from users
+  answer: Rows are sorted by key, so all pages of one domain sit together for fast range scans
+  explanation: com.cnn.www instead of www.cnn.com. Re-crawling example.com becomes one range scan over the com.example. prefix.
+
+- key: sd12-q006
+  type: match
+  section: "12.3"
+  difficulty: 2
+  prompt: Match each Webtable column family.
+  pairs:
+    - { term: "contents:", definition: "The page HTML, with several versions by crawl time" }
+    - { term: "anchor:", definition: "One column per linking site, holding its link text" }
+    - { term: Row operations, definition: "Reads and writes to one row are atomic" }
+  explanation: A popular page could have millions of anchor columns — exactly why "wide" matters.
+
+- key: sd12-q007
+  type: order
+  section: "12.4"
+  difficulty: 3
+  prompt: Order the LSM write path.
+  items:
+    - Append to the commit log
+    - Write to the in-memory memtable
+    - Flush to a sorted, immutable SSTable on disk
+    - Merge SSTables through compaction
+  explanation: This is why wide-column stores have very fast writes.
+
+- key: sd12-q008
+  type: match
+  section: "12.4"
+  difficulty: 3
+  prompt: HBase or Cassandra?
+  pairs:
+    - { term: HBase, definition: "Master + RegionServers on HDFS; range regions; CP" }
+    - { term: Cassandra, definition: "Masterless hashed ring; AP by default but tunable" }
+    - { term: CQL, definition: "Cassandra's SQL-like language, with no joins" }
+  explanation: Cassandra is the Bigtable data model with Dynamo's distribution.
+
+- key: sd12-q009
+  type: match
+  section: "12.4"
+  difficulty: 2
+  prompt: "In `PRIMARY KEY ((user_id), created_at, video_id)`, what does each part do?"
+  pairs:
+    - { term: user_id, definition: "Partition key: which nodes hold the data" }
+    - { term: created_at, definition: "Clustering column: sort order within the partition" }
+    - { term: One partition, definition: "The same idea as one wide row" }
+  explanation: "\"Latest 20 videos\" is one fast sequential read."
+
+- key: sd12-q010
+  type: single
+  section: "12.5"
+  difficulty: 2
+  prompt: How do you query a wide-column store by something other than the row key?
+  options:
+    - Build another table keyed by what you query on (an index table)
+    - Use a JOIN
+    - Scan every row
+    - Add a column family
+  answer: Build another table keyed by what you query on (an index table)
+  explanation: E.g. UserVideos keyed by user_id, VideosByTag keyed by tag. "One table per query" — denormalize around your queries.
+
+- key: sd12-q011
+  type: single
+  section: "12.5"
+  difficulty: 2
+  prompt: How should the app write index tables when a user uploads a video?
+  options:
+    - Write the main table, then offload index-table writes to a task queue
+    - Write every table synchronously, always
+    - Skip index tables until a nightly job
+    - Write index tables first, then the main table
+  answer: Write the main table, then offload index-table writes to a task queue
+  explanation: If a task fails, retry, then notify the user or mark the row incomplete. If you need strong consistency across tables, write them all before responding and accept slower writes.
+
+- key: sd12-q012
+  type: multi
+  section: "12.5"
+  difficulty: 2
+  prompt: What does "one table per query" cost?
+  options:
+    - More writes
+    - More storage
+    - Copies that are eventually consistent
+    - Slower single-key reads
+  answers:
+    - More writes
+    - More storage
+    - Copies that are eventually consistent
+  explanation: The benefit is every read is a single fast lookup or range scan.
+
+- key: sd12-q013
+  type: single
+  section: "12.6"
+  difficulty: 2
+  prompt: A user's rows grow over 5-10 years. What does the course suggest?
+  options:
+    - Archive old data to another DB, or bucket by time up front
+    - Let the row grow without limit
+    - Shard by timestamp only
+    - Move everything to a cache
+  answer: Archive old data to another DB, or bucket by time up front
+  explanation: Bigtable limits a row to 256 MB. Bucketing like (user_id, month) keeps partitions bounded; past a point you might as well use an object store.
+
+- key: sd12-q014
+  type: multi
+  section: "12.7"
+  difficulty: 2
+  prompt: When is a wide-column store a better fit than a plain key-value store?
+  options:
+    - Many columns per row, read selectively
+    - Sorted range scans within a key
+    - Huge write volume
+    - Multi-row ACID transactions
+  answers:
+    - Many columns per row, read selectively
+    - Sorted range scans within a key
+    - Huge write volume
+  explanation: Versioned cells are another reason. Payments, ad-hoc reporting and heavy relationships are poor fits.
+
+- key: sd12-q015
+  type: single
+  section: "12.8"
+  difficulty: 2
+  prompt: "Chat in Cassandra: which key keeps partitions bounded and makes \"last 50 messages\" one read?"
+  options:
+    - "PRIMARY KEY ((chat_id, month), sent_at, msg_id), ordered by sent_at DESC"
+    - "PRIMARY KEY (msg_id)"
+    - "PRIMARY KEY ((sent_at), chat_id)"
+    - "PRIMARY KEY ((user_id), msg_id)"
+  answer: "PRIMARY KEY ((chat_id, month), sent_at, msg_id), ordered by sent_at DESC"
+  explanation: Month bucketing respects the row-size limit. Search messages by word through Elasticsearch, fed from the queue.
+
+- key: sd12-q016
+  type: single
+  section: "12.8"
+  difficulty: 2
+  prompt: "IoT: 1M sensors, a reading every 10 s. What design fits?"
+  options:
+    - Key (sensor_id, day), clustered by timestamp, with a 90-day TTL
+    - One row per reading keyed by timestamp alone
+    - A single partition for all sensors
+    - A relational table with a foreign key per sensor
+  answer: Key (sensor_id, day), clustered by timestamp, with a 90-day TTL
+  explanation: LSM writes fit the write-heavy load. Fleet-wide analytics go to Spark or a warehouse.
+
+- key: sd12-q017
+  type: multi
+  section: "12.9"
+  difficulty: 2
+  prompt: Which are wide-column pitfalls in interviews?
+  options:
+    - Designing normalized tables that expect joins
+    - Querying a non-key column without an index table
+    - Letting a partition grow without limit
+    - Bucketing partitions by time
+  answers:
+    - Designing normalized tables that expect joins
+    - Querying a non-key column without an index table
+    - Letting a partition grow without limit
+  explanation: Also don't call Cassandra strongly consistent without quorum settings, and don't use it for ad-hoc analytics or multi-row transactions.

@@ -1,0 +1,14 @@
+number: 1
+title: Anatomy of a Scalable Web Application
+note_title: Anatomy of a Scalable Web Application
+sections:
+- key: '1.1'
+  title: Why this lecture matters
+- key: '1.2'
+  title: The two videos
+- key: '1.3'
+  title: Diagram for a Scalable Web Backend
+- key: '1.4'
+  title: Component by component (from the instructor's answers)
+- key: '1.5'
+  title: Concepts from the discussion

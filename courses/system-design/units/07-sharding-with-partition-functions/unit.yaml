@@ -1,0 +1,24 @@
+number: 7
+title: Sharding with Partition Functions
+note_title: Sharding - Using Partition Functions
+sections:
+- key: '7.1'
+  title: The idea in one line
+- key: '7.2'
+  title: How it works
+- key: '7.3'
+  title: Pros and cons
+- key: '7.4'
+  title: 'The big problem: changing N'
+- key: '7.5'
+  title: Homogeneous vs non-homogeneous data
+- key: '7.6'
+  title: Replication with a partition function
+- key: '7.7'
+  title: 'Remapping: adding machines without downtime'
+- key: '7.8'
+  title: Scenarios to walk through
+- key: '7.9'
+  title: How it compares with the other options
+- key: '7.10'
+  title: Pitfalls to avoid in interviews

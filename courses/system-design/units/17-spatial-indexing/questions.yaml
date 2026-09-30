@@ -1,0 +1,206 @@
+- key: sd17-q001
+  type: truefalse
+  section: "17.1"
+  difficulty: 1
+  prompt: In an interview you should cover every spatial indexing approach.
+  answer: false
+  explanation: Any one approach (R-tree, quadtree, …) is good enough; these topics are "quite complicated for interviews anyway". The Anatomy Diagram is your cheat sheet.
+
+- key: sd17-q002
+  type: match
+  section: "17.2"
+  difficulty: 1
+  prompt: Match each spatial query type.
+  pairs:
+    - { term: Range query, definition: "Everything inside a box or circle" }
+    - { term: kNN query, definition: "The k closest points" }
+    - { term: kNN in practice, definition: "A range query that grows until at least k points are found" }
+  explanation: Normal indexes sort on one value, but location has two dimensions.
+
+- key: sd17-q003
+  type: single
+  section: "17.3"
+  difficulty: 2
+  prompt: Why is a search box with separate lat and lng indexes slow at scale?
+  options:
+    - Each index returns a huge strip across the whole map, and only their small intersection is the answer
+    - B-trees can't hold decimals
+    - SQL can't do range queries
+    - It needs a full table scan per row
+  answer: Each index returns a huge strip across the whole map, and only their small intersection is the answer
+  explanation: E.g. about 60k index entries read to return about 200 restaurants in a 1-mile box. A composite (lat, lng) index still scans the whole latitude strip for a range on lat.
+
+- key: sd17-q004
+  type: single
+  section: "17.4"
+  difficulty: 2
+  prompt: What does each R-tree node store for its children?
+  options:
+    - A minimum bounding rectangle containing everything below it
+    - A hash of the child's points
+    - The child's latitude only
+    - A geohash string
+  answer: A minimum bounding rectangle containing everything below it
+  explanation: It's like a B-tree — balanced, at most M children per node, nodes split when full — but the keys are rectangles.
+
+- key: sd17-q005
+  type: order
+  section: "17.4"
+  difficulty: 2
+  prompt: Order an R-tree range query.
+  items:
+    - Start at the root
+    - Skip every child box that doesn't intersect the query box X
+    - Go into the children that do intersect X
+    - At the leaves, return the points inside X
+  explanation: Whole regions that don't touch X are skipped in one check, so the work is about O(log n + results).
+
+- key: sd17-q006
+  type: order
+  section: "17.4"
+  difficulty: 3
+  prompt: Order R-tree insertion.
+  items:
+    - Go down into the child whose box would grow the least
+    - Add the point to the leaf
+    - If the leaf has more than M entries, split it into two groups of close points
+    - Expand parent boxes and push splits upward
+  explanation: If the root splits, the tree gets one level taller, like a B-tree.
+
+- key: sd17-q007
+  type: single
+  section: "17.4"
+  difficulty: 2
+  prompt: Uber drivers move every few seconds. Is the R-tree rebuilt?
+  options:
+    - No — individual points are updated (delete and re-insert, or adjust in place)
+    - Yes, every few seconds
+    - Yes, nightly only
+    - Drivers aren't stored in the index
+  answer: No — individual points are updated (delete and re-insert, or adjust in place)
+  explanation: "\"Rebuilt, no. Individual points updated, yes.\""
+
+- key: sd17-q008
+  type: single
+  section: "17.5"
+  difficulty: 2
+  prompt: The box around the rider has no drivers. What does the instructor suggest?
+  options:
+    - Keep widening the box (1 mile → 5 → 10…)
+    - Return "no drivers" immediately
+    - Rebuild the index
+    - Query every driver in the world
+  answer: Keep widening the box (1 mile → 5 → 10…)
+  explanation: Box queries turn kNN into a growing range query.
+
+- key: sd17-q009
+  type: truefalse
+  section: "17.5"
+  difficulty: 3
+  prompt: A bounding-box query always returns the exact k nearest neighbors.
+  answer: false
+  explanation: A point just outside the box's edge can be closer than one in a corner. For exact kNN, fetch more than k, compute real distances, and check the box's half-width ≥ the k-th distance (or use best-first search). In practice it rarely matters.
+
+- key: sd17-q010
+  type: match
+  section: "17.6"
+  difficulty: 2
+  prompt: Match each approach.
+  pairs:
+    - { term: Quadtree, definition: "Split each square into 4 until each holds ≤ N points" }
+    - { term: Geohash, definition: "Interleaved bits as a string; shared prefix means nearby" }
+    - { term: H3, definition: "Uber's hexagon cells with equal distance to all neighbors" }
+    - { term: R-tree, definition: "A tree of bounding rectangles; PostGIS uses it via GiST" }
+  explanation: Any one is enough in an interview.
+
+- key: sd17-q011
+  type: single
+  section: "17.6"
+  difficulty: 2
+  prompt: Why check the 8 neighboring cells in a geohash search?
+  options:
+    - Close points can fall in different cells with different prefixes (edge effects)
+    - Geohash cells overlap by design
+    - To find points further away
+    - Redis requires it
+  answer: Close points can fall in different cells with different prefixes (edge effects)
+  explanation: Fetch the user's cell plus its 8 neighbors, then filter by real distance.
+
+- key: sd17-q012
+  type: match
+  section: "17.6"
+  difficulty: 3
+  prompt: Match each geohash length to its approximate cell size.
+  pairs:
+    - { term: "5 characters", definition: "About 4.9 km × 4.9 km" }
+    - { term: "6 characters", definition: "About 1.2 km × 0.6 km" }
+    - { term: "7 characters", definition: "About 153 m × 153 m" }
+  explanation: More characters mean a smaller cell.
+
+- key: sd17-q013
+  type: single
+  section: "17.6"
+  difficulty: 2
+  prompt: Why do interviewers like geohash?
+  options:
+    - It turns a 2D problem into a 1D key, so normal sharding, caching and key-value tools work
+    - It's always exact
+    - It needs no index at all
+    - It only works in SQL
+  answer: It turns a 2D problem into a 1D key, so normal sharding, caching and key-value tools work
+  explanation: Redis GEO uses a sorted set with geohash-based scores, all in memory — good for frequently updated driver locations.
+
+- key: sd17-q014
+  type: single
+  section: "17.7"
+  difficulty: 2
+  prompt: How do you shard a spatial index that's too big for one machine?
+  options:
+    - By geography — city/region or geohash / cell ranges, with smaller cells in dense areas
+    - By driver ID hash
+    - Randomly
+    - You can't shard spatial data
+  answer: By geography — city/region or geohash / cell ranges, with smaller cells in dense areas
+  explanation: A nearby query then usually hits one shard, or a few at borders. Manhattan needs more shards than rural areas.
+
+- key: sd17-q015
+  type: single
+  section: "17.8"
+  difficulty: 2
+  prompt: Yelp restaurants rarely move. What fits?
+  options:
+    - A read-heavy spatial index built once and cached (PostGIS R-tree, geohash + B-tree, or Elasticsearch geo)
+    - Rebuilding the index every second
+    - A write-optimized LSM store
+    - A single in-memory list scanned per query
+  answer: A read-heavy spatial index built once and cached (PostGIS R-tree, geohash + B-tree, or Elasticsearch geo)
+  explanation: Query a box around the user, filter by exact distance, then rank by rating.
+
+- key: sd17-q016
+  type: single
+  section: "17.8"
+  difficulty: 2
+  prompt: Geohash in a plain key-value store — how do you store drivers?
+  options:
+    - "geohash6 → set of driver IDs; move a driver between sets when its geohash changes"
+    - One key per driver with lat/lng; scan them all
+    - One key for all drivers
+    - driver_id → geohash only
+  answer: "geohash6 → set of driver IDs; move a driver between sets when its geohash changes"
+  explanation: A query does 9 key lookups (the cell plus 8 neighbors), merges and filters by distance.
+
+- key: sd17-q017
+  type: multi
+  section: "17.9"
+  difficulty: 2
+  prompt: Which are spatial-indexing pitfalls?
+  options:
+    - Saying "index lat and lng" without the strip-intersection cost
+    - Treating box results as exact kNN
+    - Rebuilding the index for moving drivers
+    - Checking neighbor cells with geohash
+  answers:
+    - Saying "index lat and lng" without the strip-intersection cost
+    - Treating box results as exact kNN
+    - Rebuilding the index for moving drivers
+  explanation: Also widen empty boxes, handle dense-area hot spots, and pick one approach to explain well.
