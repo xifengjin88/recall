@@ -1,0 +1,22 @@
+number: 8
+title: Dynamic Sharding
+note_title: Dynamic Sharding
+sections:
+- key: '8.1'
+  title: What the lecture says
+- key: '8.2'
+  title: The core idea
+- key: '8.3'
+  title: How the locator table works
+- key: '8.4'
+  title: Adding machines and rebalancing
+- key: '8.5'
+  title: Keeping the locator available
+- key: '8.6'
+  title: Pros and cons
+- key: '8.7'
+  title: Distributed joins
+- key: '8.8'
+  title: Scenarios to walk through
+- key: '8.9'
+  title: Pitfalls to avoid in interviews

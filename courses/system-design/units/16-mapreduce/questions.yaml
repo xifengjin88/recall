@@ -1,0 +1,238 @@
+- key: sd16-q001
+  type: single
+  section: "16.1"
+  difficulty: 1
+  prompt: What pattern do GFS, dynamic sharding and MapReduce share, per the instructor?
+  options:
+    - Work spread across many cheap workers, with a master keeping track
+    - Every machine holds all the data
+    - No coordination at all
+    - Everything runs on one big machine
+  answer: Work spread across many cheap workers, with a master keeping track
+  explanation: "\"This design is very helpful for scaling lots of things.\" The programming model is mostly asked in data engineering interviews."
+
+- key: sd16-q002
+  type: single
+  section: "16.2"
+  difficulty: 1
+  prompt: What does the MapReduce library take off the programmer's hands?
+  options:
+    - Splitting data, scheduling, failures and communication between machines
+    - Writing the map and reduce functions
+    - Choosing the input data
+    - Nothing
+  answer: Splitting data, scheduling, failures and communication between machines
+  explanation: The programmer writes just two functions; the hard distributed parts are in the library.
+
+- key: sd16-q003
+  type: match
+  section: "16.3"
+  difficulty: 2
+  prompt: Match each job to what its map emits.
+  pairs:
+    - { term: Word count, definition: "(word, 1) for each word" }
+    - { term: Inverted index, definition: "(word, document ID)" }
+    - { term: Reverse web-link graph, definition: "(target, source) for each link" }
+    - { term: URL access frequency, definition: "(URL, 1) from request logs" }
+  explanation: Grep and distributed sort use an identity reduce.
+
+- key: sd16-q004
+  type: truefalse
+  section: "16.3"
+  difficulty: 1
+  prompt: In word count, the 1 in `(car, 1)` is a document ID.
+  answer: false
+  explanation: It's a count of one occurrence. Reduce adds the counts for each word.
+
+- key: sd16-q005
+  type: order
+  section: "16.4"
+  difficulty: 2
+  prompt: Order a MapReduce job.
+  items:
+    - Split the input into M pieces of 16-64 MB
+    - Map workers run map and buffer output
+    - Output is written to local disk, split into R regions
+    - Reducers pull their region from every map worker and sort by key
+    - Reduce runs per key and writes an output file to GFS
+  explanation: The result is R output files, often fed into another MapReduce job.
+
+- key: sd16-q006
+  type: single
+  section: "16.4"
+  difficulty: 2
+  prompt: Do you need 8,000 machines for 8,000 reduce tasks?
+  options:
+    - No — the same machines run map and reduce tasks; task count and machine count are separate
+    - Yes, one machine per reduce task
+    - Yes, plus one per map task
+    - Only if the data is larger than 8 TB
+  answer: No — the same machines run map and reduce tasks; task count and machine count are separate
+  explanation: The master tracks each task's state and which worker has it.
+
+- key: sd16-q007
+  type: match
+  section: "16.5"
+  difficulty: 3
+  prompt: A worker dies. What happens to its tasks?
+  pairs:
+    - { term: In-progress tasks, definition: "Rescheduled" }
+    - { term: Completed map tasks, definition: "Re-run, because their output was on its local disk" }
+    - { term: Completed reduce tasks, definition: "Kept, because their output is on GFS" }
+  explanation: Reducers are told to read the re-run map output from the new worker.
+
+- key: sd16-q008
+  type: single
+  section: "16.5"
+  difficulty: 2
+  prompt: What happens if the master fails?
+  options:
+    - The job is aborted and the client retries (checkpoints are possible)
+    - A worker becomes master automatically
+    - The job continues without it
+    - All output is lost from GFS
+  answer: The job is aborted and the client retries (checkpoints are possible)
+  explanation: There's only one master, so failure is unlikely.
+
+- key: sd16-q009
+  type: single
+  section: "16.5"
+  difficulty: 3
+  prompt: How does MapReduce stay correct when a reduce task runs twice?
+  options:
+    - Each task writes a private temp file; reduce atomically renames it to the final name
+    - It locks the output directory
+    - The second run is never allowed
+    - It merges both outputs
+  answer: Each task writes a private temp file; reduce atomically renames it to the final name
+  explanation: The master also ignores duplicate map completions. With deterministic functions, the result equals one failure-free run.
+
+- key: sd16-q010
+  type: single
+  section: "16.6"
+  difficulty: 2
+  prompt: What does "move the computation, not the data" mean in MapReduce?
+  options:
+    - Schedule each map task on (or near) a machine that holds its input block
+    - Copy all input to the master first
+    - Run everything on one machine
+    - Send data to the fastest machine
+  answer: Schedule each map task on (or near) a machine that holds its input block
+  explanation: Input is on GFS in 64 MB blocks with 3 copies, so most input is read locally and uses no network bandwidth.
+
+- key: sd16-q011
+  type: single
+  section: "16.6"
+  difficulty: 2
+  prompt: Why make M and R much larger than the number of machines?
+  options:
+    - Better load balancing and faster recovery from failures
+    - To use more memory
+    - To make the output files larger
+    - It's required by GFS
+  answer: Better load balancing and faster recovery from failures
+  explanation: Typical — M = 200,000, R = 5,000, on 2,000 workers.
+
+- key: sd16-q012
+  type: single
+  section: "16.6"
+  difficulty: 2
+  prompt: How does MapReduce deal with stragglers?
+  options:
+    - Near the end, launch backup copies of remaining tasks; the first to finish wins
+    - Kill the whole job
+    - Wait indefinitely
+    - Skip the slow tasks
+  answer: Near the end, launch backup copies of remaining tasks; the first to finish wins
+  explanation: Sort took 44% longer without backup tasks, for a cost of only a few percent more resources. Today it's called speculative execution.
+
+- key: sd16-q013
+  type: match
+  section: "16.7"
+  difficulty: 2
+  prompt: Match each refinement.
+  pairs:
+    - { term: Partitioning function, definition: "Default hash(key) mod R; custom e.g. by hostname" }
+    - { term: Combiner, definition: "A mini-reduce on the map worker to cut network traffic" }
+    - { term: Skipping bad records, definition: "Skip a record that crashes the map every time" }
+    - { term: Counters, definition: "Named counts gathered by the master, de-duplicated" }
+  explanation: Keys within a partition are processed in sorted order.
+
+- key: sd16-q014
+  type: single
+  section: "16.7"
+  difficulty: 3
+  prompt: When can you use a combiner?
+  options:
+    - When the reduce is associative and commutative (e.g. sum, not a plain average)
+    - Always
+    - Only for sort jobs
+    - Never with word count
+  answer: When the reduce is associative and commutative (e.g. sum, not a plain average)
+  explanation: For an average, send (sum, count) pairs instead.
+
+- key: sd16-q015
+  type: single
+  section: "16.8"
+  difficulty: 3
+  prompt: In the 2004 paper, how much slower was sort when 200 workers were killed mid-job?
+  options:
+    - Only about 5% slower
+    - About 44% slower
+    - Twice as slow
+    - It failed
+  answer: Only about 5% slower
+  explanation: 933 s vs 891 s. Without backup tasks it was 44% slower (1,283 s).
+
+- key: sd16-q016
+  type: match
+  section: "16.9"
+  difficulty: 2
+  prompt: MapReduce, Spark or streaming?
+  pairs:
+    - { term: MapReduce, definition: "One-pass batch; intermediate data on disk; minutes to hours" }
+    - { term: Spark, definition: "Multi-step or iterative jobs kept in memory" }
+    - { term: Stream processing, definition: "Real-time metrics and alerts in milliseconds to seconds" }
+  explanation: Hadoop is the open-source MapReduce + HDFS.
+
+- key: sd16-q017
+  type: single
+  section: "16.10"
+  difficulty: 2
+  prompt: How do you keep each website's URLs in one output file?
+  options:
+    - A custom partitioner, hash(hostname(url)) mod R
+    - The default hash(url) mod R
+    - Set R = 1 for every site
+    - Sort the input first
+  answer: A custom partitioner, hash(hostname(url)) mod R
+  explanation: The default scatters site.com/a and site.com/b across files.
+
+- key: sd16-q018
+  type: single
+  section: "16.10"
+  difficulty: 3
+  prompt: How do you produce a fully sorted 1 TB output?
+  options:
+    - Partition by key range (sampled split points) so the R sorted files concatenate in order
+    - Use hash(key) mod R
+    - Use a single reducer for everything, always
+    - Sort in the map function only
+  answer: Partition by key range (sampled split points) so the R sorted files concatenate in order
+  explanation: Each reducer's file is sorted; joined end to end they're globally sorted. 1 TB took 891 s on about 1,800 machines in 2004.
+
+- key: sd16-q019
+  type: multi
+  section: "16.11"
+  difficulty: 2
+  prompt: Which are MapReduce pitfalls in interviews?
+  options:
+    - Sending all input over the network instead of using locality
+    - Using a combiner for a plain average
+    - Using MapReduce for real-time needs
+    - Using a combiner for sums
+  answers:
+    - Sending all input over the network instead of using locality
+    - Using a combiner for a plain average
+    - Using MapReduce for real-time needs
+  explanation: Also watch for hot reduce keys, non-idempotent side effects, and forgetting completed map output is lost with its worker.

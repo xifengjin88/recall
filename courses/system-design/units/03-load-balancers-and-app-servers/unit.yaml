@@ -1,0 +1,24 @@
+number: 3
+title: Load Balancers and App Servers
+note_title: Load Balancers and App Servers
+sections:
+- key: '3.1'
+  title: What the lecture covers
+- key: '3.2'
+  title: What a load balancer is and why you use one
+- key: '3.3'
+  title: L4 vs L7 load balancers
+- key: '3.4'
+  title: How the LB picks a server (algorithms)
+- key: '3.5'
+  title: Stateless vs stateful app servers
+- key: '3.6'
+  title: Consistency and scaling reads vs writes
+- key: '3.7'
+  title: Making the load balancer itself redundant
+- key: '3.8'
+  title: Scenarios to walk through
+- key: '3.9'
+  title: Case studies
+- key: '3.10'
+  title: Pitfalls to avoid in interviews

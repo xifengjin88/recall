@@ -1,0 +1,306 @@
+- key: sd15-q001
+  type: single
+  section: "15.1"
+  difficulty: 1
+  prompt: How should you mention GFS/HDFS in an interview?
+  options:
+    - Say your design is "similar to how HDFS does it", adapted to the question
+    - Recite the GFS paper
+    - Never mention them
+    - Only mention Colossus
+  answer: Say your design is "similar to how HDFS does it", adapted to the question
+  explanation: Show it's inspired, not memorized. The first half of the paper matters; the second half is irrelevant for general interviews.
+
+- key: sd15-q002
+  type: multi
+  section: "15.2"
+  difficulty: 2
+  prompt: Which workload assumptions shaped GFS?
+  options:
+    - Component failures are the norm
+    - Files are huge (multi-GB is common)
+    - Mostly large sequential appends; random writes are rare
+    - Low latency per request matters more than throughput
+  answers:
+    - Component failures are the norm
+    - Files are huge (multi-GB is common)
+    - Mostly large sequential appends; random writes are rare
+  explanation: High sustained bandwidth matters more than latency. Start any DFS design by stating the workload.
+
+- key: sd15-q003
+  type: match
+  section: "15.3"
+  difficulty: 2
+  prompt: Match GFS's two special operations.
+  pairs:
+    - { term: Snapshot, definition: "A cheap copy of a file or directory tree" }
+    - { term: Record append, definition: "Many clients append to one file; each append is atomic" }
+    - { term: Regular operations, definition: "create, delete, open, close, read, write (not full POSIX)" }
+  explanation: Record append needs no extra locking from clients.
+
+- key: sd15-q004
+  type: match
+  section: "15.4"
+  difficulty: 1
+  prompt: Match each GFS component.
+  pairs:
+    - { term: Master, definition: "All metadata: namespace, file → chunks, chunk locations" }
+    - { term: Chunkserver, definition: "Stores chunks as plain Linux files" }
+    - { term: Client library, definition: "Gets metadata from the master, then data directly from chunkservers" }
+  explanation: The key principle — data never flows through the master, so the single master isn't a bottleneck.
+
+- key: sd15-q005
+  type: single
+  section: "15.4"
+  difficulty: 1
+  prompt: What's the GFS chunk size and default replication?
+  options:
+    - 64 MB chunks, 3 replicas
+    - 4 KB chunks, 1 replica
+    - 1 GB chunks, 2 replicas
+    - 128 KB chunks, 5 replicas
+  answer: 64 MB chunks, 3 replicas
+  explanation: Each chunk has an immutable, globally unique 64-bit handle assigned by the master.
+
+- key: sd15-q006
+  type: truefalse
+  section: "15.4"
+  difficulty: 2
+  prompt: GFS clients cache file data.
+  answer: false
+  explanation: Apps stream through huge files, so data caching wouldn't help and would add coherence problems. Clients do cache metadata; chunkservers rely on the Linux page cache.
+
+- key: sd15-q007
+  type: order
+  section: "15.5"
+  difficulty: 2
+  prompt: Order a GFS read.
+  items:
+    - The client turns (file, byte offset) into a chunk index
+    - It asks the master for that chunk's handle and replicas
+    - It caches the reply
+    - It reads from the closest replica
+  explanation: Later reads of that chunk skip the master until the cache expires or the file is reopened.
+
+- key: sd15-q008
+  type: typed
+  section: "15.5"
+  difficulty: 3
+  prompt: With 64 MB (67,108,864-byte) chunks, which **0-based** chunk index holds byte 200,000,000?
+  accept: ["2", "chunk 2", "#2"]
+  explanation: 200,000,000 ÷ 67,108,864 ≈ 2.98, so chunk index 2. The client computes this itself because the chunk size is fixed.
+
+- key: sd15-q009
+  type: multi
+  section: "15.6"
+  difficulty: 2
+  prompt: What do big 64 MB chunks buy you?
+  options:
+    - Fewer trips to the master
+    - Less network overhead from long-lived connections
+    - Less metadata, so it all fits in the master's RAM
+    - No hot spots ever
+  answers:
+    - Fewer trips to the master
+    - Less network overhead from long-lived connections
+    - Less metadata, so it all fits in the master's RAM
+  explanation: The cost — a small one-chunk file read by many clients becomes a hot spot (an executable launched on hundreds of machines). Fix with more replicas or staggered starts.
+
+- key: sd15-q010
+  type: single
+  section: "15.7"
+  difficulty: 3
+  prompt: Which master metadata is **not** saved to disk?
+  options:
+    - Chunk replica locations — the master asks chunkservers at startup
+    - The namespace
+    - The file → chunk handles mapping
+    - The operation log
+  answer: Chunk replica locations — the master asks chunkservers at startup
+  explanation: The chunkserver has the final say on what it holds. Asking avoids keeping master and chunkservers in sync.
+
+- key: sd15-q011
+  type: single
+  section: "15.7"
+  difficulty: 2
+  prompt: When does a client get a reply to a metadata change?
+  options:
+    - After the operation log record is flushed to disk locally and on remote replicas
+    - Immediately, before logging
+    - After the next checkpoint
+    - After every chunkserver confirms
+  answer: After the operation log record is flushed to disk locally and on remote replicas
+  explanation: Same write-ahead idea as databases. Recovery loads the latest checkpoint and replays the log after it.
+
+- key: sd15-q012
+  type: match
+  section: "15.8"
+  difficulty: 3
+  prompt: Match each GFS file-region state.
+  pairs:
+    - { term: Consistent, definition: "Every client sees the same data from any replica" }
+    - { term: Defined, definition: "Consistent, and shows exactly what one change wrote" }
+    - { term: Consistent but undefined, definition: "Same data everywhere, but mixed from concurrent writes" }
+    - { term: Inconsistent, definition: "Clients may see different data after a failed change" }
+  explanation: Concurrent successful writes leave a region consistent but undefined.
+
+- key: sd15-q013
+  type: single
+  section: "15.8"
+  difficulty: 2
+  prompt: What guarantee does record append give?
+  options:
+    - At least once, atomically, at an offset GFS picks
+    - Exactly once, at the offset the client picks
+    - At most once
+    - No guarantee
+  answer: At least once, atomically, at an offset GFS picks
+  explanation: Files may contain padding or duplicates. Apps use checksums (self-validating) and unique IDs (self-identifying) — like at-least-once queues with idempotency.
+
+- key: sd15-q014
+  type: single
+  section: "15.9"
+  difficulty: 2
+  prompt: Who decides the order of changes to a chunk?
+  options:
+    - The primary replica holding the chunk lease
+    - The master
+    - The client
+    - Whichever replica is fastest
+  answer: The primary replica holding the chunk lease
+  explanation: Leases last 60 s and are extended through HeartBeats; the master can revoke them.
+
+- key: sd15-q015
+  type: order
+  section: "15.9"
+  difficulty: 3
+  prompt: Order the GFS write.
+  items:
+    - Client asks the master who holds the lease and where replicas are
+    - Client pushes the data along a chain of replicas (buffered, not applied)
+    - Client sends the write request to the primary
+    - Primary assigns a serial number and applies it
+    - Secondaries apply in the same order and reply
+    - Primary replies success or errors to the client
+  explanation: On errors the client retries; the region may be inconsistent until then.
+
+- key: sd15-q016
+  type: single
+  section: "15.10"
+  difficulty: 3
+  prompt: Why does GFS separate data flow from control flow?
+  options:
+    - Data is pipelined along a chain so each machine's full outgoing bandwidth is used
+    - To encrypt data separately
+    - To let the master see every byte
+    - To avoid replication
+  answer: Data is pipelined along a chain so each machine's full outgoing bandwidth is used
+  explanation: Each server forwards to the closest server without the data. 1 MB reaches all replicas in about 80 ms on 100 Mbps links.
+
+- key: sd15-q017
+  type: single
+  section: "15.11"
+  difficulty: 3
+  prompt: A record won't fit in the current chunk. What happens?
+  options:
+    - The primary pads the chunk to 64 MB and the client retries on the next chunk
+    - The record is split across two chunks
+    - The append fails permanently
+    - The chunk grows past 64 MB
+  answer: The primary pads the chunk to 64 MB and the client retries on the next chunk
+  explanation: Records are limited to ¼ of the chunk size (16 MB) to limit wasted padding.
+
+- key: sd15-q018
+  type: single
+  section: "15.12"
+  difficulty: 3
+  prompt: How does GFS make snapshots cheap?
+  options:
+    - Copy-on-write — copy only metadata; a shared chunk is copied locally on its first write
+    - Copy every chunk immediately
+    - Freeze the file system
+    - Snapshots aren't supported
+  answer: Copy-on-write — copy only metadata; a shared chunk is copied locally on its first write
+  explanation: The master first revokes outstanding leases. Local disk copies are about 3× faster than the network.
+
+- key: sd15-q019
+  type: match
+  section: "15.13"
+  difficulty: 3
+  prompt: Match each master operation.
+  pairs:
+    - { term: Replica placement, definition: "Spread across machines and racks" }
+    - { term: Re-replication priority, definition: "Chunks furthest below their goal go first" }
+    - { term: Lazy deletion, definition: "Rename to a hidden name; remove after 3 days" }
+    - { term: Chunk version number, definition: "Bumped on each new lease to spot stale replicas" }
+  explanation: Namespace locks are taken in a consistent order to avoid deadlock.
+
+- key: sd15-q020
+  type: multi
+  section: "15.14"
+  difficulty: 2
+  prompt: How does GFS tolerate failures?
+  options:
+    - Master and chunkservers restart in seconds
+    - Operation log and checkpoints replicated; shadow masters serve reads
+    - 32-bit checksums on 64 KB blocks, checked on every read
+    - Every write goes through the master
+  answers:
+    - Master and chunkservers restart in seconds
+    - Operation log and checkpoints replicated; shadow masters serve reads
+    - 32-bit checksums on 64 KB blocks, checked on every read
+  explanation: On a checksum mismatch the client reads another replica and the master replaces the corrupt copy.
+
+- key: sd15-q021
+  type: single
+  section: "15.15"
+  difficulty: 3
+  prompt: In 2003, how fast did GFS re-replicate a killed chunkserver with 600 GB?
+  options:
+    - About 23 minutes
+    - About 2 days
+    - About 5 seconds
+    - It couldn't
+  answer: About 23 minutes
+  explanation: Chunks down to one copy were restored to two within 2 minutes. Master load was only 200-500 ops/s.
+
+- key: sd15-q022
+  type: match
+  section: "15.16"
+  difficulty: 2
+  prompt: Map GFS terms to HDFS.
+  pairs:
+    - { term: Master, definition: "NameNode" }
+    - { term: Chunkserver, definition: "DataNode" }
+    - { term: Operation log + checkpoint, definition: "EditLog + FsImage" }
+    - { term: Shadow master, definition: "Standby NameNode" }
+  explanation: HDFS blocks are 128 MB by default and allow one writer per file. Google replaced GFS with Colossus, which shards the metadata.
+
+- key: sd15-q023
+  type: single
+  section: "15.17"
+  difficulty: 3
+  prompt: A replica was down during a write and comes back reporting "chunk X v7", but others have v8. What happens?
+  options:
+    - Its copy is stale — ignored, garbage-collected, and replaced
+    - It becomes the new primary
+    - The others roll back to v7
+    - The file is deleted
+  answer: Its copy is stale — ignored, garbage-collected, and replaced
+  explanation: The version number increases every time the master grants a new lease.
+
+- key: sd15-q024
+  type: multi
+  section: "15.18"
+  difficulty: 2
+  prompt: Which are DFS pitfalls in interviews?
+  options:
+    - Sending file data through the master
+    - Using tiny chunks like 4 KB
+    - Promising strong consistency for concurrent appends
+    - Letting chunkservers report chunk locations
+  answers:
+    - Sending file data through the master
+    - Using tiny chunks like 4 KB
+    - Promising strong consistency for concurrent appends
+  explanation: Also remember rack-aware placement, stale replicas, corruption, and the single master's file-count limit.

@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import Markdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Link } from "react-router";
-import { hasNotes } from "~/content";
+import { unitForNote } from "~/content";
 import { remarkCallouts } from "~/lib/callouts";
 import { headingId, resolveWikilinks } from "~/lib/notes";
 import type { CodeBlock as Code } from "~/lib/types";
@@ -27,7 +27,7 @@ const LANGS = new Set(["c", "bash", "text"]);
  * leave the current screen (e.g. mid-session) open the full notes page in a new tab.
  */
 export function NoteMarkdown({ markdown, chapter, embedded = false }: { markdown: string; chapter: number; embedded?: boolean }) {
-  const source = useMemo(() => resolveWikilinks(markdown, hasNotes), [markdown]);
+  const source = useMemo(() => resolveWikilinks(markdown, unitForNote), [markdown]);
 
   const components = useMemo<Components>(() => {
     const heading =

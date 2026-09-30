@@ -1,0 +1,229 @@
+- key: sd06-q001
+  type: single
+  section: "6.1"
+  difficulty: 1
+  prompt: What's the most important thing to remember about ACID vs BASE?
+  options:
+    - ACID is consistent; BASE is eventually consistent
+    - ACID is NoSQL; BASE is SQL
+    - ACID is faster; BASE is safer
+    - ACID only works on one machine
+  answer: ACID is consistent; BASE is eventually consistent
+  explanation: The instructor confirmed consistency is the key property. BASE's looser guarantees make it easier to scale and always available.
+
+- key: sd06-q002
+  type: match
+  section: "6.1"
+  difficulty: 1
+  prompt: Which consistency does each kind of data need?
+  pairs:
+    - { term: Blog posts, definition: "Eventual: a version 5 minutes old is fine, and they stay available" }
+    - { term: User passwords, definition: "Strong: the old password must never work after a change" }
+    - { term: Like counts, definition: "Eventual: a few seconds behind harms nobody" }
+  explanation: In an interview, look at each piece of data and decide what consistency it needs.
+
+- key: sd06-q003
+  type: match
+  section: "6.2"
+  difficulty: 1
+  prompt: Match each CAP letter to its meaning.
+  pairs:
+    - { term: Consistency, definition: "Every read gets the most recent write or an error" }
+    - { term: Availability, definition: "Every request to a non-failing node gets a response" }
+    - { term: Partition tolerance, definition: "The system keeps working when messages between nodes are lost" }
+  explanation: Eric Brewer proposed CAP at PODC 2000; Gilbert and Lynch proved it in 2002.
+
+- key: sd06-q004
+  type: single
+  section: "6.2"
+  difficulty: 2
+  prompt: What is the real choice CAP forces?
+  options:
+    - When a network partition happens, give up consistency or availability
+    - Pick any 2 of C, A and P forever
+    - Choose between SQL and NoSQL
+    - Choose between latency and throughput
+  answer: When a network partition happens, give up consistency or availability
+  explanation: With more than one machine, partitions will happen, so P isn't optional. Without a partition you can have both C and A.
+
+- key: sd06-q005
+  type: match
+  section: "6.2"
+  difficulty: 2
+  prompt: "Flight price: DB1 gets $350; DB2 still has $300 while replication runs. What does DB2 do?"
+  pairs:
+    - { term: CP, definition: "Blocks or waits on reads until it has $350" }
+    - { term: AP, definition: "Returns $300 right away and updates to $350 later" }
+    - { term: Single machine, definition: "Can be C and A because there's no network between copies" }
+  explanation: AP is eventual consistency. Claiming "CA" for a distributed database is a red flag.
+
+- key: sd06-q006
+  type: truefalse
+  section: "6.2"
+  difficulty: 3
+  prompt: A reader seeing $300 before the $350 write is acknowledged violates consistency.
+  answer: false
+  explanation: The write only "happens" once it's acknowledged, so reading $300 before then is acceptable.
+
+- key: sd06-q007
+  type: match
+  section: "6.2"
+  difficulty: 2
+  prompt: Classify each system by its usual default.
+  pairs:
+    - { term: CP, definition: "HBase, ZooKeeper/etcd, MongoDB with primary writes" }
+    - { term: AP, definition: "Cassandra, DynamoDB default reads, Riak, DNS" }
+    - { term: "\"CA\"", definition: "A single-node PostgreSQL" }
+  explanation: Most are tunable, so read these as defaults.
+
+- key: sd06-q008
+  type: match
+  section: "6.3"
+  difficulty: 1
+  prompt: Match each ACID property.
+  pairs:
+    - { term: Atomic, definition: "Everything succeeds or the whole operation rolls back" }
+    - { term: Consistent, definition: "Two reads of the same data never disagree (the course's definition)" }
+    - { term: Isolated, definition: "Operations can't interfere with each other" }
+    - { term: Durable, definition: "Completed operations survive a restart" }
+  explanation: PostgreSQL is a classic ACID database.
+
+- key: sd06-q009
+  type: single
+  section: "6.3"
+  difficulty: 3
+  prompt: How is ACID's C different from CAP's C in textbooks?
+  options:
+    - "ACID's C: data follows its rules and constraints. CAP's C: every read sees the latest write."
+    - They mean exactly the same thing
+    - "ACID's C: every read sees the latest write. CAP's C: constraints hold."
+    - ACID has no C
+  answer: "ACID's C: data follows its rules and constraints. CAP's C: every read sees the latest write."
+  explanation: The course's ACID definition ("two reads never disagree") is really CAP's C. Use the course's framing, but be ready to explain the difference.
+
+- key: sd06-q010
+  type: truefalse
+  section: "6.3"
+  difficulty: 2
+  prompt: Per the instructor, a replicated ACID database keeps its guarantees because a write returns success only after it reaches all replicas.
+  answer: true
+  explanation: In practice many SQL setups use asynchronous read replicas that can serve stale reads, so know which kind you're describing.
+
+- key: sd06-q011
+  type: match
+  section: "6.4"
+  difficulty: 1
+  prompt: Match each part of BASE.
+  pairs:
+    - { term: Basically Available, definition: "Puts availability ahead of consistency" }
+    - { term: Soft state, definition: "State changes without user input, e.g. syncing after replying" }
+    - { term: Eventual consistency, definition: "If updates stop, all reads eventually return the last write" }
+  explanation: Soft-state example — DB2 replies $300, then updates itself to $350 without any client asking.
+
+- key: sd06-q012
+  type: match
+  section: "6.4"
+  difficulty: 3
+  prompt: How do copies that disagree get fixed?
+  pairs:
+    - { term: Last writer wins, definition: "Keep the newest timestamp; can silently drop a concurrent write" }
+    - { term: Read repair, definition: "Fix stale copies when a read notices they differ" }
+    - { term: Anti-entropy, definition: "Background syncing, e.g. with Merkle trees" }
+    - { term: CRDTs, definition: "Data types that merge concurrent updates without conflicts" }
+  explanation: App-level merges are another option.
+
+- key: sd06-q013
+  type: truefalse
+  section: "6.4"
+  difficulty: 2
+  prompt: All NoSQL databases are BASE and all SQL databases are ACID.
+  answer: false
+  explanation: NoSQL can be configured for ACID-like behavior (Cassandra consistency levels); MongoDB has multi-document transactions and DynamoDB has transactions.
+
+- key: sd06-q014
+  type: typed
+  section: "6.5"
+  difficulty: 2
+  prompt: Write the quorum rule that guarantees a read overlaps the latest write (N copies, W write acks, R read replies).
+  accept: [R + W > N, R+W>N, W + R > N, W+R>N]
+  explanation: The common setting is N=3, W=2, R=2. Quorums don't beat CAP — during a partition the minority side can't answer at quorum.
+
+- key: sd06-q015
+  type: single
+  section: "6.5"
+  difficulty: 2
+  prompt: What does PACELC add to CAP?
+  options:
+    - Else (no partition), choose between latency and consistency
+    - A fourth property called durability
+    - A way to beat CAP with quorums
+    - A rule that partitions never happen
+  answer: Else (no partition), choose between latency and consistency
+  explanation: If Partition, choose A or C; Else, choose Latency or Consistency. Cassandra, Dynamo and Riak are PA/EL; Bigtable/HBase are PC/EC.
+
+- key: sd06-q016
+  type: order
+  section: "6.5"
+  difficulty: 2
+  prompt: Order these consistency models from strongest to weakest.
+  items:
+    - Strong / linearizable
+    - Read-your-writes
+    - Monotonic reads
+    - Eventual
+  explanation: Read-your-writes means you always see your own writes; monotonic reads means you never see data go back in time.
+
+- key: sd06-q017
+  type: single
+  section: "6.6"
+  difficulty: 2
+  prompt: What question decides the consistency each piece of data needs?
+  options:
+    - "What goes wrong if someone reads a slightly old value?"
+    - "Which database is fastest?"
+    - "Is the data stored in SQL?"
+    - "How many users are there?"
+  answer: "What goes wrong if someone reads a slightly old value?"
+  explanation: Harm, security risk or money → strong/ACID/CP. Just a slightly old view → eventual/BASE/AP. Say the tradeoff out loud.
+
+- key: sd06-q018
+  type: single
+  section: "6.7"
+  difficulty: 2
+  prompt: Stock is 1 and two users click "buy" on different servers. What does the course recommend?
+  options:
+    - Lock the item as soon as a purchase starts; whoever locks first gets it
+    - Let both buy and refund later
+    - Read from a replica to check stock
+    - Use eventual consistency for inventory
+  answer: Lock the item as soon as a purchase starts; whoever locks first gets it
+  explanation: An atomic conditional update also works — `UPDATE stock SET qty = qty - 1 WHERE id = X AND qty > 0`, treating 0 rows as sold out.
+
+- key: sd06-q019
+  type: single
+  section: "6.7"
+  difficulty: 3
+  prompt: "Cassandra with N = 3: which setting reads the latest write while tolerating one node down?"
+  options:
+    - Write QUORUM, read QUORUM
+    - Write ONE, read ONE
+    - Write ALL, read ONE
+    - Write ONE, read ALL
+  answer: Write QUORUM, read QUORUM
+  explanation: R + W = 4 > 3. Write ALL fails if a single node is down; ONE/ONE is fastest but may be stale.
+
+- key: sd06-q020
+  type: multi
+  section: "6.8"
+  difficulty: 2
+  prompt: Which are CAP pitfalls in interviews?
+  options:
+    - Picking "CA" for a distributed system
+    - Choosing one consistency level for the whole system
+    - Assuming async read replicas are always current
+    - Choosing consistency per piece of data
+  answers:
+    - Picking "CA" for a distributed system
+    - Choosing one consistency level for the whole system
+    - Assuming async read replicas are always current
+  explanation: Also avoid treating CAP as "pick 2 forever", mixing up ACID's and CAP's C, and thinking quorums beat CAP.

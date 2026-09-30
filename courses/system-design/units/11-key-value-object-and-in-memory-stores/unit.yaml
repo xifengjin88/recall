@@ -1,0 +1,20 @@
+number: 11
+title: Key-Value, Object and In-Memory Stores
+note_title: Key-Value Stores incl. Object Stores, In Memory DBs
+sections:
+- key: '11.1'
+  title: What the lecture says
+- key: '11.2'
+  title: What a key-value store is
+- key: '11.3'
+  title: 'Special type 1: object stores'
+- key: '11.4'
+  title: 'Special type 2: in-memory databases'
+- key: '11.5'
+  title: 'Special type 3: distributed cache'
+- key: '11.6'
+  title: Choosing between them
+- key: '11.7'
+  title: Scenarios to walk through
+- key: '11.8'
+  title: Pitfalls to avoid in interviews

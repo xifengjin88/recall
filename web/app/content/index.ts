@@ -27,11 +27,14 @@ export let EXERCISES_BY_ID = new Map<string, Exercise & { chapter: number }>();
 
 let notes = new Map<number, string>();
 let chapterById = new Map<string, number>();
+let unitByNoteTitle = new Map<string, number>();
 
 export const getChapter = (n: number) => CHAPTERS.find((c) => c.number === n);
 export const getNotes = (chapter: number) => notes.get(chapter);
 export const hasNotes = (chapter: number) => notes.has(chapter);
 export const chapterOf = (itemId: string) => chapterById.get(itemId);
+/** The unit whose notes are titled `title` (an Obsidian [[wikilink]] target), if it has notes. */
+export const unitForNote = (title: string) => unitByNoteTitle.get(title.trim().toLowerCase());
 
 /** Replace the current course. `unitNotes` maps unit number → notes Markdown. */
 export function setCourse(outline: CourseOutline, content: CourseContent, unitNotes: Map<number, string>) {
@@ -59,6 +62,7 @@ export function setCourse(outline: CourseOutline, content: CourseContent, unitNo
   ALL_EXERCISES = CHAPTERS.flatMap((c) => c.exercises.map((e) => ({ ...e, chapter: c.number })));
   EXERCISES_BY_ID = new Map(ALL_EXERCISES.map((e) => [e.id, e]));
   notes = unitNotes;
+  unitByNoteTitle = new Map(CHAPTERS.filter((c) => c.note && unitNotes.has(c.number)).map((c) => [c.note.trim().toLowerCase(), c.number]));
   chapterById = new Map();
   for (const c of CHAPTERS) {
     for (const q of c.questions) chapterById.set(q.id, c.number);

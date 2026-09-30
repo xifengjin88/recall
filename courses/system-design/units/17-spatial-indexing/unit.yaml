@@ -1,0 +1,22 @@
+number: 17
+title: Spatial Indexing
+note_title: Spatial Indexing - Nearest Neighbors Search
+sections:
+- key: '17.1'
+  title: What the lecture says
+- key: '17.2'
+  title: The problem
+- key: '17.3'
+  title: 'Approach 1: a regular 1D index (SQL / BST)'
+- key: '17.4'
+  title: 'Approach 2: R-trees'
+- key: '17.5'
+  title: From range query to kNN
+- key: '17.6'
+  title: Other approaches worth knowing
+- key: '17.7'
+  title: At scale
+- key: '17.8'
+  title: Scenarios to walk through
+- key: '17.9'
+  title: Pitfalls to avoid in interviews

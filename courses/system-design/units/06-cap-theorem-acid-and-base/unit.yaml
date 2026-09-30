@@ -1,0 +1,20 @@
+number: 6
+title: CAP Theorem, ACID and BASE
+note_title: CAP Theorem for Beginners
+sections:
+- key: '6.1'
+  title: What the lecture says
+- key: '6.2'
+  title: CAP theorem (filling in the video)
+- key: '6.3'
+  title: ACID
+- key: '6.4'
+  title: BASE
+- key: '6.5'
+  title: Beyond CAP
+- key: '6.6'
+  title: How to use this in an interview
+- key: '6.7'
+  title: Scenarios to walk through
+- key: '6.8'
+  title: Pitfalls to avoid in interviews

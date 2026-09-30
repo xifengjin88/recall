@@ -1,0 +1,22 @@
+number: 14
+title: Facebook Haystack
+note_title: Facebook Haystack (Optional Paper)
+sections:
+- key: '14.1'
+  title: What the lecture says
+- key: '14.2'
+  title: The scale
+- key: '14.3'
+  title: 'The problem: file metadata was the bottleneck'
+- key: '14.4'
+  title: Design goals
+- key: '14.5'
+  title: 'The key idea: pack many photos into one huge file'
+- key: '14.6'
+  title: 'Architecture: Directory, Cache, Store'
+- key: '14.7'
+  title: Lessons for interviews
+- key: '14.8'
+  title: Scenarios to walk through
+- key: '14.9'
+  title: Pitfalls to avoid in interviews

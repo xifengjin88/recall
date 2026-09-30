@@ -1,0 +1,224 @@
+- key: sd07-q001
+  type: typed
+  section: "7.1"
+  difficulty: 1
+  prompt: Write the classic partition function that picks a machine for a key (N machines).
+  accept: [hash(key) mod N, hash(key) % N, hash(key)%N, hash(key) mod n]
+  explanation: No lookup table or coordinator — anyone who knows the formula and N can compute where a key lives. It's the simplest way to shard.
+
+- key: sd07-q002
+  type: multi
+  section: "7.2"
+  difficulty: 2
+  prompt: Why hash the key before taking `mod N`?
+  options:
+    - It turns any key, such as a string, into a number
+    - It spreads keys evenly so neighboring keys don't pile up
+    - It makes range queries cheap
+    - It removes the need to agree on N
+  answers:
+    - It turns any key, such as a string, into a number
+    - It spreads keys evenly so neighboring keys don't pile up
+  explanation: Hashing scatters keys roughly at random. It makes range queries expensive, not cheap.
+
+- key: sd07-q003
+  type: single
+  section: "7.2"
+  difficulty: 2
+  prompt: Which hash should a partition function **not** use?
+  options:
+    - A language hash that changes per process, like Python's hash() on strings
+    - MurmurHash
+    - xxHash
+    - MD5
+  answer: A language hash that changes per process, like Python's hash() on strings
+  explanation: The hash must be fast, uniform and stable, and every client must use the same one.
+
+- key: sd07-q004
+  type: truefalse
+  section: "7.2"
+  difficulty: 1
+  prompt: With a hash partition function, six sample keys might land unevenly, but 100,000 keys spread about evenly.
+  answer: true
+  explanation: Four of six sample keys landed on M0, but 100,000 keys split about 25% each across four machines. Hashing evens out at scale.
+
+- key: sd07-q005
+  type: multi
+  section: "7.3"
+  difficulty: 2
+  prompt: Which are **pros** of a partition function?
+  options:
+    - No lookup service, so no extra hop or single point of failure
+    - Any client can compute a key's location
+    - O(1) to find the machine
+    - Cheap range queries
+  answers:
+    - No lookup service, so no extra hop or single point of failure
+    - Any client can compute a key's location
+    - O(1) to find the machine
+  explanation: "Cons: changing N moves most keys, hot spots with non-homogeneous data, expensive range queries, and you can't move a single hot key."
+
+- key: sd07-q006
+  type: single
+  section: "7.4"
+  difficulty: 2
+  prompt: About what share of keys move when going from N to N+1 machines with `hash mod N`?
+  options:
+    - N/(N+1)
+    - 1/N
+    - 1/(N+1)
+    - None
+  answer: N/(N+1)
+  explanation: 3→4 moves 75%, 4→5 moves 80%, 10→11 moves 91%. The bigger the cluster, the worse it gets.
+
+- key: sd07-q007
+  type: single
+  section: "7.4"
+  difficulty: 3
+  prompt: Why is **doubling** N the least painful resize with `hash mod N`?
+  options:
+    - Each key either stays on machine k or moves to k + N, so only half move
+    - No keys move at all
+    - Only 1/N of keys move
+    - Doubling lets you skip the hash
+  answer: Each key either stays on machine k or moves to k + N, so only half move
+  explanation: Each old machine splits cleanly in two. Better still, use consistent hashing or many logical shards.
+
+- key: sd07-q008
+  type: match
+  section: "7.5"
+  difficulty: 2
+  prompt: Homogeneous or not?
+  pairs:
+    - { term: User profiles created each day, definition: "Homogeneous: you choose how the keys are made" }
+    - { term: Images keyed by date, definition: "Non-homogeneous: today's images land on one machine" }
+    - { term: Tweets keyed by a celebrity's ID, definition: "Non-homogeneous: one user's activity concentrates on one machine" }
+  explanation: Homogeneous data is mixed evenly across the hash space, so each machine gets about the same load.
+
+- key: sd07-q009
+  type: truefalse
+  section: "7.5"
+  difficulty: 2
+  prompt: Hashing spreads the load of a single very hot key across machines.
+  answer: false
+  explanation: "All requests for one key still go to one machine. Salt the key (celebrity:123#0…#9), cache hot reads, or partition on a less busy dimension (tweet_id, not author_id)."
+
+- key: sd07-q010
+  type: single
+  section: "7.6"
+  difficulty: 2
+  prompt: With replicas, when is a write usually considered successful?
+  options:
+    - When a majority of replicas confirm it
+    - When the client sends it
+    - Only when it reaches a cache
+    - When any one replica confirms it, always
+  answer: When a majority of replicas confirm it
+  explanation: If most fail, return an error or retry. For strong consistency, use synchronous replication — success only when all replicas have it.
+
+- key: sd07-q011
+  type: single
+  section: "7.6"
+  difficulty: 2
+  prompt: "A simple way to place 2 replicas when the primary is `p = hash(key) mod N`?"
+  options:
+    - (p+1) mod N and (p+2) mod N
+    - Both on machine 0
+    - p and p again
+    - Random machines chosen per write
+  answer: (p+1) mod N and (p+2) mod N
+  explanation: Three copies in total, for fault tolerance.
+
+- key: sd07-q012
+  type: order
+  section: "7.7"
+  difficulty: 3
+  prompt: Order the remapping steps for adding machines without downtime.
+  items:
+    - Start bulk-copying data to the new layout
+    - Record new writes in a log while reads stay on the old machines
+    - Replay the logged writes onto the new layout
+    - Switch reads and writes once the new layout catches up
+  explanation: The old layout stays the single source of truth until the switch.
+
+- key: sd07-q013
+  type: multi
+  section: "7.7"
+  difficulty: 3
+  prompt: Why log new writes instead of writing straight to the new machines during a move?
+  options:
+    - A later bulk copy of the old row could overwrite the newer write
+    - If the copy fails halfway you'd have to untangle what went where
+    - You always keep one source of truth to fall back on
+    - Logs are faster than databases
+  answers:
+    - A later bulk copy of the old row could overwrite the newer write
+    - If the copy fails halfway you'd have to untangle what went where
+    - You always keep one source of truth to fall back on
+  explanation: The log can be a queue with workers or even a cache; "log" is just a concept.
+
+- key: sd07-q014
+  type: single
+  section: "7.7"
+  difficulty: 3
+  prompt: You need consistent reads while remapping. Where do reads go?
+  options:
+    - Keep reading from the old machines until the new ones are fully caught up
+    - Read from the new machines as soon as copying starts
+    - Read from whichever answers first
+    - Stop serving reads
+  answer: Keep reading from the old machines until the new ones are fully caught up
+  explanation: Ideally also check the log for newer data. Real systems add change data capture, double writes with verification, and a short read-only window.
+
+- key: sd07-q015
+  type: single
+  section: "7.8"
+  difficulty: 2
+  prompt: Profiles are sharded by `murmur(user_id) mod 4`. What's the weakness?
+  options:
+    - "\"Users who signed up in May\" must ask all 4 DBs and merge"
+    - Looking up one profile needs a directory
+    - Profiles aren't homogeneous
+    - Writes can't be replicated
+  answer: "\"Users who signed up in May\" must ask all 4 DBs and merge"
+  explanation: Single-profile lookups are one query with no directory; range-style queries scatter.
+
+- key: sd07-q016
+  type: single
+  section: "7.8"
+  difficulty: 3
+  prompt: "You must grow a mod-N cache from 4 machines. What's the least disruptive option?"
+  options:
+    - Double to 8 (only 50% of keys move), or switch to consistent hashing
+    - Go to 5 at peak traffic
+    - Go to 5 and flush the whole cache
+    - Add machines without changing N
+  answer: Double to 8 (only 50% of keys move), or switch to consistent hashing
+  explanation: Going 4→5 moves about 80% of keys, dropping the hit rate from about 90% to about 20%.
+
+- key: sd07-q017
+  type: match
+  section: "7.9"
+  difficulty: 2
+  prompt: What happens when you **add a machine**?
+  pairs:
+    - { term: Partition function, definition: "Most keys move" }
+    - { term: Consistent hashing, definition: "About 1/N of keys move" }
+    - { term: Lookup table, definition: "Move whatever you choose" }
+  explanation: Only a lookup table lets you move a single hot key, at the cost of an extra hop and a directory that must be highly available.
+
+- key: sd07-q018
+  type: multi
+  section: "7.10"
+  difficulty: 2
+  prompt: Which are partition-function pitfalls?
+  options:
+    - Not mentioning what happens when N changes
+    - Forgetting replication
+    - Partitioning on a time-based key
+    - Choosing a stable, uniform hash
+  answers:
+    - Not mentioning what happens when N changes
+    - Forgetting replication
+    - Partitioning on a time-based key
+  explanation: Also avoid expecting cheap range queries, moving data with no source of truth, and clients disagreeing on N or the hash.

@@ -1,0 +1,24 @@
+slug: system-design
+title: System Design
+short: SD
+author: Interview Camp (study notes)
+description: Scalable web architecture, sharding, caching, consistency, storage systems and the classic papers (GFS, MapReduce, Haystack), for system design interviews.
+outline:
+  - { number: 1, title: Anatomy of a Scalable Web Application }
+  - { number: 2, title: Interview Approach and Uber/Lyft Design }
+  - { number: 3, title: Load Balancers and App Servers }
+  - { number: 4, title: Why Sharding Is the Swiss Army Knife }
+  - { number: 5, title: Distributed Caching with Memcached }
+  - { number: 6, title: "CAP Theorem, ACID and BASE" }
+  - { number: 7, title: Sharding with Partition Functions }
+  - { number: 8, title: Dynamic Sharding }
+  - { number: 9, title: Consistent Hashing }
+  - { number: 10, title: Indexing and NoSQL }
+  - { number: 11, title: "Key-Value, Object and In-Memory Stores" }
+  - { number: 12, title: Wide-Column Stores }
+  - { number: 13, title: Transaction Processing }
+  - { number: 14, title: Facebook Haystack }
+  - { number: 15, title: Distributed File Systems (GFS) }
+  - { number: 16, title: MapReduce }
+  - { number: 17, title: Spatial Indexing }
+  - { number: 18, title: "Capstone: Scaling a Web App" }

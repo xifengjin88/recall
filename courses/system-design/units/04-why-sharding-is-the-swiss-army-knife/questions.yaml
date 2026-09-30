@@ -1,0 +1,264 @@
+- key: sd04-q001
+  type: single
+  section: "4.1"
+  difficulty: 1
+  prompt: What does **sharding** mean, in the course's words?
+  options:
+    - Splitting things into small pieces on different machines, with logic to decide which piece is where
+    - Copying the same data to several machines
+    - Giving one machine more CPU and memory
+    - Caching database reads in memory
+  answer: Splitting things into small pieces on different machines, with logic to decide which piece is where
+  explanation: It's the Swiss Army knife of scaling because one idea scales databases, caches, DHTs, key-value stores and even computation (MapReduce).
+
+- key: sd04-q002
+  type: multi
+  section: "4.1"
+  difficulty: 1
+  prompt: Which can you scale with sharding?
+  options:
+    - A distributed database
+    - A distributed cache
+    - A relational database
+    - Work spread over machines (MapReduce)
+  answers:
+    - A distributed database
+    - A distributed cache
+    - A relational database
+    - Work spread over machines (MapReduce)
+  explanation: All of them. Sharding is horizontal scaling.
+
+- key: sd04-q003
+  type: truefalse
+  section: "4.1"
+  difficulty: 2
+  prompt: Agents on many machines that sync collected data to a master DB every few hours is an example of sharding.
+  answer: false
+  explanation: That's closer to distributed load balancing. Sharding means dividing data between machines, e.g. a huge profiles table split across machines with a master table recording which key is where.
+
+- key: sd04-q004
+  type: match
+  section: "4.2"
+  difficulty: 2
+  prompt: Don't mix these up.
+  pairs:
+    - { term: Vertical scaling, definition: "A bigger machine: more CPU, RAM, disk" }
+    - { term: Horizontal scaling, definition: "More machines" }
+    - { term: Vertical partitioning, definition: "Splitting by table or feature (users DB, payments DB)" }
+    - { term: Horizontal partitioning, definition: "Splitting the rows of one table across machines (sharding)" }
+  explanation: Vertical partitioning is also called federation or functional partitioning.
+
+- key: sd04-q005
+  type: multi
+  section: "4.2"
+  difficulty: 2
+  prompt: What are the downsides of **vertical** scaling?
+  options:
+    - A hard hardware limit
+    - It gets expensive
+    - A single point of failure
+    - Cross-shard queries
+  answers:
+    - A hard hardware limit
+    - It gets expensive
+    - A single point of failure
+  explanation: Its upside is simplicity (no code changes, no distributed-systems problems). Cross-shard queries are a cost of horizontal scaling.
+
+- key: sd04-q006
+  type: match
+  section: "4.3"
+  difficulty: 1
+  prompt: Sharding or replication?
+  pairs:
+    - { term: Replication, definition: "The same data on several machines; scales reads" }
+    - { term: Sharding, definition: "Different data on each machine; scales writes and storage" }
+    - { term: Real systems, definition: "Shard, then replicate each shard" }
+  explanation: "Rule to memorize: to scale writes, shard; to scale reads, replicate. You usually need both."
+
+- key: sd04-q007
+  type: match
+  section: "4.4"
+  difficulty: 2
+  prompt: Match each way of deciding which shard holds a key.
+  pairs:
+    - { term: Range-based, definition: "Cheap range scans, but rising keys create a hot last shard" }
+    - { term: Hash mod N, definition: "Even spread, but changing N moves almost every key" }
+    - { term: Consistent hashing, definition: "Adding a shard moves only about 1/N of keys" }
+    - { term: Directory table, definition: "A master table maps keys to shards; most flexible" }
+    - { term: Fixed hash slots, definition: "Rebalance by moving whole slots (Redis Cluster's 16,384)" }
+  explanation: Entity/tenant-based and geographic sharding are two more options.
+
+- key: sd04-q008
+  type: single
+  section: "4.4"
+  difficulty: 3
+  prompt: What's the "logical vs physical shards" trick?
+  options:
+    - Split into many logical shards up front, map them to a few machines, and grow by moving whole logical shards
+    - Keep one physical shard per logical table
+    - Re-hash every key whenever you add a machine
+    - Use physical shards only for reads
+  answer: Split into many logical shards up front, map them to a few machines, and grow by moving whole logical shards
+  explanation: You never re-hash keys. Instagram, Pinterest and Notion all do this.
+
+- key: sd04-q009
+  type: order
+  section: "4.4"
+  difficulty: 2
+  prompt: Put consistent hashing's lookup in order.
+  items:
+    - Hash each server (as several virtual nodes) onto a ring
+    - Hash the key onto the same ring
+    - Walk clockwise from the key
+    - The first server reached owns the key
+  explanation: Adding a server takes keys only from its clockwise neighbor, about 1/N of all keys.
+
+- key: sd04-q010
+  type: multi
+  section: "4.5"
+  difficulty: 2
+  prompt: What makes a good shard key?
+  options:
+    - Lots of distinct values
+    - Spreads reads and writes evenly
+    - Matches the most common query so it touches one shard
+    - Always increasing, like a timestamp
+  answers:
+    - Lots of distinct values
+    - Spreads reads and writes evenly
+    - Matches the most common query so it touches one shard
+  explanation: It should also keep related data together so joins and transactions stay on one shard. Timestamps send every write to the newest shard.
+
+- key: sd04-q011
+  type: match
+  section: "4.5"
+  difficulty: 2
+  prompt: Pick the good shard key for each system.
+  pairs:
+    - { term: Social network profiles, definition: "user_id" }
+    - { term: Chat messages, definition: "(channel_id, time_bucket)" }
+    - { term: Multi-tenant SaaS, definition: "workspace_id / org_id" }
+    - { term: Orders, definition: "customer_id" }
+  explanation: Bad choices would be country (few values, hot US shard), message timestamp, document_id alone, and order_date.
+
+- key: sd04-q012
+  type: multi
+  section: "4.6"
+  difficulty: 3
+  prompt: A celebrity's profile overloads its shard. Which fixes help?
+  options:
+    - Salt the key into key#0…key#9 and combine on read
+    - Cache hot reads
+    - Coalesce identical in-flight reads
+    - Switch to hash mod N
+  answers:
+    - Salt the key into key#0…key#9 and combine on read
+    - Cache hot reads
+    - Coalesce identical in-flight reads
+  explanation: A hot key overloads its shard whatever the scheme. You can also special-case heavy users or give hot tenants their own shard.
+
+- key: sd04-q013
+  type: single
+  section: "4.6"
+  difficulty: 3
+  prompt: How do you "join" across shards?
+  options:
+    - An application-level join, fetching IDs then the objects from their shards
+    - A normal SQL JOIN; the DB handles it
+    - You can't, so never shard
+    - Move all data to one shard first
+  answer: An application-level join, fetching IDs then the objects from their shards
+  explanation: Pinterest does this. Cross-shard transactions need 2PC or sagas; better to design the key so a transaction stays on one shard.
+
+- key: sd04-q014
+  type: match
+  section: "4.6"
+  difficulty: 3
+  prompt: Local or global secondary index?
+  pairs:
+    - { term: Local index, definition: "Cheap writes, but a lookup asks every shard" }
+    - { term: Global index, definition: "Fast lookups, but one write touches several shards" }
+    - { term: Scatter-gather, definition: "A query without the shard key hitting every shard" }
+  explanation: A global index is itself sharded by the indexed value.
+
+- key: sd04-q015
+  type: single
+  section: "4.6"
+  difficulty: 3
+  prompt: How does Instagram make unique IDs across shards?
+  options:
+    - "64-bit IDs: 41 bits of time, 13 bits of logical shard, 10 bits of sequence"
+    - Auto-increment on each shard
+    - Random UUIDs only
+    - A single global counter server
+  answer: "64-bit IDs: 41 bits of time, 13 bits of logical shard, 10 bits of sequence"
+  explanation: The ID says which shard it lives on and sorts by time. Pinterest uses 16 bits of shard, 10 of type and 36 of local ID.
+
+- key: sd04-q016
+  type: order
+  section: "4.8"
+  difficulty: 2
+  prompt: Order the cheaper options to try before sharding.
+  items:
+    - Optimize queries and indexes
+    - Scale vertically
+    - Cache
+    - Read replicas
+    - Vertical partitioning
+    - Shard
+  explanation: One modern Postgres/MySQL node handles roughly 10-20k write transactions per second and tens of TB; today the push to shard often comes from operations such as backups and VACUUM.
+
+- key: sd04-q017
+  type: single
+  section: "4.9"
+  difficulty: 3
+  prompt: A cache uses `hash % N` across 10 Memcached nodes and one dies. What happens?
+  options:
+    - N changes, almost every key moves, and the DB takes a flood of misses
+    - Only that node's 10% of keys miss
+    - Nothing; Memcached replicates keys
+    - The load balancer reroutes the keys
+  answer: N changes, almost every key moves, and the DB takes a flood of misses
+  explanation: With consistent hashing, only the dead node's keys (about 1/10) miss and get reloaded.
+
+- key: sd04-q018
+  type: single
+  section: "4.9"
+  difficulty: 2
+  prompt: Orders are range-sharded by `created_at`. What goes wrong, and what's the fix?
+  options:
+    - Every new order hits the newest shard; shard by hash(customer_id) instead
+    - Old shards fill up; add more range shards
+    - Nothing; time ranges are ideal
+    - Reads get slower; add a cache
+  answer: Every new order hits the newest shard; shard by hash(customer_id) instead
+  explanation: Keep a separate time-sorted index or analytics store for "orders today" queries.
+
+- key: sd04-q019
+  type: single
+  section: "4.10"
+  difficulty: 2
+  prompt: Pinterest's rule for sharded data?
+  options:
+    - Once data lands in a shard it never moves; whole shards move to new machines
+    - Rebalance individual rows nightly
+    - Keep all joins inside MySQL
+    - Use one shard per table
+  answer: Once data lands in a shard it never moves; whole shards move to new machines
+  explanation: Pinterest started with 8 servers and 4,096 shards, did joins in the app, and stored fields in JSON to avoid ALTER TABLE.
+
+- key: sd04-q020
+  type: multi
+  section: "4.11"
+  difficulty: 2
+  prompt: Which are sharding pitfalls in interviews?
+  options:
+    - Sharding a 50 GB DB
+    - Saying "shard it" without the shard key or how keys find their shard
+    - Forgetting to replicate shards
+    - Naming how you'd handle hot keys and resharding
+  answers:
+    - Sharding a 50 GB DB
+    - Saying "shard it" without the shard key or how keys find their shard
+    - Forgetting to replicate shards
+  explanation: Say what you'd shard, by which key, how the key finds its shard, and how you'd handle hot keys and resharding. That covers most follow-ups.

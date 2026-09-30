@@ -1,0 +1,22 @@
+number: 13
+title: Transaction Processing
+note_title: Transaction Processing
+sections:
+- key: '13.1'
+  title: What the lecture says
+- key: '13.2'
+  title: Why transactions exist
+- key: '13.3'
+  title: ACID recap
+- key: '13.4'
+  title: What goes wrong without isolation
+- key: '13.5'
+  title: How databases give you isolation
+- key: '13.6'
+  title: Transactions across machines
+- key: '13.7'
+  title: 'Reservations: holding inventory without long locks'
+- key: '13.8'
+  title: Scenarios to walk through
+- key: '13.9'
+  title: Pitfalls to avoid in interviews

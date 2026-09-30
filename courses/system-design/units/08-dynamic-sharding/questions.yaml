@@ -1,0 +1,229 @@
+- key: sd08-q001
+  type: single
+  section: "8.2"
+  difficulty: 1
+  prompt: What does dynamic sharding use instead of a fixed formula?
+  options:
+    - A locator service with a table mapping key ranges to machines
+    - A bigger hash function
+    - A load balancer that remembers keys
+    - One machine per key
+  answer: A locator service with a table mapping key ranges to machines
+  explanation: Change the table and you change where data lives — no formula has to change. MongoDB, HBase and Bigtable work this way.
+
+- key: sd08-q002
+  type: match
+  section: "8.2"
+  difficulty: 2
+  prompt: Partition function or locator service?
+  pairs:
+    - { term: Partition function, definition: "Compute hash(X) mod N; adding a machine moves most keys" }
+    - { term: Locator service, definition: "Look up X's range; adding a machine moves one range" }
+    - { term: Hot range, definition: "Only the locator can split or move it" }
+  explanation: The locator's cost is one more highly available service and an extra (cacheable) lookup.
+
+- key: sd08-q003
+  type: truefalse
+  section: "8.2"
+  difficulty: 1
+  prompt: Dynamic sharding only works for NoSQL databases.
+  answer: false
+  explanation: It works for any distributed database; it's a general way to spread data across machines.
+
+- key: sd08-q004
+  type: single
+  section: "8.3"
+  difficulty: 2
+  prompt: How should keys map into the locator's key space?
+  options:
+    - hash(key), with no % N, into a very large fixed key space
+    - hash(key) % N, then look up the result
+    - Always the raw key, never hashed
+    - A random machine number
+  answer: hash(key), with no % N, into a very large fixed key space
+  explanation: Taking `% N` would bring back the changing-N problem. Using the raw key (as HBase/Bigtable do) keeps range scans fast at the risk of hot spots.
+
+- key: sd08-q005
+  type: truefalse
+  section: "8.3"
+  difficulty: 2
+  prompt: Key ranges in the locator table must all be the same size.
+  answer: false
+  explanation: Busy parts of the key space get smaller ranges.
+
+- key: sd08-q006
+  type: single
+  section: "8.3"
+  difficulty: 2
+  prompt: Who asks the locator where data lives?
+  options:
+    - The app server (or a proxy/router in front of the DB)
+    - The load balancer
+    - The CDN
+    - The end user's browser
+  answer: The app server (or a proxy/router in front of the DB)
+  explanation: The locator belongs to the distributed database, not the load balancer. A proxy asking the locator is exactly MongoDB's `mongos` router.
+
+- key: sd08-q007
+  type: single
+  section: "8.3"
+  difficulty: 3
+  prompt: A client's cached locator map is out of date and it sends a request to the wrong shard. What happens?
+  options:
+    - The shard replies "not mine" and the client refreshes its map
+    - The data is written to the wrong shard
+    - The locator crashes
+    - The request is silently dropped
+  answer: The shard replies "not mine" and the client refreshes its map
+  explanation: Clients and routers cache the table so they don't ask the locator on every request.
+
+- key: sd08-q008
+  type: order
+  section: "8.4"
+  difficulty: 3
+  prompt: Order the steps to move range 17-33 from M1 to a new M5.
+  items:
+    - Copy the range to M5 while M1 keeps serving it
+    - Catch up on writes made during the copy
+    - Briefly pause writes for that range
+    - Update the locator so 17-33 points to M5
+    - Resume, then delete the range from M1
+  explanation: Clients with an old cached map get redirected and refresh. M2, M3 and M4 aren't touched.
+
+- key: sd08-q009
+  type: match
+  section: "8.4"
+  difficulty: 3
+  prompt: Match each real system's rebalancing unit.
+  pairs:
+    - { term: MongoDB, definition: "Chunks of shard-key range, 128 MB by default, moved by a balancer" }
+    - { term: HBase, definition: "Regions that split automatically past 10 GB" }
+    - { term: Jumbo chunk, definition: "A chunk that can't split because it's all one shard-key value" }
+  explanation: HBase's `hbase:meta` table is its locator; the HMaster assigns regions to RegionServers.
+
+- key: sd08-q010
+  type: single
+  section: "8.5"
+  difficulty: 2
+  prompt: In the course's HA pair, what does the backup locator do when the primary fails?
+  options:
+    - Takes over in read-only mode — no map changes, but data reads and writes keep working
+    - Takes over fully and splits ranges freely
+    - Stops all reads and writes
+    - Rebuilds the table from the shards
+  answer: Takes over in read-only mode — no map changes, but data reads and writes keep working
+  explanation: When the primary returns you don't have to lock and re-sync two versions of the map. To survive both failing, add a copy in another data center.
+
+- key: sd08-q011
+  type: single
+  section: "8.5"
+  difficulty: 2
+  prompt: What happens if the locator (and its backup) is down?
+  options:
+    - Nobody knows where data lives, so reads and writes stop (except from cached maps)
+    - Only writes stop
+    - Nothing; shards work alone
+    - The load balancer takes over
+  answer: Nobody knows where data lives, so reads and writes stop (except from cached maps)
+  explanation: It's a single point of failure unless made redundant — an HA pair, a replica set, or a consensus group like ZooKeeper/etcd.
+
+- key: sd08-q012
+  type: single
+  section: "8.5"
+  difficulty: 3
+  prompt: How does Bigtable find a tablet?
+  options:
+    - "Three levels: a Chubby file → root tablet → METADATA tablets → user tablet, cached by clients"
+    - By asking the master on every request
+    - With hash mod N over tablet servers
+    - By broadcasting to every tablet server
+  answer: "Three levels: a Chubby file → root tablet → METADATA tablets → user tablet, cached by clients"
+  explanation: Clients don't go through the master to find data. An empty cache costs 3 round trips; a stale one up to 6.
+
+- key: sd08-q013
+  type: multi
+  section: "8.6"
+  difficulty: 2
+  prompt: Which are **pros** of dynamic sharding?
+  options:
+    - Adding machines moves only the affected ranges
+    - Hot ranges can be split or moved
+    - You can pin a big customer to its own machine
+    - No extra service to run
+  answers:
+    - Adding machines moves only the affected ranges
+    - Hot ranges can be split or moved
+    - You can pin a big customer to its own machine
+  explanation: The locator is one more service to keep highly available, and caches can go stale.
+
+- key: sd08-q014
+  type: multi
+  section: "8.7"
+  difficulty: 2
+  prompt: How do you avoid distributed joins across shards?
+  options:
+    - Keep related data together on one shard
+    - Denormalize
+    - Join in the application
+    - Broadcast small tables to every shard
+  answers:
+    - Keep related data together on one shard
+    - Denormalize
+    - Join in the application
+    - Broadcast small tables to every shard
+  explanation: Scatter-gather is the last resort. Distributed JOINs are a big challenge when sharding relational DBs.
+
+- key: sd08-q015
+  type: single
+  section: "8.8"
+  difficulty: 3
+  prompt: Data is range-sharded by raw timestamp. Why doesn't splitting ranges fix the hot spot?
+  options:
+    - Every new write goes to the last range, and splitting just makes a new last range
+    - Timestamps can't be split
+    - The locator can't store timestamps
+    - Old ranges get all the reads
+  answer: Every new write goes to the last range, and splitting just makes a new last range
+  explanation: Key on (sensor_id, timestamp) or add a small hash prefix/bucket and query buckets in parallel.
+
+- key: sd08-q016
+  type: single
+  section: "8.8"
+  difficulty: 3
+  prompt: One single key is hot (a MongoDB jumbo chunk). Does splitting the range help?
+  options:
+    - No — you need a better key, e.g. add a suffix or refine the shard key
+    - Yes, split until the key is alone
+    - Yes, move the range to a bigger machine
+    - No — disable the balancer
+  answer: No — you need a better key, e.g. add a suffix or refine the shard key
+  explanation: A range with one key can't be split further.
+
+- key: sd08-q017
+  type: single
+  section: "8.8"
+  difficulty: 2
+  prompt: One enterprise customer becomes 30% of traffic in an `org_id`-range-sharded app. What does the locator allow?
+  options:
+    - Give that org its own range and machine with one row in the table
+    - Nothing; you must re-hash everyone
+    - Move all other customers away
+    - Throttle the customer
+  answer: Give that org its own range and machine with one row in the table
+  explanation: Custom placement is the locator's superpower; a partition function can't do that.
+
+- key: sd08-q018
+  type: multi
+  section: "8.9"
+  difficulty: 2
+  prompt: Which are dynamic-sharding pitfalls?
+  options:
+    - Not saying how the locator stays available
+    - Using hash(key) % N and then a locator
+    - Confusing the locator with the load balancer
+    - Having clients cache the map
+  answers:
+    - Not saying how the locator stays available
+    - Using hash(key) % N and then a locator
+    - Confusing the locator with the load balancer
+  explanation: Also avoid range-sharding on a rising key, assuming splits fix a single hot key, and ignoring cross-shard joins.

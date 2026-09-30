@@ -47,6 +47,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     }
     throw new ApiError(res.status, body.error?.code ?? "http_error", body.error?.message ?? res.statusText, body.error?.details);
   }
+  if (res.status === 204) return undefined as T; // No Content (e.g. PUT /last-unit)
   return (await res.json()) as T;
 }
 

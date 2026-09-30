@@ -1,0 +1,26 @@
+number: 4
+title: Why Sharding Is the Swiss Army Knife
+note_title: Why Sharding is the Swiss Army Knife of System Design
+sections:
+- key: '4.1'
+  title: The lecture in one breath
+- key: '4.2'
+  title: Horizontal vs vertical scaling
+- key: '4.3'
+  title: Sharding vs replication
+- key: '4.4'
+  title: 'The "some logic": deciding which piece goes where'
+- key: '4.5'
+  title: Choosing a shard key
+- key: '4.6'
+  title: The hard parts (what interviewers ask next)
+- key: '4.7'
+  title: Applying the Swiss Army knife to each item
+- key: '4.8'
+  title: When to shard (and when not to)
+- key: '4.9'
+  title: Scenarios to walk through
+- key: '4.10'
+  title: Case studies
+- key: '4.11'
+  title: Pitfalls to avoid in interviews

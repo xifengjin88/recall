@@ -1,0 +1,293 @@
+- key: sd18-q001
+  type: match
+  section: "18.1"
+  difficulty: 1
+  prompt: Match each path through the scalable web app.
+  pairs:
+    - { term: Synchronous path, definition: "Client → LB → app server → cache → DB, while a user waits" }
+    - { term: Job path, definition: "App → queue → workers → DB, for work the user doesn't need yet" }
+    - { term: Analytics path, definition: "DB/events → data processing → results written back" }
+  explanation: The analytics path computes aggregates and ML outputs without touching the primary OLTP database.
+
+- key: sd18-q002
+  type: single
+  section: "18.2"
+  difficulty: 2
+  prompt: What does each step in the "zero to millions" evolution keep relocating?
+  options:
+    - The single point of failure (web server → LB → DB primary → cache → region)
+    - The database schema
+    - The CDN provider
+    - The programming language
+  answer: The single point of failure (web server → LB → DB primary → cache → region)
+  explanation: After every step, ask "where is the SPOF now?"
+
+- key: sd18-q003
+  type: order
+  section: "18.2"
+  difficulty: 2
+  prompt: Order the standard scaling story.
+  items:
+    - Move the database to its own server
+    - Put a load balancer in front of several web servers
+    - Add read replicas and a cache
+    - Add a CDN and make the web tier stateless
+    - Go multi-DC, add queues, then shard
+  explanation: It's an interview narrative, not a law — the habit that carries over is naming the new risk each step introduces.
+
+- key: sd18-q004
+  type: match
+  section: "18.2"
+  difficulty: 3
+  prompt: Match each fix to the new risk it brings.
+  pairs:
+    - { term: LB + N web servers, definition: "The LB is a SPOF; servers must be stateless" }
+    - { term: Read replicas, definition: "Replication lag and failover complexity" }
+    - { term: Cache, definition: "Staleness, invalidation and stampedes" }
+    - { term: Queue + workers, definition: "Duplicates, retries and eventual consistency" }
+    - { term: Sharding, definition: "Hot shards, cross-shard joins and resharding" }
+  explanation: Knowing what each box costs matters as much as knowing what it does.
+
+- key: sd18-q005
+  type: truefalse
+  section: "18.2"
+  difficulty: 2
+  prompt: Scaling horizontally requires splitting into microservices.
+  answer: false
+  explanation: Monolith vs microservices is about code; single vs multi-server is about machines. A monolith can run as 50 instances behind an LB. Fowler advises "monolith first".
+
+- key: sd18-q006
+  type: match
+  section: "18.3"
+  difficulty: 2
+  prompt: Push or pull CDN?
+  pairs:
+    - { term: Push CDN, definition: "You upload on change; suits low-traffic, rarely changing content" }
+    - { term: Pull CDN, definition: "The edge fetches on first miss and caches for the TTL; suits high traffic" }
+    - { term: "s-maxage", definition: "Sets a TTL for shared caches like the CDN, separate from browsers" }
+  explanation: CloudFront's default TTL is 24 hours when no cache policy applies.
+
+- key: sd18-q007
+  type: single
+  section: "18.3"
+  difficulty: 2
+  prompt: How does AWS recommend updating cached static assets?
+  options:
+    - Versioned file names rather than invalidation
+    - Invalidate the whole CDN on every deploy
+    - Set every TTL to zero
+    - Serve assets from the app servers
+  answer: Versioned file names rather than invalidation
+  explanation: Invalidation can't clear browser or proxy caches; versioning is cheaper and allows rollback. Static sites typically hit 95-99%.
+
+- key: sd18-q008
+  type: single
+  section: "18.3"
+  difficulty: 3
+  prompt: How does a VRRP backup load balancer take over?
+  options:
+    - It stops seeing the master's heartbeats, claims the floating VIP and sends gratuitous ARP
+    - DNS is updated to its IP
+    - Clients reconnect to a new IP manually
+    - The app servers elect it
+  answer: It stops seeing the master's heartbeats, claims the floating VIP and sends gratuitous ARP
+  explanation: The IP never changes, so VIP and anycast failover are faster than DNS failover, which waits out the TTL.
+
+- key: sd18-q009
+  type: single
+  section: "18.4"
+  difficulty: 2
+  prompt: What does "stateless" really mean for the app tier?
+  options:
+    - Servers keep no per-user data between requests; the state moved to the data tier
+    - The system has no state
+    - Servers never talk to a database
+    - Sessions are pinned to one server
+  answer: Servers keep no per-user data between requests; the state moved to the data tier
+  explanation: That's where the hard problems (replication, sharding, invalidation) now live. Twelve-Factor says sticky sessions "should never be used or relied upon".
+
+- key: sd18-q010
+  type: match
+  section: "18.4"
+  difficulty: 2
+  prompt: Where can session state live?
+  pairs:
+    - { term: Server memory + sticky sessions, definition: "Simple, but uneven load and lost on crash" }
+    - { term: Shared store (Redis/DB), definition: "Any server serves any request; instant revocation" }
+    - { term: Signed token (JWT), definition: "No server lookup, but hard to revoke before expiry" }
+  explanation: One practitioner verdict — server-side sessions for browsers, JWTs for service-to-service.
+
+- key: sd18-q011
+  type: multi
+  section: "18.5"
+  difficulty: 3
+  prompt: Which are cache mistakes?
+  options:
+    - Deleting the cache key before updating the DB
+    - Leaving Redis on its default noeviction policy for a cache
+    - Giving every key the same TTL
+    - Updating the DB, then deleting the key
+  answers:
+    - Deleting the cache key before updating the DB
+    - Leaving Redis on its default noeviction policy for a cache
+    - Giving every key the same TTL
+  explanation: noeviction makes writes fail when memory is full — set allkeys-lru or allkeys-lfu. Identical TTLs expire together (an avalanche); add jitter.
+
+- key: sd18-q012
+  type: multi
+  section: "18.5"
+  difficulty: 2
+  prompt: Which two problems do Facebook's memcache leases solve?
+  options:
+    - Stale sets
+    - Thundering herds
+    - Hot keys across regions
+    - Memory fragmentation
+  answers:
+    - Stale sets
+    - Thundering herds
+  explanation: On contended keys, leases cut peak DB queries from 17K/s to 1.3K/s.
+
+- key: sd18-q013
+  type: single
+  section: "18.5"
+  difficulty: 3
+  prompt: A dead cache node's keys are re-hashed onto healthy nodes. What's the risk, and Facebook's alternative?
+  options:
+    - A hot key can cascade and overload survivors; use a gutter pool
+    - No risk; re-hashing is always best
+    - Keys are lost forever; use write-back
+    - The DB gets fewer reads; add replicas
+  answer: A hot key can cascade and overload survivors; use a gutter pool
+  explanation: A gutter pool of about 1% of servers takes over for failed nodes.
+
+- key: sd18-q014
+  type: match
+  section: "18.6"
+  difficulty: 3
+  prompt: Match each replication style.
+  pairs:
+    - { term: Single-leader, definition: "No write conflicts, but the leader is the write bottleneck" }
+    - { term: Multi-leader, definition: "Low-latency regional writes, but conflicts to resolve" }
+    - { term: Leaderless, definition: "Quorum writes to any N replicas; stale reads possible" }
+    - { term: Semi-synchronous, definition: "One synchronous follower, the rest asynchronous" }
+  explanation: Async replication can lose acknowledged writes on failover; split brain is another failover risk.
+
+- key: sd18-q015
+  type: single
+  section: "18.6"
+  difficulty: 2
+  prompt: A workload is write-bound. What helps?
+  options:
+    - Sharding — read replicas don't help writes
+    - More read replicas
+    - A bigger CDN
+    - A longer cache TTL
+  answer: Sharding — read replicas don't help writes
+  explanation: Try query tuning, vertical scaling, federation and connection pooling first; shard only when needed.
+
+- key: sd18-q016
+  type: single
+  section: "18.7"
+  difficulty: 2
+  prompt: How does SQS stop two workers taking the same message?
+  options:
+    - A visibility timeout hides a received message until it's deleted or the timeout expires
+    - It deletes the message on receive
+    - Only one worker can connect
+    - It locks the queue
+  answer: A visibility timeout hides a received message until it's deleted or the timeout expires
+  explanation: Default 30 s, max 12 h. Set it above worst-case processing time, or two workers run the same job.
+
+- key: sd18-q017
+  type: match
+  section: "18.7"
+  difficulty: 3
+  prompt: Queue (RabbitMQ/SQS) or log (Kafka)?
+  pairs:
+    - { term: Queue, definition: "Competing consumers; messages deleted on ack" }
+    - { term: Log, definition: "Append-only partitions; replay by resetting the offset" }
+    - { term: Kafka parallelism cap, definition: "The number of partitions" }
+    - { term: Kafka ordering, definition: "Only within a partition" }
+  explanation: Queues suit task/job work; logs suit event streams, analytics, CDC and replay.
+
+- key: sd18-q018
+  type: single
+  section: "18.7"
+  difficulty: 2
+  prompt: How do you get "exactly-once" processing in practice?
+  options:
+    - At-least-once delivery plus idempotent handling
+    - At-most-once delivery
+    - A faster queue
+    - Kafka transactions covering any external API
+  answer: At-least-once delivery plus idempotent handling
+  explanation: E.g. a dedup table in the same transaction, a conditional upsert, or an Idempotency-Key. Kafka's exactly-once only covers Kafka-to-Kafka.
+
+- key: sd18-q019
+  type: multi
+  section: "18.7"
+  difficulty: 2
+  prompt: What should retries include?
+  options:
+    - Capped exponential backoff
+    - Jitter
+    - A dead-letter queue after a max receive count
+    - Retrying 4xx client errors forever
+  answers:
+    - Capped exponential backoff
+    - Jitter
+    - A dead-letter queue after a max receive count
+  explanation: Without jitter, backoff still produces synchronized spikes. A DLQ isolates poison messages.
+
+- key: sd18-q020
+  type: typed
+  section: "18.7"
+  difficulty: 3
+  prompt: "Workers scale on backlog per worker. Acceptable latency is 10 s and each message takes 0.1 s. What's the target backlog per instance?"
+  accept: ["100", "100 messages"]
+  explanation: Target backlog = acceptable latency ÷ processing time. 1,500 messages over 10 instances (150 each) means scale out by 5.
+
+- key: sd18-q021
+  type: match
+  section: "18.8"
+  difficulty: 2
+  prompt: Batch, stream, Lambda or Kappa?
+  pairs:
+    - { term: Batch, definition: "Bounded data on a schedule; minutes to hours" }
+    - { term: Stream, definition: "Unbounded events; milliseconds to seconds" }
+    - { term: Lambda, definition: "Batch and speed layers merged at query time (logic written twice)" }
+    - { term: Kappa, definition: "One stream job; reprocess by replaying the log" }
+  explanation: Offline results like user_id → recommended items are written back to a serving store the app reads.
+
+- key: sd18-q022
+  type: typed
+  section: "18.9"
+  difficulty: 2
+  prompt: About how many QPS is 1 million requests per day?
+  accept: ["12", "about 12", "~12", "11.6", "11.57"]
+  explanation: 1,000,000 ÷ 86,400 seconds per day ≈ 12 QPS. Back-of-envelope numbers show which box becomes necessary and when.
+
+- key: sd18-q023
+  type: match
+  section: "18.9"
+  difficulty: 2
+  prompt: Match each number to know.
+  pairs:
+    - { term: Main memory reference, definition: "About 100 ns" }
+    - { term: Round trip within a datacenter, definition: "About 500 µs" }
+    - { term: Disk seek, definition: "About 10 ms" }
+    - { term: Postgres/MySQL writes per node, definition: "About 10-20k TPS (rule of thumb)" }
+  explanation: A packet from California to the Netherlands and back is about 150 ms.
+
+- key: sd18-q024
+  type: match
+  section: "18.10"
+  difficulty: 2
+  prompt: Match each term.
+  pairs:
+    - { term: Split brain, definition: "Two nodes both believe they are leader" }
+    - { term: Federation, definition: "Splitting databases by function" }
+    - { term: Backpressure, definition: "Bounding in-flight work so consumers aren't overwhelmed" }
+    - { term: CDC, definition: "Streaming database changes as events" }
+  explanation: The conclusion — for each feature, which copy may be stale, and for how long?

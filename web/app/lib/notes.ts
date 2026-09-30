@@ -35,10 +35,10 @@ function scan(md: string) {
     if (f) {
       if (fence === null) fence = f[2];
       else if (f[2] === fence) fence = null;
-      return { line, heading: null };
+      return { line, heading: null, code: true };
     }
     const h = fence === null ? HEADING.exec(line) : null;
-    return { line, heading: h ? { level: h[1].length, text: h[2] } : null };
+    return { line, heading: h ? { level: h[1].length, text: h[2] } : null, code: fence !== null };
   });
 }
 
@@ -81,18 +81,24 @@ export const stripTitle = (md: string) => md.replace(/^\s*#\s+[^\n]*\n/, "");
 /**
  * Turn Obsidian wikilinks into markdown links:
  *   [[#Heading|alias]]            -> [alias](#heading-id)
- *   [[TLPI 06 - Processes]]       -> [TLPI 06 - Processes](/chapters/6/notes), if those notes exist
+ *   [[TLPI 06 - Processes]]       -> [TLPI 06 - Processes](/chapters/6/notes), if a unit's notes have that title
  *   [[TLPI 06 - Processes#Heading]] -> …/notes#heading-id
- * Links to notes that don't exist yet become plain text.
+ * Links to notes that don't exist (yet) become plain text. `unitForNote` maps a note title to its unit.
  */
-export function resolveWikilinks(md: string, hasNotes: (chapter: number) => boolean): string {
-  return md.replace(/\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/g, (_all, target: string, alias?: string) => {
+export function resolveWikilinks(md: string, unitForNote: (title: string) => number | undefined): string {
+  // Code is left alone: Mermaid uses [[…]] for node shapes, and code samples may contain it too.
+  return scan(md)
+    .map(({ line, code }) => (code ? line : line.split(/(`[^`]*`)/).map((part, i) => (i % 2 ? part : linkify(part, unitForNote))).join("")))
+    .join("\n");
+}
+
+function linkify(text: string, unitForNote: (title: string) => number | undefined): string {
+  return text.replace(/\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/g, (_all, target: string, alias?: string) => {
     const [page, heading] = target.split("#") as [string, string | undefined];
     const label = alias ?? (page ? target.replace("#", " › ") : heading ?? target);
     if (!page) return `[${label}](#${headingId(heading ?? "")})`;
-    const m = /^TLPI\s+(\d+)\b/i.exec(page.trim());
-    const n = m ? Number(m[1]) : null;
-    if (n === null || !hasNotes(n)) return label;
+    const n = unitForNote(page);
+    if (n === undefined) return label;
     return `[${label}](${notesHref(n)}${heading ? `#${headingId(heading)}` : ""})`;
   });
 }

@@ -1,0 +1,265 @@
+- key: sd05-q001
+  type: single
+  section: "5.1"
+  difficulty: 1
+  prompt: According to the instructor, what is the memcached setup in the article basically?
+  options:
+    - A distributed hash table (DHT)
+    - A relational database
+    - A message queue
+    - A CDN
+  answer: A distributed hash table (DHT)
+  explanation: Focus on how they used memcached and how it sped things up, not LiveJournal's DB setup. In interviews, just say "in-memory cache".
+
+- key: sd05-q002
+  type: single
+  section: "5.2"
+  difficulty: 2
+  prompt: Why couldn't LiveJournal pre-generate its pages?
+  options:
+    - Pages were dynamic and different for each viewer (security levels, friends)
+    - The site had too few users
+    - Pages were too large for disk
+    - The CDN didn't support HTML
+  answer: Pages were dynamic and different for each viewer (security levels, friends)
+  explanation: Every page view hit the DB hard, and the DB servers' own caches were limited by memory and 32-bit address space.
+
+- key: sd05-q003
+  type: single
+  section: "5.2"
+  difficulty: 3
+  prompt: Why did LiveJournal use 9 independent user clusters instead of one big cluster with many replicas?
+  options:
+    - Independent clusters spread writes; replicas only spread reads because every replica applies every write
+    - Replicas can't be read from
+    - One cluster can't hold user data
+    - It was cheaper to license
+  answer: Independent clusters spread writes; replicas only spread reads because every replica applies every write
+  explanation: It's the "shard to scale writes, replicate to scale reads" rule. The global cluster held the user-to-cluster table (directory sharding).
+
+- key: sd05-q004
+  type: order
+  section: "5.2"
+  difficulty: 2
+  prompt: Put memcached's **two-layer hash** in order.
+  items:
+    - The app calls get(key)
+    - The client library hashes the key to pick a server
+    - That server looks the key up in its own in-memory hash table
+    - The value (or a miss) comes back to the app
+  explanation: Servers don't know about each other; there's no replication or coordination. All the sharding logic lives in the client.
+
+- key: sd05-q005
+  type: truefalse
+  section: "5.2"
+  difficulty: 1
+  prompt: Memcached servers replicate keys to each other.
+  answer: false
+  explanation: Servers are independent. If one dies, its keys simply miss and are reloaded from the DB.
+
+- key: sd05-q006
+  type: single
+  section: "5.2"
+  difficulty: 2
+  prompt: What fixed memcached's memory fragmentation from glibc `malloc`?
+  options:
+    - A slab allocator with fixed-size slots per size class
+    - Restarting servers every week
+    - Swapping to disk
+    - Compressing values
+  answer: A slab allocator with fixed-size slots per size class
+  explanation: It grabs big chunks and cuts them into slots, with slab classes for powers of two from 64 bytes to 1 MB. When full, it evicts the least recently used item.
+
+- key: sd05-q007
+  type: single
+  section: "5.2"
+  difficulty: 2
+  prompt: Client A updates key K while 10 clients are reading it. What do the readers get?
+  options:
+    - The old version (K-version1) until they read again
+    - They block until A finishes
+    - An error
+    - The new version immediately, guaranteed
+  answer: The old version (K-version1) until they read again
+  explanation: Objects are multi-versioned and reference-counted, so no client blocks another. A cache isn't meant to be strongly consistent.
+
+- key: sd05-q008
+  type: order
+  section: "5.2"
+  difficulty: 1
+  prompt: Put the **cache-aside read** in order.
+  items:
+    - Check memcached
+    - On a miss, read the database
+    - Store the result in memcached
+    - Return it
+  explanation: On writes, update the DB and update or delete the cache entry.
+
+- key: sd05-q009
+  type: single
+  section: "5.2"
+  difficulty: 2
+  prompt: What hit rate did LiveJournal get?
+  options:
+    - About 92%
+    - About 50%
+    - About 99.9%
+    - About 20%
+  answer: About 92%
+  explanation: 28 memcached instances on 10 hosts cached the most popular 30 GB, at about 7,000 queries/s per server with low CPU.
+
+- key: sd05-q010
+  type: single
+  section: "5.3"
+  difficulty: 2
+  prompt: Last.fm said changing the number of servers with `hash % N` "effectively wiped the entire cache". What fixed it?
+  options:
+    - Consistent hashing (ketama), with 100-200 points per server on a ring
+    - Adding more RAM
+    - Longer TTLs
+    - Replicating every key to every server
+  answer: Consistent hashing (ketama), with 100-200 points per server on a ring
+  explanation: Adding or removing a server then moves only about 1/N of keys. It became the standard for memcached clients.
+
+- key: sd05-q011
+  type: match
+  section: "5.3"
+  difficulty: 3
+  prompt: Match each memcached command to its use.
+  pairs:
+    - { term: add, definition: "Store only if the key doesn't exist: locks, duplicate-submission guards" }
+    - { term: "gets + cas", definition: "Write only if unchanged since read: optimistic concurrency" }
+    - { term: delete, definition: "Invalidation on write" }
+    - { term: incr, definition: "Counters and rate limits; fails if the key doesn't exist" }
+    - { term: replace, definition: "Store only if the key already exists" }
+  explanation: Keys are up to 250 bytes; values up to 1 MB by default.
+
+- key: sd05-q012
+  type: single
+  section: "5.3"
+  difficulty: 2
+  prompt: On a write, what's the common practice for the cache?
+  options:
+    - Update the DB first, then delete the cache key
+    - Update the cache first, then the DB
+    - Set the new value in the cache and skip the DB
+    - Do nothing; wait for the TTL
+  answer: Update the DB first, then delete the cache key
+  explanation: Deletes are idempotent. Two writers doing `set` can arrive out of order and leave the older value cached.
+
+- key: sd05-q013
+  type: order
+  section: "5.3"
+  difficulty: 3
+  prompt: Put the **stale set** race in order.
+  items:
+    - Reader A misses and reads the old value from the DB
+    - Writer B updates the DB and deletes the key
+    - A sets the old value into the cache
+    - The cache stays stale until the TTL expires
+  explanation: "Fixes: leases (a token on miss; the set only works if no delete happened since), gets/cas, and short TTLs."
+
+- key: sd05-q014
+  type: match
+  section: "5.3"
+  difficulty: 2
+  prompt: Match each caching pattern.
+  pairs:
+    - { term: Cache-aside, definition: "The app checks the cache and fills it after a DB read" }
+    - { term: Read-through, definition: "The cache loads from the DB on a miss" }
+    - { term: Write-through, definition: "Write the cache and DB together" }
+    - { term: Write-around, definition: "Write only the DB; the cache fills on read" }
+    - { term: Write-back, definition: "Write the cache; the DB is updated later (lost if the cache dies)" }
+  explanation: Memcached can't load from a DB, so it's used cache-aside.
+
+- key: sd05-q015
+  type: match
+  section: "5.3"
+  difficulty: 3
+  prompt: Match each cache problem to a fix.
+  pairs:
+    - { term: Stampede, definition: "A lock or lease so one request refills; jitter TTLs" }
+    - { term: Cache penetration, definition: "Cache the \"not found\" or put a Bloom filter in front" }
+    - { term: Hot key, definition: "Split into key#1..N copies; add a local cache" }
+    - { term: Node dies, definition: "Consistent hashing plus a gutter pool" }
+    - { term: Cold start, definition: "Warm from another cache or pre-load" }
+  explanation: Facebook's gutter pool (about 1% of servers) cut client-visible failures by 99%.
+
+- key: sd05-q016
+  type: match
+  section: "5.3"
+  difficulty: 2
+  prompt: Memcached or Redis?
+  pairs:
+    - { term: Memcached, definition: "Multi-threaded, strings only, sharded in the client, no persistence" }
+    - { term: Redis, definition: "Rich data types, cluster hash slots, replication, optional persistence" }
+    - { term: In an interview, definition: "Say \"in-memory cache\" and name one" }
+  explanation: Pick Redis for counters, leaderboards, rate limiters, sessions, locks and queues.
+
+- key: sd05-q017
+  type: single
+  section: "5.3"
+  difficulty: 3
+  prompt: Raising the hit rate from 90% to 99% cuts DB reads by how much?
+  options:
+    - 10×
+    - About 10%
+    - 2×
+    - 99×
+  answer: 10×
+  explanation: The miss rate is what matters — 10% of requests miss versus 1%.
+
+- key: sd05-q018
+  type: single
+  section: "5.4"
+  difficulty: 3
+  prompt: "A flapping node comes back after clients routed around it. Why might users see stale data?"
+  options:
+    - Deletes sent while it was away went elsewhere, so it still holds old values
+    - It replicates stale data from other nodes
+    - Its TTLs reset to infinity
+    - The DB rolls back
+  answer: Deletes sent while it was away went elsewhere, so it still holds old values
+  explanation: "Fixes: short TTLs, wait for a node to stay healthy before using it, flush a node when it rejoins, or use a gutter pool instead of re-hashing."
+
+- key: sd05-q019
+  type: single
+  section: "5.4"
+  difficulty: 3
+  prompt: Building a per-minute rate limit in memcached, why do you `add` before `incr`?
+  options:
+    - incr fails if the key doesn't exist
+    - add resets the TTL on every request
+    - incr only works on strings
+    - add makes the counter persistent
+  answer: incr fails if the key doesn't exist
+  explanation: "`add ratelimit:{user}:{minute} 0 ttl=60`, then `incr`. For seats or money keep the DB as the source of truth; memcached can evict or lose the counter."
+
+- key: sd05-q020
+  type: single
+  section: "5.4"
+  difficulty: 2
+  prompt: How did LiveJournal block duplicate form submissions with memcached?
+  options:
+    - "`add submit:{user}:{hash(form)}` with a short TTL; if add fails, reject it"
+    - Store every form in the DB and compare
+    - Use `set` and check the return value
+    - Disable the submit button in the browser
+  answer: "`add submit:{user}:{hash(form)}` with a short TTL; if add fails, reject it"
+  explanation: Losing this data when a node dies is harmless, which makes it a good fit for a cache.
+
+- key: sd05-q021
+  type: multi
+  section: "5.6"
+  difficulty: 2
+  prompt: Which are memcached pitfalls in interviews?
+  options:
+    - Saying the cache loads from the DB by itself
+    - Using the cache as the only copy of important data
+    - Forgetting TTLs or invalidation on write
+    - Using consistent hashing to pick servers
+  answers:
+    - Saying the cache loads from the DB by itself
+    - Using the cache as the only copy of important data
+    - Forgetting TTLs or invalidation on write
+  explanation: Also avoid `hash % N`, updating (rather than deleting) on write, and ignoring stampedes, hot keys and cold starts.

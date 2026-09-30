@@ -1,0 +1,182 @@
+- key: sd14-q001
+  type: single
+  section: "14.1"
+  difficulty: 1
+  prompt: Why read Haystack for interviews, per the instructor?
+  options:
+    - To see classic fundamentals applied in a real system, not to memorize Haystack
+    - Because interviewers ask about Haystack directly
+    - To learn the newest storage techniques
+    - To copy Facebook's code
+  answer: To see classic fundamentals applied in a real system, not to memorize Haystack
+  explanation: Read only the first 5 pages. Interviews aren't knowledge tests; they expect classic, fundamental techniques.
+
+- key: sd14-q002
+  type: single
+  section: "14.2"
+  difficulty: 1
+  prompt: What is Facebook's photo access pattern?
+  options:
+    - Written once, read often, never modified, rarely deleted
+    - Written often, read rarely
+    - Modified constantly
+    - Read once and deleted
+  answer: Written once, read often, never modified, rarely deleted
+  explanation: A textbook object-store workload — 260+ billion images, about 1 billion uploads per week, 1M+ reads/s at peak (2010).
+
+- key: sd14-q003
+  type: order
+  section: "14.3"
+  difficulty: 2
+  prompt: In the old NFS design, order the disk operations for one photo read.
+  items:
+    - Read the directory metadata
+    - Load the inode
+    - Read the file contents
+  explanation: The metadata didn't fit in memory, so most disk work went to finding the file rather than reading it.
+
+- key: sd14-q004
+  type: single
+  section: "14.3"
+  difficulty: 2
+  prompt: Why couldn't caching alone fix the storage problem?
+  options:
+    - The long tail of less popular, older photos misses the CDN and still reaches storage
+    - CDNs can't cache images
+    - The cache was too fast
+    - Photos change too often to cache
+  answer: The long tail of less popular, older photos misses the CDN and still reaches storage
+  explanation: Each old photo is rare, but together they're a lot of traffic, so storage itself had to be fast for random reads.
+
+- key: sd14-q005
+  type: single
+  section: "14.4"
+  difficulty: 2
+  prompt: What was Haystack's main performance goal?
+  options:
+    - At most one disk operation per read, by keeping all metadata in memory
+    - Zero disk operations for every photo
+    - Storing every photo in RAM
+    - Compressing photos to half their size
+  answer: At most one disk operation per read, by keeping all metadata in memory
+  explanation: Other goals — fault tolerance through replication, lower cost (about 28% cheaper per TB, about 4× more reads/s), and simplicity.
+
+- key: sd14-q006
+  type: single
+  section: "14.5"
+  difficulty: 2
+  prompt: What is Haystack's key idea?
+  options:
+    - Pack many photos ("needles") into a few huge volume files with an in-memory index of offsets
+    - One file per photo on faster disks
+    - Store photos in MySQL
+    - Put every photo on the CDN
+  answer: Pack many photos ("needles") into a few huge volume files with an in-memory index of offsets
+  explanation: A read is one seek and one read with no filesystem metadata lookup.
+
+- key: sd14-q007
+  type: match
+  section: "14.5"
+  difficulty: 3
+  prompt: Match each needle field.
+  pairs:
+    - { term: Key, definition: "The photo ID" }
+    - { term: Alternate key, definition: "Which of the 4 sizes" }
+    - { term: Cookie, definition: "A random value in the URL so photos can't be guessed" }
+    - { term: Flags, definition: "E.g. deleted; space is reclaimed later by compaction" }
+  explanation: The in-memory index maps (key, alternate key) → (flags, size, offset).
+
+- key: sd14-q008
+  type: match
+  section: "14.6"
+  difficulty: 2
+  prompt: Match each Haystack component.
+  pairs:
+    - { term: Directory, definition: "Maps logical to physical volumes and builds photo URLs (a locator)" }
+    - { term: Cache, definition: "Facebook's internal cache in front of the Store (an in-house CDN)" }
+    - { term: Store, definition: "Machines holding physical volumes with in-memory indexes" }
+  explanation: The Directory also decides CDN vs Cache per request and tracks write-enabled volumes.
+
+- key: sd14-q009
+  type: single
+  section: "14.6"
+  difficulty: 2
+  prompt: How does Haystack replicate photos?
+  options:
+    - A logical volume groups physical volumes on different machines; writes go to all of them
+    - It relies on the CDN
+    - Each Store machine copies to its neighbor nightly
+    - It doesn't replicate
+  answer: A logical volume groups physical volumes on different machines; writes go to all of them
+  explanation: The same "copies on 3 machines" idea from the sharding lectures.
+
+- key: sd14-q010
+  type: order
+  section: "14.6"
+  difficulty: 2
+  prompt: Order a Haystack photo read.
+  items:
+    - The browser gets a URL built by the Directory
+    - Try the CDN
+    - On a miss, try the Haystack Cache
+    - On a miss, the Store looks up its in-memory index
+    - The Store does one disk read at the offset
+  explanation: "The URL encodes the route: http://<CDN>/<Cache>/<Machine id>/<Logical volume, Photo>. Each layer strips its part and forwards on a miss."
+
+- key: sd14-q011
+  type: multi
+  section: "14.7"
+  difficulty: 2
+  prompt: Which fundamentals does Haystack use?
+  options:
+    - Keep indexes in memory so a read is one disk operation
+    - Append-only, immutable writes with delete flags
+    - Tiered caching (CDN, internal cache, storage)
+    - One file per photo on NFS
+  answers:
+    - Keep indexes in memory so a read is one disk operation
+    - Append-only, immutable writes with delete flags
+    - Tiered caching (CDN, internal cache, storage)
+  explanation: Also a locator mapping logical to physical, replication across regions, unguessable URLs, and designing for the access pattern.
+
+- key: sd14-q012
+  type: single
+  section: "14.8"
+  difficulty: 2
+  prompt: A user deletes a photo. What does the Store do?
+  options:
+    - Sets the deleted flag; compaction reclaims the space later
+    - Rewrites the whole volume immediately
+    - Removes the photo from every CDN instantly
+    - Nothing
+  answer: Sets the deleted flag; compaction reclaims the space later
+  explanation: Reads now return "not found". CDN copies may live until they expire.
+
+- key: sd14-q013
+  type: single
+  section: "14.8"
+  difficulty: 3
+  prompt: Where do Haystack's cost savings (about 28% cheaper, about 4× more reads per TB) come from?
+  options:
+    - One disk operation per read instead of about 3, so far fewer disks for the same traffic
+    - Cheaper hard drives
+    - Deleting old photos
+    - Storing only one size per photo
+  answer: One disk operation per read instead of about 3, so far fewer disks for the same traffic
+  explanation: At 1M reads per second, 3 disk operations per read means 3× the disks.
+
+- key: sd14-q014
+  type: multi
+  section: "14.9"
+  difficulty: 2
+  prompt: Which are photo-storage pitfalls in interviews?
+  options:
+    - Assuming a CDN solves everything
+    - Storing billions of small files without thinking about metadata cost
+    - Leading with Haystack details before the fundamentals
+    - Using an object store behind a CDN
+  answers:
+    - Assuming a CDN solves everything
+    - Storing billions of small files without thinking about metadata cost
+    - Leading with Haystack details before the fundamentals
+  explanation: Also don't store photos in the database, and remember several sizes are stored per image.

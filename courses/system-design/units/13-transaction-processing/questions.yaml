@@ -1,0 +1,246 @@
+- key: sd13-q001
+  type: single
+  section: "13.1"
+  difficulty: 1
+  prompt: Which database does the course recommend for payments and other transactions?
+  options:
+    - Typically a relational database
+    - Cassandra in consistent mode
+    - Memcached
+    - An object store
+  answer: Typically a relational database
+  explanation: NoSQL can be consistent but isn't designed for it — Cassandra in consistent mode must wait for all writes, which is slower. Say "most NoSQL DBs prioritize availability", not "NoSQL isn't consistent".
+
+- key: sd13-q002
+  type: single
+  section: "13.1"
+  difficulty: 3
+  prompt: "In 2PC, A and B committed but C crashes in phase 2. What happens?"
+  options:
+    - C recovers from its log and finishes the commit; the coordinator keeps retrying until C confirms
+    - A and B are rolled back
+    - C is allowed to refuse
+    - The transaction is half-applied forever
+  answer: C recovers from its log and finishes the commit; the coordinator keeps retrying until C confirms
+  explanation: A "YES" in phase 1 is a binding promise — C already logged the change durably. That's why prepared participants must wait for the decision, making 2PC blocking.
+
+- key: sd13-q003
+  type: single
+  section: "13.1"
+  difficulty: 2
+  prompt: What if a rollback itself fails?
+  options:
+    - Retry a few times; if it still fails, raise an error for manual intervention
+    - Ignore it
+    - Commit instead
+    - Delete the table
+  answer: Retry a few times; if it still fails, raise an error for manual intervention
+  explanation: From the instructor's answers in the discussion.
+
+- key: sd13-q004
+  type: order
+  section: "13.2"
+  difficulty: 1
+  prompt: Order how the last seat gets overbooked **without** transactions.
+  items:
+    - Both users read seats_left = 1
+    - Both write seats_left = 0
+    - Both get a confirmation
+  explanation: With transactions and locking, the first to lock the row wins and the second sees 0.
+
+- key: sd13-q005
+  type: match
+  section: "13.3"
+  difficulty: 2
+  prompt: How does a database provide each ACID property?
+  pairs:
+    - { term: Atomicity, definition: "Undo log / rollback, with the WAL recording changes first" }
+    - { term: Consistency, definition: "Constraints plus the app's own logic" }
+    - { term: Isolation, definition: "Locks and/or MVCC" }
+    - { term: Durability, definition: "The WAL saved to disk before \"commit OK\"" }
+  explanation: Replicas add durability too.
+
+- key: sd13-q006
+  type: match
+  section: "13.4"
+  difficulty: 3
+  prompt: Match each anomaly.
+  pairs:
+    - { term: Dirty read, definition: "Reading another transaction's uncommitted change" }
+    - { term: Non-repeatable read, definition: "The same row read twice gives different values" }
+    - { term: Phantom read, definition: "Rerunning a query shows new rows" }
+    - { term: Lost update, definition: "Two read-modify-writes and one overwrites the other" }
+    - { term: Write skew, definition: "Two transactions each check a rule, write different rows, and break it" }
+  explanation: The on-call doctors example is write skew.
+
+- key: sd13-q007
+  type: order
+  section: "13.4"
+  difficulty: 2
+  prompt: Order the isolation levels from weakest to strongest.
+  items:
+    - Read uncommitted
+    - Read committed
+    - Repeatable read / snapshot
+    - Serializable
+  explanation: Serializable acts as if transactions ran one at a time.
+
+- key: sd13-q008
+  type: truefalse
+  section: "13.4"
+  difficulty: 2
+  prompt: ACID databases are serializable by default.
+  answer: false
+  explanation: PostgreSQL defaults to read committed; MySQL InnoDB to repeatable read. For money or inventory, raise the isolation level or lock explicitly.
+
+- key: sd13-q009
+  type: single
+  section: "13.5"
+  difficulty: 2
+  prompt: What does `SELECT … FOR UPDATE` do?
+  options:
+    - Takes a row lock so others wait until the transaction commits
+    - Reads without any lock
+    - Updates the row immediately
+    - Creates an index
+  answer: Takes a row lock so others wait until the transaction commits
+  explanation: Pessimistic locking — "whoever locks the entry first gets the purchase". Safe under high contention, but others wait and deadlocks are possible.
+
+- key: sd13-q010
+  type: single
+  section: "13.5"
+  difficulty: 2
+  prompt: How do you prevent deadlocks between transactions?
+  options:
+    - Always lock rows in the same order (e.g. by ID)
+    - Never use transactions
+    - Lock rows in random order
+    - Hold locks longer
+  answer: Always lock rows in the same order (e.g. by ID)
+  explanation: Databases detect deadlocks and abort one transaction; the app retries.
+
+- key: sd13-q011
+  type: single
+  section: "13.5"
+  difficulty: 2
+  prompt: "`UPDATE flights SET seats_left = 0, version = 8 WHERE id = 42 AND version = 7` updates 0 rows. What does that mean?"
+  options:
+    - Someone changed the row first; retry (optimistic concurrency)
+    - The flight doesn't exist
+    - The database is down
+    - The seat was booked successfully
+  answer: Someone changed the row first; retry (optimistic concurrency)
+  explanation: Great when conflicts are rare; under heavy contention it causes many retries. Same idea as memcached's gets/cas.
+
+- key: sd13-q012
+  type: match
+  section: "13.5"
+  difficulty: 3
+  prompt: Pick the technique for each case.
+  pairs:
+    - { term: Single-row counter or stock, definition: "Atomic conditional update" }
+    - { term: Multi-step logic on hot rows, definition: "Pessimistic lock" }
+    - { term: Editing a profile (rare conflicts), definition: "Optimistic version check" }
+    - { term: Complex rules across many rows, definition: "Serializable isolation" }
+  explanation: MVCC lets readers see a snapshot without blocking writers.
+
+- key: sd13-q013
+  type: order
+  section: "13.6"
+  difficulty: 2
+  prompt: Order two-phase commit.
+  items:
+    - Coordinator sends PREPARE to every participant
+    - Participants lock, log and reply YES
+    - Coordinator sends COMMIT
+    - Participants commit
+  explanation: Atomic across nodes, but slow and blocking if the coordinator dies after prepare.
+
+- key: sd13-q014
+  type: match
+  section: "13.6"
+  difficulty: 2
+  prompt: 2PC or saga?
+  pairs:
+    - { term: 2PC, definition: "Atomic across nodes; blocking and slow" }
+    - { term: Saga, definition: "Local transactions with compensating undos; eventually consistent" }
+    - { term: Microservices, definition: "Usually prefer sagas" }
+  explanation: Sagas can be orchestrated (central coordinator) or choreographed (events via a queue).
+
+- key: sd13-q015
+  type: match
+  section: "13.6"
+  difficulty: 3
+  prompt: Match each pattern.
+  pairs:
+    - { term: Transactional outbox, definition: "Write the change and an event row in one local transaction" }
+    - { term: Idempotency key, definition: "A retry with the same key returns the saved result" }
+    - { term: Shard-local transactions, definition: "Choose keys so a transaction touches one shard" }
+  explanation: Idempotency is essential for payments and at-least-once job queues.
+
+- key: sd13-q016
+  type: order
+  section: "13.7"
+  difficulty: 2
+  prompt: Order a seat reservation without long locks.
+  items:
+    - Short transaction marks the seat HELD with an expiry
+    - The user pays (no DB locks held)
+    - Short transaction marks it SOLD if the hold is still valid
+    - A background job releases expired holds
+  explanation: A cache counter can gate most requests, but the DB transaction stays the source of truth.
+
+- key: sd13-q017
+  type: single
+  section: "13.8"
+  difficulty: 2
+  prompt: Flight booking with read replicas — where do bookings go?
+  options:
+    - To the primary; search reads can use replicas
+    - To any replica
+    - To the cache
+    - To the replica with the most seats
+  answer: To the primary; search reads can use replicas
+  explanation: Otherwise replica lag causes double booking. When sharded, shard by flight_id so the transaction stays local.
+
+- key: sd13-q018
+  type: single
+  section: "13.8"
+  difficulty: 2
+  prompt: A user double-clicks "Pay". How do you avoid charging twice?
+  options:
+    - The client sends an idempotency key stored with the result in the same transaction
+    - Disable the button
+    - Refund duplicates at the end of the month
+    - Use a read replica
+  answer: The client sends an idempotency key stored with the result in the same transaction
+  explanation: The second request finds the key and returns the first result.
+
+- key: sd13-q019
+  type: single
+  section: "13.8"
+  difficulty: 2
+  prompt: How do you fix a lost update on a like counter?
+  options:
+    - UPDATE posts SET likes = likes + 1 (atomic), or Redis INCR
+    - Read, add 1 in the app, then write
+    - Add a cache in front
+    - Use a read replica
+  answer: UPDATE posts SET likes = likes + 1 (atomic), or Redis INCR
+  explanation: At huge scale use sharded counters added up periodically.
+
+- key: sd13-q020
+  type: multi
+  section: "13.9"
+  difficulty: 2
+  prompt: Which are transaction pitfalls in interviews?
+  options:
+    - Read, check, then write in separate steps without a lock or condition
+    - Holding DB locks while waiting on a payment API
+    - Forgetting idempotency with retries
+    - Using an atomic conditional update for stock
+  answers:
+    - Read, check, then write in separate steps without a lock or condition
+    - Holding DB locks while waiting on a payment API
+    - Forgetting idempotency with retries
+  explanation: Also avoid assuming serializable by default, reading from async replicas for decisions, 2PC across microservices without its downsides, and ignoring deadlocks.
