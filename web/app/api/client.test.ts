@@ -25,6 +25,11 @@ describe("api client", () => {
     expect(err).toMatchObject({ status: 404, code: "course_not_found", message: 'No course with slug "nope".' });
   });
 
+  it("accepts an empty 204 reply", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 204 })));
+    await expect(api.setLastUnit("demo", 1)).resolves.toBeUndefined();
+  });
+
   it("reports an unreachable server clearly", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("Failed to fetch"))));
     await expect(api.courses()).rejects.toMatchObject({ code: "network_error" });
